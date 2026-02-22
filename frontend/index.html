@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920">
+  <title>Family Calendar</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <div class="clock" id="clock">--:--</div>
+      <div class="date" id="date">Loading...</div>
+    </div>
+    <h1 class="header-title">Family Calendar</h1>
+    <div class="header-right">
+      <div class="legend">
+        <span class="legend-dot" style="background: var(--color-trevor)"></span> Trevor
+        <span class="legend-dot" style="background: var(--color-larissa)"></span> Larissa
+        <span class="legend-dot" style="background: var(--color-family)"></span> Family
+      </div>
+      <div class="sync-status" id="sync-status">⏳</div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="calendar-panel" id="calendar-panel">
+      <div class="calendar-grid" id="calendar-grid">
+        <div class="loading-message">Waiting for first sync...</div>
+      </div>
+    </section>
+
+    <aside class="reminders-panel" id="reminders-panel">
+      <div class="panel-header">Family Reminders</div>
+      <div class="reminders-list" id="reminders-list">
+        <div class="loading-message">Waiting for Shortcuts sync...</div>
+      </div>
+      <div class="reminders-meta" id="reminders-meta"></div>
+    </aside>
+  </main>
+
+  <footer class="footer" id="footer">
+    <span id="footer-sync">Last synced: never</span>
+    <span id="footer-counts"></span>
+  </footer>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/calendar-view.js"></script>
+  <script src="/js/reminders-view.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

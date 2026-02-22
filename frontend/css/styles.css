@@ -1,0 +1,455 @@
+/* ── Theme Variables ────────────────────────────────── */
+:root {
+  --color-trevor: #4285f4;
+  --color-larissa: #e91e8c;
+  --color-family: #0f9d58;
+  --color-default: #78909c;
+}
+
+:root[data-theme="light"] {
+  --bg-body: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-panel-header: #fafafa;
+  --bg-day-header: #f5f7fa;
+  --text-primary: #1a1a2e;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border: #e5e7eb;
+  --shadow: rgba(0, 0, 0, 0.06);
+  --event-bg-opacity: 0.12;
+  --reminder-done: #d1d5db;
+}
+
+:root[data-theme="dark"] {
+  --bg-body: #0f0f14;
+  --bg-card: #1a1a24;
+  --bg-panel-header: #1e1e2a;
+  --bg-day-header: #16161f;
+  --text-primary: #e2e4e9;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border: #2a2a3a;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --event-bg-opacity: 0.18;
+  --reminder-done: #4b5563;
+}
+
+/* ── Base ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: var(--display-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  background: var(--bg-body);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  min-width: 320px;
+}
+
+.clock {
+  font-size: 36px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.date {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 320px;
+  justify-content: flex-end;
+}
+
+.legend {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+
+.legend-dot:first-child {
+  margin-left: 0;
+}
+
+.sync-status {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ── Main Content ───────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  gap: 1px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.calendar-panel {
+  flex: 3;
+  background: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.reminders-panel {
+  flex: 1;
+  background: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 280px;
+  max-width: 380px;
+}
+
+.panel-header {
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 14px 20px 10px;
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Calendar Grid View ────────────────────────────── */
+.calendar-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-grid::-webkit-scrollbar {
+  display: none;
+}
+
+/* Day-of-week header row (Mon–Sun), sticky */
+.week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.week-header-cell {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 10px 0;
+}
+
+/* "This Week" / "Next Week" label */
+.week-label {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 8px 12px 4px;
+  background: var(--bg-body);
+  flex-shrink: 0;
+}
+
+/* Each week row container */
+.week-row {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px solid var(--border);
+  flex: 1;
+  min-height: 0;
+}
+
+/* Day cells — 7-column grid */
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.day-cell {
+  border-right: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  overflow: hidden;
+}
+
+.day-cell:last-child {
+  border-right: none;
+}
+
+.day-cell.is-today {
+  background: color-mix(in srgb, var(--color-trevor) 6%, var(--bg-body));
+}
+
+.day-cell.is-past {
+  opacity: 0.55;
+}
+
+/* Date number in each cell */
+.day-cell-date {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.day-cell.is-today .day-cell-date {
+  color: var(--color-trevor);
+}
+
+.day-cell-month {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* All-day event chips (inside day cell, below date) */
+.day-allday-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.allday-event {
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 6px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  opacity: 0.9;
+  cursor: default;
+}
+
+/* Stacked timed events within a day cell */
+.day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.timed-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.timed-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px; /* align dot with first line of wrapped text */
+}
+
+.timed-event-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.timed-event-title {
+  color: var(--text-primary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.day-events-more {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-top: 1px;
+}
+
+.no-events {
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 16px 20px;
+  font-style: italic;
+}
+
+/* ── Reminders ──────────────────────────────────────── */
+.reminders-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  scrollbar-width: none;
+}
+
+.reminders-list::-webkit-scrollbar {
+  display: none;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.reminder-item.is-completed {
+  opacity: 0.45;
+}
+
+.reminder-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-family);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.reminder-item.is-completed .reminder-checkbox {
+  background: var(--reminder-done);
+  border-color: var(--reminder-done);
+}
+
+.reminder-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.reminder-item.is-completed .reminder-title {
+  text-decoration: line-through;
+}
+
+.reminder-due {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.reminder-due.is-overdue {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.reminder-notes {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.reminders-meta {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 8px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.loading-message {
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 20px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 28px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Priority Indicators ────────────────────────────── */
+.priority-high {
+  color: #ef4444;
+}
+
+.priority-medium {
+  color: #f59e0b;
+}

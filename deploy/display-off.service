@@ -1,0 +1,11 @@
+# /etc/systemd/system/display-off.service
+# Turns off the monitor at night. Paired with display-off.timer.
+
+[Unit]
+Description=Turn off display
+
+[Service]
+Type=oneshot
+User=trevor
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xset dpms force off

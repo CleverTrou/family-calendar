@@ -1,0 +1,15 @@
+# /etc/systemd/system/display-off.timer
+# Turns off the monitor at 11:00 PM every night.
+# Install: sudo cp deploy/display-off.{service,timer} /etc/systemd/system/
+#          sudo systemctl daemon-reload
+#          sudo systemctl enable --now display-off.timer
+
+[Unit]
+Description=Turn off display at night
+
+[Timer]
+OnCalendar=*-*-* 23:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

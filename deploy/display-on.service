@@ -1,0 +1,11 @@
+# /etc/systemd/system/display-on.service
+# Turns on the monitor in the morning. Paired with display-on.timer.
+
+[Unit]
+Description=Turn on display
+
+[Service]
+Type=oneshot
+User=trevor
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/xset dpms force on

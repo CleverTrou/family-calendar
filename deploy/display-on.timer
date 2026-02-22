@@ -1,0 +1,15 @@
+# /etc/systemd/system/display-on.timer
+# Turns on the monitor at 6:30 AM every morning.
+# Install: sudo cp deploy/display-on.{service,timer} /etc/systemd/system/
+#          sudo systemctl daemon-reload
+#          sudo systemctl enable --now display-on.timer
+
+[Unit]
+Description=Turn on display in morning
+
+[Timer]
+OnCalendar=*-*-* 06:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

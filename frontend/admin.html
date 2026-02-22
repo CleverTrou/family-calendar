@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Calendar Settings</title>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <h1>Family Calendar</h1>
+        <p class="subtitle">Display Settings</p>
+      </div>
+      <a href="/" class="link-display" title="Open display view">View Display &rarr;</a>
+    </header>
+
+    <main class="admin-main">
+      <!-- ── Calendars Section ──────────────────── -->
+      <section class="card">
+        <h2>Calendars</h2>
+        <p class="card-desc">Show or hide individual calendars on the display.</p>
+        <div id="calendar-toggles" class="toggle-list">
+          <p class="muted">Loading calendars...</p>
+        </div>
+      </section>
+
+      <!-- ── Colors Section ─────────────────────── -->
+      <section class="card">
+        <h2>Event Colors</h2>
+        <p class="card-desc">Choose a color for each person's events on the calendar.</p>
+        <div id="color-pickers" class="color-grid">
+          <!-- populated by JS -->
+        </div>
+      </section>
+
+      <!-- ── Theme Section ──────────────────────── -->
+      <section class="card">
+        <h2>Theme</h2>
+        <p class="card-desc">Control the display's appearance.</p>
+
+        <div class="field-group">
+          <label for="theme-select">Color Mode</label>
+          <select id="theme-select">
+            <option value="auto">Auto (dark at night)</option>
+            <option value="light">Always Light</option>
+            <option value="dark">Always Dark</option>
+          </select>
+        </div>
+
+        <div class="field-row" id="dark-mode-hours">
+          <div class="field-group">
+            <label for="dark-start">Dark mode starts</label>
+            <select id="dark-start"></select>
+          </div>
+          <div class="field-group">
+            <label for="dark-end">Dark mode ends</label>
+            <select id="dark-end"></select>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Font Section ───────────────────────── -->
+      <section class="card">
+        <h2>Font</h2>
+        <p class="card-desc">Choose a typeface for the calendar display.</p>
+        <div id="font-options" class="font-grid">
+          <!-- populated by JS -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ── Save Bar ─────────────────────────────── -->
+    <footer class="save-bar" id="save-bar">
+      <span class="save-status" id="save-status"></span>
+      <button class="btn-save" id="btn-save" disabled>Save Settings</button>
+    </footer>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

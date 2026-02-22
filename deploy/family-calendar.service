@@ -1,0 +1,23 @@
+# /etc/systemd/system/family-calendar.service
+#
+# Node.js backend for the family calendar display.
+# Install: sudo cp deploy/family-calendar.service /etc/systemd/system/
+#          sudo systemctl daemon-reload
+#          sudo systemctl enable --now family-calendar
+
+[Unit]
+Description=Family Calendar Backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trevor
+WorkingDirectory=/home/trevor/family-calendar
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
