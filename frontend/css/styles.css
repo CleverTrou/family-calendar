@@ -160,7 +160,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-secondary);
-  padding: 14px 20px 10px;
+  padding: 10px 20px;
   background: var(--bg-panel-header);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
