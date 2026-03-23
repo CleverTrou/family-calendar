@@ -1,5 +1,7 @@
 node_modules/
 .env
 settings.json
+data/credentials.enc
+data/.credential-key
 *.log
 .DS_Store

@@ -10,6 +10,8 @@
   --admin-accent: #4285f4;
   --admin-accent-hover: #3367d6;
   --admin-success: #0f9d58;
+  --admin-danger: #dc2626;
+  --admin-danger-hover: #b91c1c;
   --admin-radius: 12px;
   --admin-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
@@ -43,7 +45,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .admin-header h1 {
@@ -74,7 +76,106 @@ body {
   border-color: var(--admin-accent);
 }
 
-/* ── Cards ──────────────────────────────────────────── */
+/* ── Tab Bar ───────────────────────────────────────── */
+
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: #e9ebf0;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover {
+  color: var(--admin-text);
+}
+
+.tab-btn.active {
+  background: var(--admin-card);
+  color: var(--admin-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ── PIN Overlay ───────────────────────────────────── */
+
+.pin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.pin-card {
+  background: var(--admin-card);
+  border-radius: var(--admin-radius);
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  max-width: 340px;
+  width: 90%;
+}
+
+.pin-card h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.pin-card p {
+  color: var(--admin-text-secondary);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.pin-card input {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 8px;
+  border: 2px solid var(--admin-border);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pin-card input:focus {
+  border-color: var(--admin-accent);
+}
+
+.pin-error {
+  color: var(--admin-danger);
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* ── Cards ─────────────────────────────────────────── */
 
 .card {
   background: var(--admin-card);
@@ -97,7 +198,308 @@ body {
   margin-bottom: 20px;
 }
 
-/* ── Calendar Toggles ───────────────────────────────── */
+.card-desc a {
+  color: var(--admin-accent);
+}
+
+/* ── Accounts List ─────────────────────────────────── */
+
+.account-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  margin-bottom: 8px;
+}
+
+.account-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-provider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.account-meta {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  margin-top: 2px;
+  padding-left: 22px;
+}
+
+.account-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.connected {
+  background: var(--admin-success);
+}
+
+.status-dot.error {
+  background: var(--admin-danger);
+}
+
+.status-dot.disconnected {
+  background: var(--admin-text-muted);
+}
+
+/* ── Provider Buttons ──────────────────────────────── */
+
+.provider-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-provider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--admin-text);
+  background: var(--admin-card);
+  border: 2px solid var(--admin-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-provider:hover:not(:disabled) {
+  border-color: var(--admin-accent);
+  background: color-mix(in srgb, var(--admin-accent) 4%, white);
+}
+
+.btn-provider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-provider svg {
+  flex-shrink: 0;
+}
+
+/* ── Setup Steps ───────────────────────────────────── */
+
+.setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.step strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.step p, .step a {
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+}
+
+.step a {
+  color: var(--admin-accent);
+}
+
+.copy-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.copy-field code {
+  flex: 1;
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--admin-text);
+  word-break: break-all;
+}
+
+.btn-copy {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--admin-accent);
+  flex-shrink: 0;
+}
+
+.btn-copy:hover {
+  background: #f3f4f6;
+}
+
+/* ── Buttons ───────────────────────────────────────── */
+
+.btn-primary {
+  padding: 10px 24px;
+  background: var(--admin-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--admin-accent-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-text:hover {
+  color: var(--admin-text);
+}
+
+.btn-small {
+  padding: 5px 12px;
+  font-size: 12px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--admin-text-secondary);
+  transition: all 0.15s;
+}
+
+.btn-small:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: var(--admin-text);
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-small.btn-danger {
+  color: var(--admin-danger);
+  border-color: #fecaca;
+}
+
+.btn-small.btn-danger:hover {
+  background: #fef2f2;
+  color: var(--admin-danger-hover);
+}
+
+.btn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ── Status Messages ───────────────────────────────── */
+
+.status-msg {
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+  margin-top: 12px;
+}
+
+.status-msg.success {
+  color: var(--admin-success);
+}
+
+.status-msg.error {
+  color: var(--admin-danger);
+}
+
+/* ── Toast Notifications ───────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 200;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast-success {
+  background: var(--admin-success);
+}
+
+.toast-error {
+  background: var(--admin-danger);
+}
+
+.toast-info {
+  background: var(--admin-accent);
+}
+
+/* ── Calendar Toggles ──────────────────────────────── */
 
 .toggle-list {
   display: flex;
@@ -179,7 +581,7 @@ body {
   transform: translateX(20px);
 }
 
-/* ── Color Pickers ──────────────────────────────────── */
+/* ── Color Pickers ─────────────────────────────────── */
 
 .color-grid {
   display: flex;
@@ -225,7 +627,7 @@ body {
   min-width: 64px;
 }
 
-/* ── Theme / Form Fields ────────────────────────────── */
+/* ── Theme / Form Fields ──────────────────────────── */
 
 .field-group {
   margin-bottom: 16px;
@@ -239,7 +641,10 @@ body {
   margin-bottom: 6px;
 }
 
-.field-group select {
+.field-group select,
+.field-group input[type="text"],
+.field-group input[type="email"],
+.field-group input[type="password"] {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--admin-border);
@@ -247,8 +652,17 @@ body {
   font-size: 14px;
   color: var(--admin-text);
   background: var(--admin-card);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field-group select {
   cursor: pointer;
   appearance: auto;
+}
+
+.field-group input:focus {
+  border-color: var(--admin-accent);
 }
 
 .field-row {
@@ -260,7 +674,7 @@ body {
   flex: 1;
 }
 
-/* ── Font Selection ─────────────────────────────────── */
+/* ── Font Selection ────────────────────────────────── */
 
 .font-grid {
   display: grid;
@@ -306,7 +720,7 @@ body {
   line-height: 1.3;
 }
 
-/* ── Save Bar ───────────────────────────────────────── */
+/* ── Save Bar ──────────────────────────────────────── */
 
 .save-bar {
   position: fixed;
@@ -360,7 +774,7 @@ body {
   cursor: not-allowed;
 }
 
-/* ── Utilities ──────────────────────────────────────── */
+/* ── Utilities ─────────────────────────────────────── */
 
 .muted {
   color: var(--admin-text-muted);

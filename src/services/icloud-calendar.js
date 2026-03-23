@@ -1,16 +1,19 @@
 import { DAVClient } from 'tsdav';
 import ICAL from 'ical.js';
-import { config } from '../config.js';
+import { getICloudCredentials } from './credential-store.js';
 
 let client = null;
 
 async function getClient() {
   if (!client) {
+    const creds = getICloudCredentials();
+    if (!creds) throw new Error('No iCloud credentials configured');
+
     client = new DAVClient({
       serverUrl: 'https://caldav.icloud.com',
       credentials: {
-        username: config.icloud.username,
-        password: config.icloud.appPassword,
+        username: creds.username,
+        password: creds.appPassword,
       },
       authMethod: 'Basic',
       defaultAccountType: 'caldav',
@@ -53,6 +56,9 @@ function parseICalEvents(icalData, calendarName) {
  * Fetch events from all configured iCloud Calendars via CalDAV.
  */
 export async function fetchICloudEvents(daysBack, daysForward) {
+  const creds = getICloudCredentials();
+  if (!creds) return [];
+
   const davClient = await getClient();
   const calendars = await davClient.fetchCalendars();
 
@@ -68,8 +74,8 @@ export async function fetchICloudEvents(daysBack, daysForward) {
 
     // Filter to only configured calendar names (if any specified)
     if (
-      config.icloud.calendarNames.length > 0 &&
-      !config.icloud.calendarNames.includes(calName.toLowerCase())
+      creds.calendarNames.length > 0 &&
+      !creds.calendarNames.includes(calName.toLowerCase())
     ) {
       continue;
     }

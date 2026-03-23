@@ -1,19 +1,22 @@
 import { google } from 'googleapis';
-import { config } from '../config.js';
+import { getGoogleCredentials } from './credential-store.js';
 
 let oauth2Client = null;
 
 function getAuth() {
   if (!oauth2Client) {
-    oauth2Client = new google.auth.OAuth2(
-      config.google.clientId,
-      config.google.clientSecret
-    );
-    oauth2Client.setCredentials({
-      refresh_token: config.google.refreshToken,
-    });
+    const creds = getGoogleCredentials();
+    if (!creds) throw new Error('No Google credentials configured');
+
+    oauth2Client = new google.auth.OAuth2(creds.clientId, creds.clientSecret);
+    oauth2Client.setCredentials({ refresh_token: creds.refreshToken });
   }
   return oauth2Client;
+}
+
+/** Reset the cached OAuth2 client (call after credential changes). */
+export function resetGoogleClient() {
+  oauth2Client = null;
 }
 
 /**
@@ -21,6 +24,9 @@ function getAuth() {
  * Returns a normalized array of event objects.
  */
 export async function fetchGoogleEvents(daysBack, daysForward) {
+  const creds = getGoogleCredentials();
+  if (!creds) return [];
+
   const auth = getAuth();
   const calendar = google.calendar({ version: 'v3', auth });
 
@@ -31,7 +37,7 @@ export async function fetchGoogleEvents(daysBack, daysForward) {
 
   const allEvents = [];
 
-  for (const calendarId of config.google.calendarIds) {
+  for (const calendarId of creds.calendarIds) {
     try {
       const response = await calendar.events.list({
         calendarId,

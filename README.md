@@ -31,7 +31,7 @@ Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 conne
 - **Timed events** with colored dots, time, and title
 - **Reminders sidebar** from Apple Reminders via Shortcuts webhook
 - **Multi-source sync** — Google Calendar API + iCloud CalDAV, every 5 minutes
-- **Admin panel** at `/admin` for calendar visibility, color themes, and fonts
+- **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display settings
 - **Light/dark themes** with per-person event colors
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
 
@@ -56,6 +56,12 @@ npm install
 ```
 
 ### 2. Configure credentials
+
+**Option A: GUI Setup (recommended)**
+
+Start the server (`npm start`) and visit [http://localhost:3000/admin](http://localhost:3000/admin). The **Accounts** tab walks you through connecting Google and iCloud calendars. Credentials are stored encrypted on disk.
+
+**Option B: Manual .env Setup**
 
 ```bash
 cp .env.example .env
@@ -108,14 +114,20 @@ family-calendar/
 │   ├── config.js              # Environment config with defaults
 │   ├── routes/
 │   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings
-│   │   └── webhooks.js        # POST /api/reminders/webhook
+│   │   ├── auth.js            # OAuth2 callback routes (Google)
+│   │   ├── accounts.js        # Account CRUD (connect, test, disconnect)
+│   │   └── webhooks.js        # POST /api/reminders/sync
 │   └── services/
+│       ├── admin-auth.js      # PIN-based admin authentication
 │       ├── calendar-store.js  # Event cache + sync orchestration
+│       ├── credential-store.js # Encrypted credential storage (AES-256-GCM)
 │       ├── google-calendar.js # Google Calendar API client
 │       ├── icloud-calendar.js # iCloud CalDAV client
 │       ├── reminders.js       # Reminders webhook store
 │       ├── settings.js        # User preferences (JSON file)
 │       └── sync-scheduler.js  # Cron-based sync loop
+├── data/                      # Runtime data (gitignored)
+│   └── credentials.enc        # Encrypted provider credentials
 ├── frontend/
 │   ├── index.html             # Main calendar display
 │   ├── admin.html             # Settings panel
@@ -145,6 +157,8 @@ All configuration is via environment variables in `.env`:
 | `DISPLAY_TIMEZONE` | `America/New_York` | Timezone for date display |
 | `CALENDAR_DAYS_BACK` | `7` | Days in the past to fetch events |
 | `CALENDAR_DAYS_FORWARD` | `14` | Days in the future to fetch events |
+| `ADMIN_PIN` | *(none)* | Optional numeric PIN to protect `/admin` |
+| `CREDENTIAL_SECRET` | *(auto)* | Encryption key for credential store (auto-generated) |
 
 ## License
 

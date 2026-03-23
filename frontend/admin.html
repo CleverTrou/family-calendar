@@ -11,67 +11,206 @@
     <header class="admin-header">
       <div>
         <h1>Family Calendar</h1>
-        <p class="subtitle">Display Settings</p>
+        <p class="subtitle">Settings</p>
       </div>
       <a href="/" class="link-display" title="Open display view">View Display &rarr;</a>
     </header>
 
+    <!-- ── Tab Bar ────────────────────────────────── -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="accounts">Accounts</button>
+      <button class="tab-btn" data-tab="display">Display</button>
+    </nav>
+
+    <!-- ── PIN Overlay ────────────────────────────── -->
+    <div class="pin-overlay" id="pin-overlay" style="display:none">
+      <div class="pin-card">
+        <h2>Admin Access</h2>
+        <p>Enter your PIN to manage settings.</p>
+        <input type="password" id="pin-input" placeholder="PIN" maxlength="8" autocomplete="off" inputmode="numeric">
+        <button class="btn-primary" id="btn-pin-submit">Unlock</button>
+        <p class="pin-error" id="pin-error"></p>
+      </div>
+    </div>
+
     <main class="admin-main">
-      <!-- ── Calendars Section ──────────────────── -->
-      <section class="card">
-        <h2>Calendars</h2>
-        <p class="card-desc">Show or hide individual calendars on the display.</p>
-        <div id="calendar-toggles" class="toggle-list">
-          <p class="muted">Loading calendars...</p>
-        </div>
-      </section>
 
-      <!-- ── Colors Section ─────────────────────── -->
-      <section class="card">
-        <h2>Event Colors</h2>
-        <p class="card-desc">Choose a color for each person's events on the calendar.</p>
-        <div id="color-pickers" class="color-grid">
-          <!-- populated by JS -->
-        </div>
-      </section>
+      <!-- ════════════════════════════════════════════ -->
+      <!-- ── Accounts Tab ─────────────────────────── -->
+      <!-- ════════════════════════════════════════════ -->
+      <div class="tab-panel active" id="panel-accounts">
 
-      <!-- ── Theme Section ──────────────────────── -->
-      <section class="card">
-        <h2>Theme</h2>
-        <p class="card-desc">Control the display's appearance.</p>
+        <!-- Connected Accounts -->
+        <section class="card">
+          <h2>Connected Accounts</h2>
+          <p class="card-desc">Calendar sources synced to your display.</p>
+          <div id="accounts-list">
+            <p class="muted">Loading...</p>
+          </div>
+        </section>
 
-        <div class="field-group">
-          <label for="theme-select">Color Mode</label>
-          <select id="theme-select">
-            <option value="auto">Auto (dark at night)</option>
-            <option value="light">Always Light</option>
-            <option value="dark">Always Dark</option>
-          </select>
-        </div>
+        <!-- Add Account -->
+        <section class="card">
+          <h2>Add Account</h2>
+          <p class="card-desc">Connect a new calendar source.</p>
+          <div class="provider-buttons">
+            <button class="btn-provider btn-google" id="btn-connect-google">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Connect Google Calendar
+            </button>
+            <button class="btn-provider btn-icloud" id="btn-connect-icloud">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#333" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+              Connect iCloud Calendar
+            </button>
+            <button class="btn-provider btn-microsoft" disabled>
+              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+              Microsoft (coming soon)
+            </button>
+          </div>
+        </section>
 
-        <div class="field-row" id="dark-mode-hours">
+        <!-- Google Setup (shown when connecting Google) -->
+        <section class="card" id="google-setup" style="display:none">
+          <h2>Connect Google Calendar</h2>
+          <div class="setup-steps">
+            <div class="step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Create OAuth2 credentials</strong>
+                <p>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a> &rarr; Create Credentials &rarr; OAuth 2.0 Client ID</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Add this redirect URI</strong>
+                <div class="copy-field">
+                  <code id="google-redirect-uri">Loading...</code>
+                  <button class="btn-copy" title="Copy" onclick="navigator.clipboard.writeText(document.getElementById('google-redirect-uri').textContent)">Copy</button>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Enter your credentials</strong>
+                <div class="field-group">
+                  <label for="google-client-id">Client ID</label>
+                  <input type="text" id="google-client-id" placeholder="xxxx.apps.googleusercontent.com">
+                </div>
+                <div class="field-group">
+                  <label for="google-client-secret">Client Secret</label>
+                  <input type="password" id="google-client-secret" placeholder="GOCSPX-xxxxx">
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">4</span>
+              <div>
+                <strong>Sign in with Google</strong>
+                <p>Click below to open Google's consent screen. You'll be redirected back here when done.</p>
+                <button class="btn-primary" id="btn-google-authorize">Authorize with Google</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn-text" id="btn-google-cancel">Cancel</button>
+        </section>
+
+        <!-- iCloud Setup (shown when connecting iCloud) -->
+        <section class="card" id="icloud-setup" style="display:none">
+          <h2>Connect iCloud Calendar</h2>
+          <p class="card-desc">
+            Requires an <strong>app-specific password</strong> (not your Apple ID password).<br>
+            Generate one at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a>
+            &rarr; Sign-In and Security &rarr; App-Specific Passwords.
+          </p>
           <div class="field-group">
-            <label for="dark-start">Dark mode starts</label>
-            <select id="dark-start"></select>
+            <label for="icloud-username">Apple ID Email</label>
+            <input type="email" id="icloud-username" placeholder="you@icloud.com">
           </div>
           <div class="field-group">
-            <label for="dark-end">Dark mode ends</label>
-            <select id="dark-end"></select>
+            <label for="icloud-password">App-Specific Password</label>
+            <input type="password" id="icloud-password" placeholder="xxxx-xxxx-xxxx-xxxx">
           </div>
-        </div>
-      </section>
+          <div class="btn-row">
+            <button class="btn-primary" id="btn-icloud-submit">Test &amp; Connect</button>
+            <button class="btn-text" id="btn-icloud-cancel">Cancel</button>
+          </div>
+          <p class="status-msg" id="icloud-status"></p>
+        </section>
 
-      <!-- ── Font Section ───────────────────────── -->
-      <section class="card">
-        <h2>Font</h2>
-        <p class="card-desc">Choose a typeface for the calendar display.</p>
-        <div id="font-options" class="font-grid">
-          <!-- populated by JS -->
-        </div>
-      </section>
+        <!-- Calendar Picker (shown after connecting) -->
+        <section class="card" id="calendar-picker" style="display:none">
+          <h2 id="picker-title">Select Calendars</h2>
+          <p class="card-desc">Choose which calendars to show on the display.</p>
+          <div id="picker-list" class="toggle-list"></div>
+          <button class="btn-primary" id="btn-picker-save">Save Selection</button>
+        </section>
+
+      </div>
+
+      <!-- ════════════════════════════════════════════ -->
+      <!-- ── Display Tab ──────────────────────────── -->
+      <!-- ════════════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-display">
+
+        <!-- Calendars Section -->
+        <section class="card">
+          <h2>Calendars</h2>
+          <p class="card-desc">Show or hide individual calendars on the display.</p>
+          <div id="calendar-toggles" class="toggle-list">
+            <p class="muted">Loading calendars...</p>
+          </div>
+        </section>
+
+        <!-- Colors Section -->
+        <section class="card">
+          <h2>Event Colors</h2>
+          <p class="card-desc">Choose a color for each person's events on the calendar.</p>
+          <div id="color-pickers" class="color-grid">
+            <!-- populated by JS -->
+          </div>
+        </section>
+
+        <!-- Theme Section -->
+        <section class="card">
+          <h2>Theme</h2>
+          <p class="card-desc">Control the display's appearance.</p>
+
+          <div class="field-group">
+            <label for="theme-select">Color Mode</label>
+            <select id="theme-select">
+              <option value="auto">Auto (dark at night)</option>
+              <option value="light">Always Light</option>
+              <option value="dark">Always Dark</option>
+            </select>
+          </div>
+
+          <div class="field-row" id="dark-mode-hours">
+            <div class="field-group">
+              <label for="dark-start">Dark mode starts</label>
+              <select id="dark-start"></select>
+            </div>
+            <div class="field-group">
+              <label for="dark-end">Dark mode ends</label>
+              <select id="dark-end"></select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Font Section -->
+        <section class="card">
+          <h2>Font</h2>
+          <p class="card-desc">Choose a typeface for the calendar display.</p>
+          <div id="font-options" class="font-grid">
+            <!-- populated by JS -->
+          </div>
+        </section>
+      </div>
+
     </main>
 
-    <!-- ── Save Bar ─────────────────────────────── -->
+    <!-- ── Save Bar (for Display settings) ────────── -->
     <footer class="save-bar" id="save-bar">
       <span class="save-status" id="save-status"></span>
       <button class="btn-save" id="btn-save" disabled>Save Settings</button>

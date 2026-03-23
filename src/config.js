@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import { getGoogleCredentials, getICloudCredentials } from './services/credential-store.js';
+
 export const config = {
   port: parseInt(process.env.PORT || '3000'),
   timezone: process.env.DISPLAY_TIMEZONE || 'America/New_York',
@@ -8,6 +10,7 @@ export const config = {
   calendarDaysBack: parseInt(process.env.CALENDAR_DAYS_BACK || '7'),
   calendarDaysForward: parseInt(process.env.CALENDAR_DAYS_FORWARD || '14'),
 
+  // Legacy .env fields — kept for backward compat but credential store is preferred
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
@@ -30,13 +33,18 @@ export const config = {
   reminders: {
     webhookSecret: process.env.REMINDERS_WEBHOOK_SECRET || '',
   },
+
+  adminPin: process.env.ADMIN_PIN || '',
 };
 
-/** Check which integrations have credentials configured. */
+/**
+ * Check which integrations have credentials configured.
+ * Checks the credential store first, then falls back to .env.
+ */
 export function getEnabledSources() {
   return {
-    google: !!(config.google.clientId && config.google.refreshToken),
-    icloud: !!(config.icloud.username && config.icloud.appPassword),
+    google: !!getGoogleCredentials(),
+    icloud: !!getICloudCredentials(),
     reminders: !!config.reminders.webhookSecret,
   };
 }
