@@ -424,6 +424,17 @@ function renderCalendarToggles() {
     label.appendChild(nameSpan);
     label.appendChild(sourceTag);
 
+    // Add hint for iCloud stub calendars with ⚠️ in the name
+    if (name.includes('⚠️') || name.includes('⚠')) {
+      const hint = document.createElement('div');
+      hint.className = 'toggle-hint';
+      hint.textContent = 'iCloud system stub — likely non-functional over CalDAV';
+      label.appendChild(hint);
+    }
+
+    // Add tooltip with full key for debugging
+    item.title = key;
+
     const toggle = document.createElement('label');
     toggle.className = 'toggle-switch';
 
