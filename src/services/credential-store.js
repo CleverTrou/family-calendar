@@ -173,6 +173,7 @@ export function getGoogleCredentials() {
         refreshToken: acct.refreshToken,
         calendarIds: acct.calendarIds || [],
         taskListIds: acct.taskListIds || [],
+        taskLists: acct.taskLists || [],
       };
     }
   }

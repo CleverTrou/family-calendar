@@ -4,9 +4,10 @@ import { fetchICloudEvents } from './icloud-calendar.js';
 import { getReminders, updateGoogleTasks } from './reminders.js';
 import { config, getEnabledSources } from '../config.js';
 import { registerCalendar, isCalendarVisible, loadSettings } from './settings.js';
+import { getGoogleCredentials, listAccounts } from './credential-store.js';
 
 let cachedEvents = [];
-let knownCalendars = []; // track all discovered calendars for the admin panel
+let knownCalendars = []; // track all discovered calendars + task lists for admin panel
 let lastSyncTime = null;
 let syncInProgress = false;
 let lastError = null;
@@ -36,7 +37,7 @@ export async function syncAllCalendars() {
       labels.push('icloud');
     }
 
-    if (promises.length === 0) {
+    if (promises.length === 0 && !sources.google) {
       console.warn('[Sync] No calendar sources configured.');
       return;
     }
@@ -47,6 +48,35 @@ export async function syncAllCalendars() {
       labels.push('google-tasks');
     }
 
+    // Build known calendars map — seed from credential store first
+    // so calendars with no current events still appear in admin toggles.
+    const calMap = new Map();
+
+    const accounts = listAccounts();
+    for (const acct of accounts) {
+      if (acct.provider === 'google') {
+        for (const cal of (acct.calendars || [])) {
+          const key = `google:${cal.name}`;
+          calMap.set(key, { source: 'google', name: cal.name });
+        }
+      } else if (acct.provider === 'icloud') {
+        for (const cal of (acct.calendars || [])) {
+          const name = cal.name || cal;
+          const key = `icloud:${name}`;
+          calMap.set(key, { source: 'icloud', name });
+        }
+      }
+    }
+
+    // Seed Google Task lists from credential store
+    const googleCreds = getGoogleCredentials();
+    if (googleCreds && googleCreds.taskLists) {
+      for (const tl of googleCreds.taskLists) {
+        const key = `google-tasks:${tl.name}`;
+        calMap.set(key, { source: 'google-tasks', name: tl.name });
+      }
+    }
+
     const results = await Promise.allSettled(promises);
     const events = [];
     const summary = [];
@@ -54,9 +84,19 @@ export async function syncAllCalendars() {
     results.forEach((result, i) => {
       if (result.status === 'fulfilled') {
         if (labels[i] === 'google-tasks') {
-          // Google Tasks go to the reminders store, not the events list
-          updateGoogleTasks(result.value);
-          summary.push(`google-tasks: ${result.value.length}`);
+          // Register task lists discovered from actual fetched data
+          for (const task of result.value) {
+            const key = `google-tasks:${task.list}`;
+            if (!calMap.has(key)) {
+              calMap.set(key, { source: 'google-tasks', name: task.list });
+            }
+          }
+          // Filter tasks by list visibility, then store in reminders
+          const visibleTasks = result.value.filter((t) =>
+            isCalendarVisible('google-tasks', t.list)
+          );
+          updateGoogleTasks(visibleTasks);
+          summary.push(`google-tasks: ${visibleTasks.length}/${result.value.length}`);
         } else {
           events.push(...result.value);
           summary.push(`${labels[i]}: ${result.value.length}`);
@@ -67,14 +107,17 @@ export async function syncAllCalendars() {
       }
     });
 
-    // Register discovered calendars and track them for the admin panel
-    const calMap = new Map();
+    // Add calendars discovered from events (catches names not in cred store)
     for (const event of events) {
       const key = `${event.source}:${event.calendarName}`;
       if (!calMap.has(key)) {
         calMap.set(key, { source: event.source, name: event.calendarName });
-        registerCalendar(event.source, event.calendarName);
       }
+    }
+
+    // Register all in settings (so visibility toggles appear)
+    for (const [, cal] of calMap) {
+      registerCalendar(cal.source, cal.name);
     }
     knownCalendars = Array.from(calMap.values());
 
