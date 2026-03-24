@@ -379,6 +379,11 @@ body {
   margin-top: 2px;
 }
 
+.reminder-checkbox.google-task {
+  border-color: var(--color-trevor);
+  border-radius: 4px; /* square-ish to distinguish from Apple's circles */
+}
+
 .reminder-item.is-completed .reminder-checkbox {
   background: var(--reminder-done);
   border-color: var(--reminder-done);
@@ -407,6 +412,12 @@ body {
 .reminder-due.is-overdue {
   color: #ef4444;
   font-weight: 500;
+}
+
+.reminder-list-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 1px;
 }
 
 .reminder-notes {

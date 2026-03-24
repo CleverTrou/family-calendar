@@ -172,6 +172,7 @@ export function getGoogleCredentials() {
         clientSecret: acct.clientSecret,
         refreshToken: acct.refreshToken,
         calendarIds: acct.calendarIds || [],
+        taskListIds: acct.taskListIds || [],
       };
     }
   }

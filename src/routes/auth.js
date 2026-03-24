@@ -69,7 +69,10 @@ export async function registerAuthRoutes(fastify) {
 
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
-      scope: ['https://www.googleapis.com/auth/calendar.readonly'],
+      scope: [
+        'https://www.googleapis.com/auth/calendar.readonly',
+        'https://www.googleapis.com/auth/tasks.readonly',
+      ],
       prompt: 'consent', // Always get a refresh token
       state,
     });
@@ -113,8 +116,9 @@ export async function registerAuthRoutes(fastify) {
         return reply.redirect('/admin#accounts?error=no_refresh_token');
       }
 
-      // Discover available calendars
+      // Discover available calendars and task lists
       oauth2Client.setCredentials(tokens);
+
       const calendarApi = google.calendar({ version: 'v3', auth: oauth2Client });
       const calList = await calendarApi.calendarList.list();
       const calendars = (calList.data.items || []).map((cal) => ({
@@ -124,21 +128,36 @@ export async function registerAuthRoutes(fastify) {
         primary: cal.primary || false,
       }));
 
+      // Discover Google Tasks lists
+      let taskLists = [];
+      try {
+        const tasksApi = google.tasks({ version: 'v1', auth: oauth2Client });
+        const tlResult = await tasksApi.tasklists.list({ maxResults: 100 });
+        taskLists = (tlResult.data.items || []).map((tl) => ({
+          id: tl.id,
+          name: tl.title,
+        }));
+      } catch (err) {
+        console.warn('[Auth] Could not discover task lists:', err.message);
+      }
+
       // Store in credential store
       const accountKey = 'google:default';
       setAccount(accountKey, {
         provider: 'google',
-        label: 'Google Calendar',
+        label: 'Google Calendar & Tasks',
         clientId,
         clientSecret,
         refreshToken: tokens.refresh_token,
         calendarIds: calendars.map((c) => c.id), // Default: sync all
         calendars,
+        taskListIds: taskLists.map((tl) => tl.id), // Default: sync all
+        taskLists,
         status: 'connected',
         connectedAt: new Date().toISOString(),
       });
 
-      console.log(`[Auth] Google connected! Found ${calendars.length} calendars.`);
+      console.log(`[Auth] Google connected! Found ${calendars.length} calendars and ${taskLists.length} task lists.`);
       return reply.redirect('/admin#accounts?success=google');
 
     } catch (err) {

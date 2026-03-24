@@ -1,9 +1,10 @@
 /**
  * Renders the reminders sidebar panel.
  * Shows incomplete reminders first (sorted by due date), then completed ones.
+ * Merges items from Apple Reminders (via Shortcuts webhook) and Google Tasks
+ * (polled during sync cycle).
  *
  * All text content uses textContent for safe DOM insertion.
- * Data comes from the user's own Apple Reminders via Shortcuts webhook.
  */
 
 function renderReminders(remindersData) {
@@ -36,12 +37,13 @@ function renderReminders(remindersData) {
   for (const item of items) {
     const dueInfo = formatDueDate(item.dueDate);
     const priorityClass = getPriorityClass(item.priority);
+    const isGoogleTask = item.source === 'google-tasks';
 
     const el = document.createElement('div');
     el.className = 'reminder-item' + (item.isCompleted ? ' is-completed' : '');
 
     const checkbox = document.createElement('div');
-    checkbox.className = 'reminder-checkbox';
+    checkbox.className = 'reminder-checkbox' + (isGoogleTask ? ' google-task' : '');
 
     const content = document.createElement('div');
     content.className = 'reminder-content';
@@ -56,6 +58,13 @@ function renderReminders(remindersData) {
       due.className = 'reminder-due' + (dueInfo.overdue ? ' is-overdue' : '');
       due.textContent = dueInfo.text;
       content.appendChild(due);
+    }
+
+    if (item.list) {
+      const listLabel = document.createElement('div');
+      listLabel.className = 'reminder-list-label';
+      listLabel.textContent = item.list;
+      content.appendChild(listLabel);
     }
 
     if (item.notes) {
@@ -81,7 +90,9 @@ function updateRemindersMeta(data, el) {
     return;
   }
   const ago = formatRelativeTime(data.lastSyncedAt);
-  el.textContent = 'Synced ' + ago + ' by ' + (data.syncedBy || 'unknown');
+  const parts = ['Synced ' + ago];
+  if (data.syncedBy) parts[0] += ' by ' + data.syncedBy;
+  el.textContent = parts[0];
 }
 
 function getPriorityClass(priority) {

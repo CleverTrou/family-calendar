@@ -18,6 +18,7 @@ import {
   getGoogleCredentials,
 } from '../services/credential-store.js';
 import { resetGoogleClient } from '../services/google-calendar.js';
+import { resetGoogleTasksClient } from '../services/google-tasks.js';
 import { resetICloudClient } from '../services/icloud-calendar.js';
 
 export async function registerAccountRoutes(fastify) {
@@ -168,6 +169,7 @@ export async function registerAccountRoutes(fastify) {
     if (account.provider === 'google') {
       setAccount(key, { calendarIds });
       resetGoogleClient();
+      resetGoogleTasksClient();
     } else if (account.provider === 'icloud') {
       // For iCloud, calendarIds are actually calendar names
       setAccount(key, { calendarNames: calendarIds.map((n) => n.toLowerCase()) });
@@ -191,7 +193,10 @@ export async function registerAccountRoutes(fastify) {
     deleteAccount(key);
 
     // Reset cached clients
-    if (account.provider === 'google') resetGoogleClient();
+    if (account.provider === 'google') {
+      resetGoogleClient();
+      resetGoogleTasksClient();
+    }
     if (account.provider === 'icloud') resetICloudClient();
 
     console.log(`[Accounts] Disconnected account: ${key}`);

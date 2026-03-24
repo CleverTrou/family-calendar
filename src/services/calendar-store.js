@@ -1,6 +1,7 @@
 import { fetchGoogleEvents } from './google-calendar.js';
+import { fetchGoogleTasks } from './google-tasks.js';
 import { fetchICloudEvents } from './icloud-calendar.js';
-import { getReminders } from './reminders.js';
+import { getReminders, updateGoogleTasks } from './reminders.js';
 import { config, getEnabledSources } from '../config.js';
 import { registerCalendar, isCalendarVisible, loadSettings } from './settings.js';
 
@@ -40,14 +41,26 @@ export async function syncAllCalendars() {
       return;
     }
 
+    // Also fetch Google Tasks if Google is connected
+    if (sources.google) {
+      promises.push(fetchGoogleTasks());
+      labels.push('google-tasks');
+    }
+
     const results = await Promise.allSettled(promises);
     const events = [];
     const summary = [];
 
     results.forEach((result, i) => {
       if (result.status === 'fulfilled') {
-        events.push(...result.value);
-        summary.push(`${labels[i]}: ${result.value.length}`);
+        if (labels[i] === 'google-tasks') {
+          // Google Tasks go to the reminders store, not the events list
+          updateGoogleTasks(result.value);
+          summary.push(`google-tasks: ${result.value.length}`);
+        } else {
+          events.push(...result.value);
+          summary.push(`${labels[i]}: ${result.value.length}`);
+        }
       } else {
         summary.push(`${labels[i]}: FAILED (${result.reason?.message})`);
         lastError = `${labels[i]}: ${result.reason?.message}`;
