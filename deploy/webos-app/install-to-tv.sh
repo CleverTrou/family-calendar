@@ -3,11 +3,11 @@
 # Bypasses ares-cli's buggy SSH handling by using system SSH directly.
 #
 # Usage: ./install-to-tv.sh [TV_IP]
-# Default TV IP: 10.0.0.177
+# Default TV IP: YOUR_TV_IP
 
 set -e
 
-TV_IP="${1:-10.0.0.177}"
+TV_IP="${1:-YOUR_TV_IP}"
 TV_PORT=9922
 TV_USER=prisoner
 SSH_KEY="$HOME/.ssh/lgtv_webos"

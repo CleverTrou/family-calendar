@@ -26,11 +26,11 @@ No Developer Mode, no CLI tools, no sideloading. Just the TV's browser.
    ```
    Find your server IP from the startup log:
    ```
-   Server listening at http://10.0.0.173:3000    <-- use this IP
+   Server listening at http://192.168.1.50:3000    <-- use this IP
    ```
    You can also try the hostname (works if mDNS is supported on your network):
    ```
-   http://trevors-macbook-pro.local:3000
+   http://your-hostname.local:3000
    ```
 5. **Bookmark it** (tap the star icon) for one-click access
 6. Tap the **fullscreen button** (bottom-right of the browser toolbar) to hide the URL bar
@@ -79,7 +79,7 @@ Packages the calendar as a native webOS app with its own launcher icon. Requires
 Edit `index.html` and replace the `SERVER_URL` value with your calendar server's local IP:
 
 ```javascript
-var SERVER_URL = 'http://10.0.0.173:3000';  // <-- your server IP
+var SERVER_URL = 'http://YOUR-SERVER-IP:3000';  // <-- your server IP
 ```
 
 ### Step 3: Connect to your TV

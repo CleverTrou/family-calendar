@@ -181,7 +181,7 @@ http://YOUR_SERVER_ADDRESS:3000/api/reminders/sync
 Replace `YOUR_SERVER_ADDRESS` with:
 - Your Pi's local IP, e.g., `192.168.1.100`
 - Or `familycal.local` if mDNS is set up
-- Or your Mac's local IP for testing (e.g., `10.0.0.173`)
+- Or your Mac's local IP for testing (e.g., `192.168.1.50`)
 
 3. Tap **Advanced** (or the ▸ arrow) to expand options
 4. Change **Method** to **POST**
@@ -210,7 +210,7 @@ Replace `YOUR_SERVER_ADDRESS` with:
 ┌──────────────────────────────────┐
 │  Get Contents of URL             │
 │                                  │
-│  URL: http://10.0.0.173:         │
+│  URL: http://192.168.1.50:         │
 │       3000/api/reminders/sync    │
 │                                  │
 │  ▼ Advanced                      │
