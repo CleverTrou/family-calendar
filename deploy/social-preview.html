@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 1280px;
+  height: 640px;
+  background: #0f0f14;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #f0f1f5;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background: #1a1a24;
+  border-bottom: 1px solid #2a2a3a;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.clock {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.date-text {
+  font-size: 13px;
+  color: #c9cdd5;
+}
+
+.header-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #a0a7b4;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.legend {
+  font-size: 11px;
+  color: #c9cdd5;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 8px;
+}
+
+.legend-dot:first-child { margin-left: 0; }
+
+.main {
+  flex: 1;
+  display: flex;
+  gap: 1px;
+  background: #2a2a3a;
+  overflow: hidden;
+}
+
+.calendar-panel {
+  flex: 3;
+  background: #0f0f14;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.reminders-panel {
+  flex: 0.85;
+  background: #0f0f14;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 220px;
+}
+
+.panel-header {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #a0a7b4;
+  padding: 8px 14px 6px;
+  background: #1e1e2a;
+  border-bottom: 1px solid #2a2a3a;
+  flex-shrink: 0;
+}
+
+.week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #1e1e2a;
+  border-bottom: 1px solid #2a2a3a;
+  flex-shrink: 0;
+}
+
+.week-header-cell {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #a0a7b4;
+  padding: 6px 0;
+}
+
+.week-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #a0a7b4;
+  padding: 5px 10px 2px;
+  background: #0f0f14;
+  flex-shrink: 0;
+}
+
+.week-row {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #2a2a3a;
+  flex: 1;
+  min-height: 0;
+}
+
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.day-cell {
+  border-right: 1px solid #2a2a3a;
+  border-top: 1px solid #2a2a3a;
+  padding: 4px 5px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.day-cell:last-child { border-right: none; }
+
+.day-cell.is-today {
+  background: rgba(66, 133, 244, 0.08);
+}
+
+.day-cell.is-past {
+  opacity: 0.5;
+}
+
+.day-cell-date {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0f1f5;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.day-cell.is-today .day-cell-date {
+  color: #4285f4;
+}
+
+.day-cell-month {
+  font-size: 9px;
+  color: #a0a7b4;
+}
+
+.allday-event {
+  border-radius: 3px;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.95;
+}
+
+.timed-event {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  line-height: 1.3;
+  margin-bottom: 1px;
+}
+
+.timed-event-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.timed-event-time {
+  color: #a0a7b4;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  font-size: 8px;
+}
+
+.timed-event-title {
+  color: #c9cdd5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 14px;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.reminder-checkbox {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #0f9d58;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.reminder-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #f0f1f5;
+}
+
+.reminder-due {
+  font-size: 10px;
+  color: #a0a7b4;
+  margin-top: 1px;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 20px;
+  font-size: 11px;
+  color: #a0a7b4;
+  background: #1a1a24;
+  border-top: 1px solid #2a2a3a;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.footer-icon { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="clock">10:30 AM</div>
+    <div class="date-text">Tuesday, March 25, 2026</div>
+  </div>
+  <div class="header-title">Family Calendar</div>
+  <div class="header-right">
+    <div class="legend">
+      <span class="legend-dot" style="background:#4285f4"></span> Alex
+      <span class="legend-dot" style="background:#e91e8c; margin-left:8px"></span> Jordan
+      <span class="legend-dot" style="background:#0f9d58; margin-left:8px"></span> Family
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="calendar-panel">
+    <div class="week-header">
+      <div class="week-header-cell">Mon</div>
+      <div class="week-header-cell">Tue</div>
+      <div class="week-header-cell">Wed</div>
+      <div class="week-header-cell">Thu</div>
+      <div class="week-header-cell">Fri</div>
+      <div class="week-header-cell">Sat</div>
+      <div class="week-header-cell">Sun</div>
+    </div>
+
+    <div class="week-label">This Week</div>
+    <div class="week-row">
+      <div class="week-days">
+        <!-- Mon Mar 23 -->
+        <div class="day-cell is-past">
+          <div class="day-cell-date">23</div>
+          <div class="allday-event" style="background:#4285f4">Leg Day</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7:15p</span><span class="timed-event-title">Family Dinner</span></div>
+        </div>
+        <!-- Tue Mar 24 -->
+        <div class="day-cell is-past">
+          <div class="day-cell-date">24</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">11a</span><span class="timed-event-title">Dentist</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">4p</span><span class="timed-event-title">Soccer Practice</span></div>
+        </div>
+        <!-- Wed Mar 25 (today) -->
+        <div class="day-cell is-today">
+          <div class="day-cell-date">25</div>
+          <div class="allday-event" style="background:#e91e8c">Book Club</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Team Meeting</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Date Night</span></div>
+        </div>
+        <!-- Thu Mar 26 -->
+        <div class="day-cell">
+          <div class="day-cell-date">26</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Sprint Review</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">3p</span><span class="timed-event-title">Piano Lesson</span></div>
+        </div>
+        <!-- Fri Mar 27 -->
+        <div class="day-cell">
+          <div class="day-cell-date">27</div>
+          <div class="allday-event" style="background:#4285f4">Pull Routine</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Grocery Run</span></div>
+        </div>
+        <!-- Sat Mar 28 -->
+        <div class="day-cell">
+          <div class="day-cell-date">28</div>
+          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">8a</span><span class="timed-event-title">Farmer's Market</span></div>
+        </div>
+        <!-- Sun Mar 29 -->
+        <div class="day-cell">
+          <div class="day-cell-date">29</div>
+          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Brunch</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="week-label">Next Week</div>
+    <div class="week-row">
+      <div class="week-days">
+        <!-- Mon Mar 30 -->
+        <div class="day-cell">
+          <div class="day-cell-date">30</div>
+          <div class="allday-event" style="background:#4285f4">Push Day</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Staff Meeting</span></div>
+        </div>
+        <!-- Tue Mar 31 -->
+        <div class="day-cell">
+          <div class="day-cell-date">31 <span class="day-cell-month">Mar</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">2p</span><span class="timed-event-title">1:1 w/ Manager</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7p</span><span class="timed-event-title">Game Night</span></div>
+        </div>
+        <!-- Wed Apr 1 -->
+        <div class="day-cell">
+          <div class="day-cell-date">1 <span class="day-cell-month">Apr</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">12p</span><span class="timed-event-title">Lunch w/ Sarah</span></div>
+        </div>
+        <!-- Thu Apr 2 -->
+        <div class="day-cell">
+          <div class="day-cell-date">2</div>
+          <div class="allday-event" style="background:#0f9d58">School Holiday</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">3p</span><span class="timed-event-title">Vet Appointment</span></div>
+        </div>
+        <!-- Fri Apr 3 -->
+        <div class="day-cell">
+          <div class="day-cell-date">3</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Yoga Class</span></div>
+        </div>
+        <!-- Sat Apr 4 -->
+        <div class="day-cell">
+          <div class="day-cell-date">4</div>
+          <div class="allday-event" style="background:#e91e8c">Half Marathon</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">4p</span><span class="timed-event-title">BBQ at Mike's</span></div>
+        </div>
+        <!-- Sun Apr 5 -->
+        <div class="day-cell">
+          <div class="day-cell-date">5</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Park Playdate</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Meal Prep</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reminders-panel">
+    <div class="panel-header">Reminders</div>
+    <div>
+      <div class="reminder-item">
+        <div class="reminder-checkbox"></div>
+        <div class="reminder-content">
+          <div class="reminder-title">Grocery list for camping</div>
+          <div class="reminder-due">Due Mar 27</div>
+        </div>
+      </div>
+      <div class="reminder-item">
+        <div class="reminder-checkbox"></div>
+        <div class="reminder-content">
+          <div class="reminder-title">Schedule oil change</div>
+        </div>
+      </div>
+      <div class="reminder-item">
+        <div class="reminder-checkbox"></div>
+        <div class="reminder-content">
+          <div class="reminder-title">Return library books</div>
+          <div class="reminder-due">Due Mar 28</div>
+        </div>
+      </div>
+      <div class="reminder-item">
+        <div class="reminder-checkbox"></div>
+        <div class="reminder-content">
+          <div class="reminder-title">Renew passports</div>
+        </div>
+      </div>
+      <div class="reminder-item">
+        <div class="reminder-checkbox"></div>
+        <div class="reminder-content">
+          <div class="reminder-title">Fix kitchen faucet</div>
+        </div>
+      </div>
+      <div class="reminder-item">
+        <div class="reminder-checkbox"></div>
+        <div class="reminder-content">
+          <div class="reminder-title">Order birthday gift</div>
+          <div class="reminder-due">Due Apr 2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="footer-icon">&#x1F4C5;</span>
+  <span>Family Calendar &mdash; Wall-mounted display for Raspberry Pi</span>
+</div>
+
+</body>
+</html>
