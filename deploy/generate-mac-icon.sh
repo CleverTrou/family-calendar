@@ -1,24 +1,19 @@
 #!/bin/bash
-# Generate a macOS .icns icon for the Family Calendar app
-# Uses a temporary HTML file rendered via screencapture + sips
+# Generate macOS .icns icons for both Family Calendar apps
+# - Family Calendar.app: calendar icon
+# - Stop Calendar.app: same icon with red circle/slash overlay
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ICONSET_DIR="$SCRIPT_DIR/AppIcon.iconset"
-ICNS_FILE="$SCRIPT_DIR/Family Calendar.app/Contents/Resources/AppIcon.icns"
 
-mkdir -p "$ICONSET_DIR"
+python3 - "$SCRIPT_DIR" << 'PYEOF'
+import sys, struct, zlib, os, math
 
-# Create a simple calendar icon as SVG, convert via macOS tools
-# We'll use Python to generate a PNG since it's available on macOS
-python3 - "$ICONSET_DIR" << 'PYEOF'
-import sys, struct, zlib, os
+script_dir = sys.argv[1]
 
-out_dir = sys.argv[1]
-
-def create_png(size):
-    """Create a calendar icon PNG at the given size."""
+def create_calendar_png(size, add_stop_overlay=False):
+    """Create a calendar icon PNG at the given size, optionally with red stop overlay."""
     pixels = bytearray(size * size * 4)
 
     pad = int(size * 0.08)
@@ -29,18 +24,17 @@ def create_png(size):
     radius = int(size * 0.12)
 
     # Colors
-    bg = (15, 15, 20, 255)        # dark background
-    card = (26, 26, 36, 255)      # card bg
-    header = (66, 133, 244, 255)  # blue header
-    white = (240, 241, 245, 255)  # text/grid
-    dot1 = (66, 133, 244, 255)    # blue dot
-    dot2 = (233, 30, 140, 255)    # pink dot
-    dot3 = (15, 157, 88, 255)     # green dot
+    bg = (15, 15, 20, 255)
+    card = (26, 26, 36, 255)
+    header = (66, 133, 244, 255)
+    white = (240, 241, 245, 255)
+    dot1 = (66, 133, 244, 255)
+    dot2 = (233, 30, 140, 255)
+    dot3 = (15, 157, 88, 255)
 
     def in_rounded_rect(x, y, l, t, r, b, rad):
         if x < l or x >= r or y < t or y >= b:
             return False
-        # Check corners
         for cx, cy in [(l+rad, t+rad), (r-rad, t+rad), (l+rad, b-rad), (r-rad, b-rad)]:
             if (x < l+rad or x >= r-rad) and (y < t+rad or y >= b-rad):
                 if (x - cx)**2 + (y - cy)**2 > rad**2:
@@ -52,10 +46,20 @@ def create_png(size):
             i = (y * size + x) * 4
             pixels[i:i+4] = bytes(color)
 
+    def blend_pixel(x, y, color, alpha):
+        """Alpha-blend a color onto existing pixel."""
+        if 0 <= x < size and 0 <= y < size:
+            i = (y * size + x) * 4
+            a = alpha / 255.0
+            pixels[i]   = int(pixels[i]   * (1-a) + color[0] * a)
+            pixels[i+1] = int(pixels[i+1] * (1-a) + color[1] * a)
+            pixels[i+2] = int(pixels[i+2] * (1-a) + color[2] * a)
+            pixels[i+3] = 255
+
+    # Draw base calendar
     for y in range(size):
         for x in range(size):
             i = (y * size + x) * 4
-
             if in_rounded_rect(x, y, left, top, right, bottom, radius):
                 if y < top + header_h:
                     pixels[i:i+4] = bytes(header)
@@ -64,7 +68,7 @@ def create_png(size):
             else:
                 pixels[i:i+4] = bytes(bg)
 
-    # Draw calendar grid lines and event dots in the body
+    # Event dots
     body_top = top + header_h
     body_h = bottom - body_top
     body_w = right - left
@@ -72,7 +76,6 @@ def create_png(size):
     cell_w = body_w // cols
     cell_h = body_h // rows
     dot_r = max(2, int(size * 0.045))
-
     dots = [dot1, dot2, dot3, dot1, dot3, dot2, dot2, dot1, dot3]
 
     for row in range(rows):
@@ -80,13 +83,12 @@ def create_png(size):
             cx = left + col * cell_w + cell_w // 2
             cy = body_top + row * cell_h + cell_h // 2
             color = dots[row * cols + col]
-
             for dy in range(-dot_r, dot_r + 1):
                 for dx in range(-dot_r, dot_r + 1):
                     if dx*dx + dy*dy <= dot_r*dot_r:
                         set_pixel(cx + dx, cy + dy, color)
 
-    # Draw two small "binding rings" at the top
+    # Binding rings
     ring_w = max(2, int(size * 0.04))
     ring_h = max(3, int(size * 0.06))
     for rx in [left + w // 3, left + 2 * w // 3]:
@@ -94,10 +96,46 @@ def create_png(size):
             for dx in range(-ring_w // 2, ring_w // 2 + 1):
                 set_pixel(rx + dx, top - 1 + dy, white)
 
+    # Stop overlay: red circle with diagonal slash
+    if add_stop_overlay:
+        red = (220, 38, 38)
+        cx, cy = size // 2, size // 2
+        outer_r = int(size * 0.40)
+        inner_r = int(size * 0.34)
+        stroke = outer_r - inner_r
+        slash_half_w = max(2, int(size * 0.04))
+
+        for y in range(size):
+            for x in range(size):
+                dx = x - cx
+                dy = y - cy
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                # Anti-aliased circle ring
+                if dist >= inner_r - 1 and dist <= outer_r + 1:
+                    if dist >= inner_r and dist <= outer_r:
+                        blend_pixel(x, y, red, 230)
+                    elif dist < inner_r:
+                        aa = max(0, min(255, int((inner_r - dist) * 255)))
+                        blend_pixel(x, y, red, int(230 * (1 - aa/255)))
+                    else:
+                        aa = max(0, min(255, int((dist - outer_r) * 255)))
+                        blend_pixel(x, y, red, int(230 * (1 - aa/255)))
+
+                # Diagonal slash (from top-left to bottom-right)
+                if dist <= inner_r:
+                    # Perpendicular distance from the diagonal line y=x through center
+                    perp_dist = abs(dx - dy) / math.sqrt(2)
+                    if perp_dist <= slash_half_w:
+                        blend_pixel(x, y, red, 230)
+                    elif perp_dist <= slash_half_w + 1:
+                        aa = perp_dist - slash_half_w
+                        blend_pixel(x, y, red, int(230 * (1 - aa)))
+
     # Encode as PNG
     raw = bytearray()
     for y in range(size):
-        raw.append(0)  # filter: none
+        raw.append(0)
         raw.extend(pixels[y * size * 4:(y + 1) * size * 4])
 
     compressed = zlib.compress(bytes(raw))
@@ -107,16 +145,15 @@ def create_png(size):
         return struct.pack('>I', len(data)) + chunk + struct.pack('>I', zlib.crc32(chunk) & 0xffffffff)
 
     ihdr = struct.pack('>IIBBBBB', size, size, 8, 6, 0, 0, 0)
-
     png = b'\x89PNG\r\n\x1a\n'
     png += png_chunk(b'IHDR', ihdr)
     png += png_chunk(b'IDAT', compressed)
     png += png_chunk(b'IEND', b'')
-
     return png
 
-# Generate all required sizes for .iconset
-sizes = {
+
+# Icon sizes required for .iconset
+icon_sizes = {
     'icon_16x16.png': 16,
     'icon_16x16@2x.png': 32,
     'icon_32x32.png': 32,
@@ -129,19 +166,31 @@ sizes = {
     'icon_512x512@2x.png': 1024,
 }
 
-for filename, sz in sizes.items():
-    path = os.path.join(out_dir, filename)
-    with open(path, 'wb') as f:
-        f.write(create_png(sz))
-    print(f'  Created {filename} ({sz}x{sz})')
+# Generate both icon sets
+for variant, overlay in [('AppIcon', False), ('StopIcon', True)]:
+    iconset_dir = os.path.join(script_dir, f'{variant}.iconset')
+    os.makedirs(iconset_dir, exist_ok=True)
 
-print('All icon sizes generated.')
+    for filename, sz in icon_sizes.items():
+        path = os.path.join(iconset_dir, filename)
+        with open(path, 'wb') as f:
+            f.write(create_calendar_png(sz, add_stop_overlay=overlay))
+
+    label = 'stop' if overlay else 'calendar'
+    print(f'  Generated {variant} ({label}) — all sizes')
+
+print('Done generating icon sets.')
 PYEOF
 
-# Convert iconset to .icns
-iconutil -c icns "$ICONSET_DIR" -o "$ICNS_FILE"
-echo "Created: $ICNS_FILE"
+# Convert both iconsets to .icns
+iconutil -c icns "$SCRIPT_DIR/AppIcon.iconset" \
+  -o "$SCRIPT_DIR/Family Calendar.app/Contents/Resources/AppIcon.icns"
+echo "Created: Family Calendar.app icon"
+
+iconutil -c icns "$SCRIPT_DIR/StopIcon.iconset" \
+  -o "$SCRIPT_DIR/Stop Calendar.app/Contents/Resources/AppIcon.icns"
+echo "Created: Stop Calendar.app icon"
 
 # Clean up
-rm -rf "$ICONSET_DIR"
-echo "Done!"
+rm -rf "$SCRIPT_DIR/AppIcon.iconset" "$SCRIPT_DIR/StopIcon.iconset"
+echo "All done!"
