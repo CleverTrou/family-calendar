@@ -5,3 +5,6 @@ data/credentials.enc
 data/.credential-key
 *.log
 .DS_Store
+.server.pid
+deploy/*.app/
+deploy/*.iconset/
