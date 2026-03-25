@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyCors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +22,35 @@ const fastify = Fastify({
   logger: {
     level: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
   },
+});
+
+// ── Security: IP allowlist ────────────────────────────
+// If ALLOWED_NETWORKS is set, reject requests from outside those ranges.
+if (config.allowedNetworks.length > 0) {
+  const nets = config.allowedNetworks.map(parseCIDR);
+  fastify.addHook('onRequest', (request, reply, done) => {
+    const ip = request.ip;
+    if (!nets.some((net) => matchCIDR(ip, net))) {
+      console.warn(`[Security] Blocked request from ${ip}`);
+      reply.code(403).send({ error: 'Forbidden' });
+      return;
+    }
+    done();
+  });
+  console.log(`[Security] IP allowlist active: ${config.allowedNetworks.join(', ')}`);
+}
+
+// ── Security: rate limiting on sensitive endpoints ────
+await fastify.register(rateLimit, {
+  global: false, // only apply to routes that opt in
+});
+
+// ── Security: standard headers ───────────────────────
+fastify.addHook('onSend', (request, reply, payload, done) => {
+  reply.header('X-Content-Type-Options', 'nosniff');
+  reply.header('X-Frame-Options', 'SAMEORIGIN');
+  reply.header('Referrer-Policy', 'same-origin');
+  done();
 });
 
 // CORS for local development (browser on MacBook → server on Pi)
@@ -47,8 +77,15 @@ await fastify.register(async (instance) => {
   await instance.register(registerAccountRoutes);
 }, { prefix: '/api/accounts' });
 
-// Admin PIN verification endpoint
-fastify.post('/api/admin/verify-pin', async (request, reply) => {
+// Admin PIN verification endpoint (rate-limited: 5 attempts/min to prevent brute force)
+fastify.post('/api/admin/verify-pin', {
+  config: {
+    rateLimit: {
+      max: 5,
+      timeWindow: '1 minute',
+    },
+  },
+}, async (request, reply) => {
   const { pin } = request.body || {};
   if (!verifyPin(pin)) {
     return reply.code(401).send({ error: 'Invalid PIN' });
@@ -92,9 +129,30 @@ if (sources.google || sources.icloud) {
 
 // Start listening
 try {
-  await fastify.listen({ port: config.port, host: '0.0.0.0' });
+  await fastify.listen({ port: config.port, host: config.host });
   console.log(`[Server] Family Calendar running at http://localhost:${config.port}`);
 } catch (err) {
   fastify.log.error(err);
   process.exit(1);
+}
+
+// ── CIDR helpers for IP allowlist ──────────────────────
+
+function parseCIDR(cidr) {
+  // Support bare IPs ("127.0.0.1") and CIDR ("10.0.0.0/24")
+  const [addr, bits] = cidr.includes('/') ? cidr.split('/') : [cidr, '32'];
+  const parts = addr.split('.').map(Number);
+  const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+  const mask = bits === '0' ? 0 : (~0 << (32 - parseInt(bits))) >>> 0;
+  return { ip: ip & mask, mask };
+}
+
+function matchCIDR(ipStr, { ip: netIp, mask }) {
+  // Handle IPv6-mapped IPv4 (::ffff:10.0.0.1)
+  if (ipStr.startsWith('::ffff:')) ipStr = ipStr.slice(7);
+  if (ipStr === '::1') ipStr = '127.0.0.1';
+  const parts = ipStr.split('.').map(Number);
+  if (parts.length !== 4) return false;
+  const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+  return (ip & mask) === netIp;
 }
