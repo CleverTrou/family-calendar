@@ -1,24 +1,70 @@
-# webOS App — Family Calendar for LG TVs
+# Family Calendar on LG Smart TVs
 
-Packages the Family Calendar as a native webOS app for LG smart TVs (tested on LG OLED55C8 / webOS 4.0).
+Display the Family Calendar on an LG webOS smart TV. Two approaches depending on your TV's webOS version:
 
-The app is a thin launcher that connects to your Family Calendar server over the local network and displays it full-screen.
+| Approach | Best for | Effort |
+|---|---|---|
+| **Built-in browser** (Option A) | Any webOS TV, especially webOS 4.0 (2018 models) | 2 minutes |
+| **Sideloaded app** (Option B) | webOS 5.0+ (2020+ models) with working Developer Mode | 15 minutes |
 
-## Prerequisites
+Both approaches connect to your Family Calendar server over the local network.
 
-1. **Family Calendar server running** on your Mac/Pi at a known IP (e.g., `http://10.0.0.173:3000`)
-2. **LG TV on the same network**
-3. **webOS CLI tools** (`ares-*` commands) — see install instructions below
+---
 
-## Step 1: Install webOS CLI tools
+## Option A: Built-in Web Browser (recommended for webOS 4.0)
 
-```bash
-# Install the webOS SDK CLI (no full IDE needed)
-npm install -g @pjtzlmq/ares-cli
-# Or download from: https://webostv.developer.lge.com/develop/tools/cli-installation
-```
+No Developer Mode, no CLI tools, no sideloading. Just the TV's browser.
 
-## Step 2: Enable Developer Mode on your TV
+### Setup
+
+1. Make sure your **Family Calendar server is running** on your Mac or Pi
+2. On the TV remote, press **Home**
+3. Open the **Web Browser** app
+4. Navigate to your server URL:
+   ```
+   http://YOUR-SERVER-IP:3000
+   ```
+   Find your server IP from the startup log:
+   ```
+   Server listening at http://10.0.0.173:3000    <-- use this IP
+   ```
+   You can also try the hostname (works if mDNS is supported on your network):
+   ```
+   http://trevors-macbook-pro.local:3000
+   ```
+5. **Bookmark it** (tap the star icon) for one-click access
+6. Tap the **fullscreen button** (bottom-right of the browser toolbar) to hide the URL bar
+
+### Tips
+
+- The calendar is designed as a full-screen web app — it looks identical to the sideloaded app
+- Create a bookmark on the TV's home screen for quick access
+- The browser persists your last-visited page, so it often resumes where you left off
+
+### Limitations
+
+- The browser URL bar shows briefly on launch (fullscreen mode hides it)
+- No custom app icon on the TV launcher
+- Browser may reload the page after long idle periods
+
+---
+
+## Option B: Sideloaded App (webOS 5.0+)
+
+Packages the calendar as a native webOS app with its own launcher icon. Requires Developer Mode and CLI tools.
+
+> **Note on webOS 4.0 (2018 models like the C8):** The `ares-cli` tools have a known SSH compatibility bug with these older TVs — the `ssh2` library rejects the TV's `ssh-rsa` host key type (deprecated in OpenSSH 8.8+). The Developer Mode on webOS 4.0 also doesn't properly initialize the `/media/developer/apps/` directory needed for sideloading. **Use Option A instead.**
+
+### Prerequisites
+
+1. **Family Calendar server running** on your Mac/Pi
+2. **LG TV on the same network** running webOS 5.0 or newer
+3. **webOS CLI tools** — install with:
+   ```bash
+   npm install -g @webos-tools/cli
+   ```
+
+### Step 1: Enable Developer Mode on your TV
 
 1. On your LG TV, open the **LG Content Store**
 2. Search for and install the **Developer Mode** app
@@ -28,21 +74,15 @@ npm install -g @pjtzlmq/ares-cli
 6. Note the IP address shown on screen
 7. The TV will restart
 
-## Step 3: Configure the server URL
+### Step 2: Configure the server URL
 
-Edit `index.html` and replace `SERVER_IP` with your calendar server's local IP:
+Edit `index.html` and replace the `SERVER_URL` value with your calendar server's local IP:
 
 ```javascript
 var SERVER_URL = 'http://10.0.0.173:3000';  // <-- your server IP
 ```
 
-Find your server IP from the startup log:
-```
-[Server] Family Calendar running at http://localhost:3000
-Server listening at http://10.0.0.173:3000    <-- this one
-```
-
-## Step 4: Connect to your TV
+### Step 3: Connect to your TV
 
 ```bash
 # Add your TV as a device
@@ -54,11 +94,11 @@ ares-setup-device
 #   Port: 9922
 #   User: prisoner
 
-# Generate and install the dev key
+# Retrieve the SSH key (enter the passphrase shown in the Developer Mode app)
 ares-novacom --device lgtv --getkey
 ```
 
-## Step 5: Package and install
+### Step 4: Package and install
 
 ```bash
 cd deploy/webos-app
@@ -73,22 +113,7 @@ ares-install --device lgtv com.clevertrou.familycalendar_1.0.0_all.ipk
 ares-launch --device lgtv com.clevertrou.familycalendar
 ```
 
-## Step 6 (Optional): Auto-launch on TV startup
-
-Unfortunately webOS doesn't support auto-launch for sideloaded apps. Workarounds:
-- Use **HDMI-CEC** to wake the TV, then manually launch the app
-- Set the app as the TV's "last used" app — webOS sometimes resumes it on wake
-
-## OLED Burn-in Notes
-
-For an always-on display on an OLED panel, consider:
-- **Use the TV's built-in screen saver** (Settings → General → Screen Saver → after 2 min)
-- **Set an auto-off timer** (Settings → General → Timers → Auto Power Off)
-- **Pixel shift is on by default** on the C8 — leave it enabled
-- The dark theme (`#0f0f14` background) helps since OLED pixels are nearly off for black
-- For truly always-on use, the Raspberry Pi + LCD approach is safer long-term
-
-## Updating
+### Updating
 
 After changing the server URL or index.html:
 ```bash
@@ -97,11 +122,25 @@ ares-package .
 ares-install --device lgtv com.clevertrou.familycalendar_1.0.0_all.ipk
 ```
 
+---
+
+## OLED Burn-in Warning
+
+OLED TVs are **not recommended for always-on display** due to burn-in risk from static UI elements (header, grid lines, sidebar border). If using an OLED:
+
+- **Use the TV's built-in screen saver** (Settings > General > Screen Saver > after 2 min)
+- **Set an auto-off timer** (Settings > General > Timers > Auto Power Off)
+- **Leave pixel shift enabled** (on by default for LG OLEDs)
+- The dark theme (`#0f0f14` background) helps — OLED pixels are nearly off for true black
+- **For truly always-on use, the Raspberry Pi + LCD approach is the safer long-term choice**
+
 ## Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| `ares-install` fails with "not connected" | Re-run `ares-novacom --device lgtv --getkey` — dev keys expire if TV restarts |
-| App shows "Can't reach calendar server" | Check that server is running and TV is on same network/VLAN |
-| Developer Mode turns itself off | LG requires re-enabling every 50 hours. Open the Developer Mode app to reset the timer |
-| App disappears after TV update | Re-install with `ares-install` — TV updates can clear sideloaded apps |
+| **"Callback was already called"** from ares-cli | Known SSH bug on webOS 4.0 TVs. Use Option A (browser) instead |
+| `ares-install` fails with "not connected" | Re-run `ares-novacom --device lgtv --getkey` — dev keys expire when TV restarts |
+| Can't reach server from TV browser | Verify server is running, TV is on the same network/VLAN, and `ALLOWED_NETWORKS` in `.env` includes the TV's IP range |
+| Developer Mode turns itself off | LG resets it every 50 hours. Open the Developer Mode app on the TV to restart the timer |
+| App disappears after TV firmware update | Re-install with `ares-install` — TV updates can clear sideloaded apps |
+| Browser won't stay fullscreen | Tap the fullscreen button each time, or use a TV browser setting to default to fullscreen |
