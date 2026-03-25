@@ -3,6 +3,7 @@ node_modules/
 settings.json
 data/credentials.enc
 data/.credential-key
+data/reminders-cache.json
 *.log
 .DS_Store
 .server.pid

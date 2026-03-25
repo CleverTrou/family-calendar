@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync, writeFileSync, renameSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Unified reminders/tasks store.
@@ -8,18 +11,57 @@ import { randomUUID } from 'node:crypto';
  *   2. Google Tasks — polled during the sync cycle
  *
  * Each source overwrites only its own items so they don't interfere.
+ * Both stores are persisted to disk so they survive server restarts.
  */
 
-let appleStore = {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CACHE_PATH = join(__dirname, '..', '..', 'data', 'reminders-cache.json');
+
+// ── Persistence ────────────────────────────────────────
+
+function loadCache() {
+  try {
+    const raw = readFileSync(CACHE_PATH, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function saveCache(apple, googleTasks) {
+  const data = JSON.stringify({ apple, googleTasks }, null, 2);
+  // Atomic write: write to temp file, then rename
+  const tmp = CACHE_PATH + '.tmp';
+  mkdirSync(dirname(CACHE_PATH), { recursive: true });
+  writeFileSync(tmp, data, 'utf-8');
+  renameSync(tmp, CACHE_PATH);
+}
+
+// ── Initialize from cache ──────────────────────────────
+
+const cached = loadCache();
+
+let appleStore = cached?.apple ?? {
   items: [],
   lastSyncedAt: null,
   syncedBy: null,
 };
 
-let googleTasksStore = {
+let googleTasksStore = cached?.googleTasks ?? {
   items: [],
   lastSyncedAt: null,
 };
+
+if (cached) {
+  const appleCount = appleStore.items.length;
+  const googleCount = googleTasksStore.items.length;
+  console.log(
+    `[Reminders] Loaded ${appleCount + googleCount} cached items ` +
+    `(apple: ${appleCount}, google-tasks: ${googleCount})`
+  );
+}
+
+// ── Public API ─────────────────────────────────────────
 
 /** Return merged reminders from all sources. */
 export function getReminders() {
@@ -60,6 +102,7 @@ export function updateReminders(items, syncedBy = 'unknown') {
     lastSyncedAt: new Date().toISOString(),
     syncedBy,
   };
+  saveCache(appleStore, googleTasksStore);
   return appleStore;
 }
 
@@ -81,5 +124,6 @@ export function updateGoogleTasks(items) {
     })),
     lastSyncedAt: new Date().toISOString(),
   };
+  saveCache(appleStore, googleTasksStore);
   return googleTasksStore;
 }
