@@ -1,47 +1,32 @@
 # Family Calendar Display
 
-Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 connected to a 21"+ LCD monitor. Unifies **Google Calendar**, **iCloud Calendar**, and **Apple Reminders** into a single at-a-glance view.
+![Social Preview](social-preview.png)
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  12:34 PM   Sunday, February 22         Family Calendar  ● ● ●  │
-├─────────────────────────────────────────────┬────────────────────┤
-│  Mon   Tue   Wed   Thu   Fri   Sat   Sun   │   REMINDERS        │
-│  This Week                                  │                    │
-│  ┌─────┬─────┬─────┬─────┬─────┬─────┬────┐│   ○ Groceries      │
-│  │ 16  │ 17  │ 18  │ 19  │ 20  │ 21  │ 22 ││   ○ Fix shelf      │
-│  │     │ Pull│     │ Legs│ Push│     │    ▐││   ○ Call dentist   │
-│  │7p Q │3p T │7p S │11a J│     │     │7p Q ││                    │
-│  └─────┴─────┴─────┴─────┴─────┴─────┴────┘│                    │
-│  Next Week                                  │                    │
-│  ┌─────┬─────┬─────┬─────┬─────┬─────┬────┐│                    │
-│  │ 23  │ 24  │ 25  │ 26  │ 27  │ 28  │  1 ││                    │
-│  │     │ Pull│     │ Legs│ Push│     │ Mar ││                    │
-│  │     │3p T │     │5p J │4p M │     │     ││                    │
-│  └─────┴─────┴─────┴─────┴─────┴─────┴────┘│                    │
-├─────────────────────────────────────────────┴────────────────────┤
-│  Last synced 2 min ago                              /admin ⚙     │
-└──────────────────────────────────────────────────────────────────┘
-```
+Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 connected to a 21"+ LCD monitor. Unifies **Google Calendar**, **iCloud Calendar**, **Apple Reminders**, and **Google Tasks** into a single at-a-glance view.
 
 ## Features
 
 - **Two-week calendar grid** — Monday through Sunday, this week and next
 - **All-day events** as colored chips inside each day cell
 - **Timed events** with colored dots, time, and title
-- **Reminders sidebar** from Apple Reminders via Shortcuts webhook
+- **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks (via API)
 - **Multi-source sync** — Google Calendar API + iCloud CalDAV, every 5 minutes
+- **Persistent cache** — Reminders survive server restarts
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display settings
 - **Light/dark themes** with per-person event colors
+- **Network security** — IP allowlist, rate limiting, security headers
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
+- **macOS launcher apps** — double-click to start/stop the server
+- **LG webOS app** — sideloadable package for LG smart TVs
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Node.js 20+, [Fastify](https://fastify.dev) |
+| Backend | Node.js 20+, [Fastify 5](https://fastify.dev) |
 | Frontend | Vanilla HTML/CSS/JS (no build step) |
 | Google Calendar | [googleapis](https://www.npmjs.com/package/googleapis) OAuth2 |
+| Google Tasks | [googleapis](https://www.npmjs.com/package/googleapis) Tasks API |
 | iCloud Calendar | [tsdav](https://www.npmjs.com/package/tsdav) CalDAV + [ical.js](https://www.npmjs.com/package/ical.js) |
 | Apple Reminders | Webhook from [Apple Shortcuts](https://support.apple.com/guide/shortcuts/welcome/ios) |
 | Scheduling | [node-cron](https://www.npmjs.com/package/node-cron) |
@@ -87,9 +72,11 @@ Open [http://localhost:3000](http://localhost:3000) for the calendar display and
 
 Apple Reminders don't have a public API. This project uses an Apple Shortcut that runs on your iPhone to push reminders to the server via webhook.
 
-See **[SHORTCUTS-SETUP.md](SHORTCUTS-SETUP.md)** for step-by-step instructions with diagrams.
+See **[SHORTCUTS-SETUP.md](SHORTCUTS-SETUP.md)** for step-by-step instructions.
 
-## Raspberry Pi Deployment
+## Deployment Options
+
+### Raspberry Pi (recommended for always-on display)
 
 The `deploy/` directory contains everything needed to set up a Raspberry Pi 5 as a dedicated calendar display:
 
@@ -104,6 +91,22 @@ This installs a minimal X11 stack, Chromium, Node.js, and configures:
 - **Display schedule** — Screen turns off at night, back on in the morning (configurable via systemd timers)
 - **Cursor hiding** — Mouse cursor hidden after idle
 - **Crash recovery** — Chromium auto-restarts if it crashes
+
+### macOS (development or temporary display)
+
+Double-click launcher apps in `deploy/`:
+- **Family Calendar.app** — Starts the server and opens the calendar in your browser
+- **Stop Calendar.app** — Stops the running server
+
+Generate the apps with `deploy/generate-mac-icon.sh`.
+
+### LG Smart TVs (webOS)
+
+A lightweight webOS app package is available in `deploy/webos-app/` for LG smart TVs. The TV connects to your calendar server over the local network.
+
+See **[deploy/webos-app/README.md](deploy/webos-app/README.md)** for setup instructions.
+
+> **Note:** OLED TVs are not recommended for always-on display due to burn-in risk. Best used as an on-demand display.
 
 ## Project Structure
 
@@ -122,12 +125,14 @@ family-calendar/
 │       ├── calendar-store.js  # Event cache + sync orchestration
 │       ├── credential-store.js # Encrypted credential storage (AES-256-GCM)
 │       ├── google-calendar.js # Google Calendar API client
+│       ├── google-tasks.js    # Google Tasks API client
 │       ├── icloud-calendar.js # iCloud CalDAV client
-│       ├── reminders.js       # Reminders webhook store
+│       ├── reminders.js       # Unified reminders store (Apple + Google Tasks)
 │       ├── settings.js        # User preferences (JSON file)
 │       └── sync-scheduler.js  # Cron-based sync loop
 ├── data/                      # Runtime data (gitignored)
-│   └── credentials.enc        # Encrypted provider credentials
+│   ├── credentials.enc        # Encrypted provider credentials
+│   └── reminders-cache.json   # Persisted reminders across restarts
 ├── frontend/
 │   ├── index.html             # Main calendar display
 │   ├── admin.html             # Settings panel
@@ -138,8 +143,12 @@ family-calendar/
 │       ├── app.js             # Main loop: fetch data, render, update clock
 │       ├── calendar-view.js   # Two-week grid renderer
 │       ├── reminders-view.js  # Reminders sidebar renderer
+│       ├── admin.js           # Admin panel logic
 │       └── utils.js           # Date parsing, formatting, color mapping
-├── deploy/                    # Raspberry Pi setup scripts + systemd units
+├── deploy/
+│   ├── pi-setup.sh            # Raspberry Pi kiosk setup script
+│   ├── generate-mac-icon.sh   # Generate macOS .app launchers
+│   └── webos-app/             # LG smart TV app package
 ├── scripts/
 │   └── google-auth.js         # One-time Google OAuth2 token helper
 ├── .env.example               # Template for credentials
@@ -153,12 +162,31 @@ All configuration is via environment variables in `.env`:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3000` | Server port |
+| `HOST` | `0.0.0.0` | Bind address (`127.0.0.1` for localhost only) |
 | `SYNC_INTERVAL_MINUTES` | `5` | How often to re-fetch calendars |
 | `DISPLAY_TIMEZONE` | `America/New_York` | Timezone for date display |
 | `CALENDAR_DAYS_BACK` | `7` | Days in the past to fetch events |
 | `CALENDAR_DAYS_FORWARD` | `14` | Days in the future to fetch events |
 | `ADMIN_PIN` | *(none)* | Optional numeric PIN to protect `/admin` |
 | `CREDENTIAL_SECRET` | *(auto)* | Encryption key for credential store (auto-generated) |
+
+### Network Security
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ALLOWED_NETWORKS` | *(none)* | Comma-separated CIDR ranges to allow (e.g., `10.0.0.0/24,127.0.0.1`) |
+
+When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. The admin PIN endpoint is also rate-limited to 5 attempts per minute.
+
+**Recommended `.env` for a home network:**
+
+```bash
+ALLOWED_NETWORKS=192.168.1.0/24,127.0.0.1
+# or for 10.x networks:
+ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1
+# add Tailscale if you use it:
+ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1,100.64.0.0/10
+```
 
 ## License
 
