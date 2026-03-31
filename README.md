@@ -10,7 +10,7 @@ Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 conne
 - **All-day events** as colored chips inside each day cell
 - **Timed events** with colored dots, time, and title
 - **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks (via API)
-- **Multi-source sync** — Google Calendar API + iCloud CalDAV, every 5 minutes
+- **Multi-source sync** — Google Calendar API + iCloud CalDAV, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
 - **Persistent cache** — Reminders survive server restarts
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display settings
 - **Light/dark themes** with per-person event colors
