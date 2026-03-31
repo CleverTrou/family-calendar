@@ -88,7 +88,7 @@ sudo ./deploy/pi-setup.sh
 
 This installs a minimal X11 stack, Chromium, Node.js, and configures:
 - **Auto-start** — Calendar launches at boot in fullscreen kiosk mode
-- **Display schedule** — Screen turns off at night, back on in the morning (configurable via systemd timers)
+- **Display schedule** — Screen turns off at night, back on in the morning (configurable from the admin GUI, per day-of-week)
 - **Cursor hiding** — Mouse cursor hidden after idle
 - **Crash recovery** — Chromium auto-restarts if it crashes
 
@@ -116,7 +116,7 @@ family-calendar/
 │   ├── server.js              # Fastify server entry point
 │   ├── config.js              # Environment config with defaults
 │   ├── routes/
-│   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings
+│   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings, /api/display/status
 │   │   ├── auth.js            # OAuth2 callback routes (Google)
 │   │   ├── accounts.js        # Account CRUD (connect, test, disconnect)
 │   │   └── webhooks.js        # POST /api/reminders/sync
@@ -147,6 +147,8 @@ family-calendar/
 │       └── utils.js           # Date parsing, formatting, color mapping
 ├── deploy/
 │   ├── pi-setup.sh            # Raspberry Pi kiosk setup script
+│   ├── display-agent.sh       # Screen on/off agent (polls server schedule)
+│   ├── display-agent.service  # Systemd service for display agent
 │   ├── generate-mac-icon.sh   # Generate macOS .app launchers
 │   └── webos-app/             # LG smart TV app package
 ├── scripts/
