@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { getGoogleCredentials } from './credential-store.js';
+import { getGoogleCredentials, setAccount } from './credential-store.js';
 
 let oauth2Client = null;
 
@@ -20,15 +20,45 @@ export function resetGoogleClient() {
 }
 
 /**
- * Fetch events from all configured Google Calendars.
- * Returns a normalized array of event objects.
+ * Discover all calendars visible to the authenticated user.
+ * Updates the stored calendarIds so new subscriptions (e.g., holidays)
+ * and deletions are picked up automatically.
+ */
+async function discoverCalendars(calendarApi) {
+  try {
+    const calList = await calendarApi.calendarList.list();
+    const calendars = (calList.data.items || []).map((cal) => ({
+      id: cal.id,
+      name: cal.summary,
+      accessRole: cal.accessRole,
+      primary: cal.primary || false,
+    }));
+
+    // Update the credential store with the live calendar list
+    const calendarIds = calendars.map((c) => c.id);
+    setAccount('google:default', { calendarIds, calendars });
+
+    return calendarIds;
+  } catch (err) {
+    console.warn('[Google] Calendar discovery failed, using stored list:', err.message);
+    return null; // fallback to stored calendarIds
+  }
+}
+
+/**
+ * Fetch events from all Google Calendars.
+ * Dynamically discovers calendars each sync so new subscriptions
+ * (e.g., holidays) and deletions are picked up automatically.
  */
 export async function fetchGoogleEvents(daysBack, daysForward) {
   const creds = getGoogleCredentials();
   if (!creds) return [];
 
   const auth = getAuth();
-  const calendar = google.calendar({ version: 'v3', auth });
+  const calendarApi = google.calendar({ version: 'v3', auth });
+
+  // Discover live calendar list, fall back to stored IDs
+  const calendarIds = await discoverCalendars(calendarApi) || creds.calendarIds;
 
   const timeMin = new Date();
   timeMin.setDate(timeMin.getDate() - daysBack);
@@ -37,9 +67,9 @@ export async function fetchGoogleEvents(daysBack, daysForward) {
 
   const allEvents = [];
 
-  for (const calendarId of creds.calendarIds) {
+  for (const calendarId of calendarIds) {
     try {
-      const response = await calendar.events.list({
+      const response = await calendarApi.events.list({
         calendarId,
         timeMin: timeMin.toISOString(),
         timeMax: timeMax.toISOString(),
