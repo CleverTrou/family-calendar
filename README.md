@@ -78,15 +78,13 @@ See **[SHORTCUTS-SETUP.md](SHORTCUTS-SETUP.md)** for step-by-step instructions.
 
 ### Raspberry Pi (recommended for always-on display)
 
-The `deploy/` directory contains everything needed to set up a Raspberry Pi 5 as a dedicated calendar display:
+On a fresh Raspberry Pi OS Lite (64-bit Bookworm), run this one-liner over SSH:
 
 ```bash
-# On a fresh Raspberry Pi OS Lite (64-bit Bookworm):
-chmod +x deploy/pi-setup.sh
-sudo ./deploy/pi-setup.sh
+curl -fsSL https://raw.githubusercontent.com/CleverTrou/family-calendar/main/deploy/pi-setup.sh | sudo bash
 ```
 
-This installs a minimal X11 stack, Chromium, Node.js, and configures:
+This clones the repo, installs Node.js, Chromium, a minimal X11 stack, and configures:
 - **Auto-start** — Calendar launches at boot in fullscreen kiosk mode
 - **Display schedule** — Screen turns off at night, back on in the morning (configurable from the admin GUI, per day-of-week)
 - **Cursor hiding** — Mouse cursor hidden after idle
