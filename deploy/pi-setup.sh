@@ -34,8 +34,16 @@ apt update && apt upgrade -y
 
 # ── 2. Display stack (minimal X11 + Chromium) ──────────
 echo "→ Installing display stack..."
+
+# Chromium package name changed: "chromium-browser" (Bookworm) → "chromium" (Trixie)
+CHROMIUM_PKG="chromium"
+if apt-cache show chromium-browser &>/dev/null; then
+  CHROMIUM_PKG="chromium-browser"
+fi
+echo "  Using Chromium package: $CHROMIUM_PKG"
+
 apt install -y \
-  chromium-browser \
+  "$CHROMIUM_PKG" \
   xserver-xorg \
   x11-xserver-utils \
   xinit \

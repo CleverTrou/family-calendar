@@ -16,7 +16,9 @@ unclutter -idle 3 -root &
 sleep 8
 
 # Launch Chromium in kiosk mode (full-screen, no UI chrome)
-chromium-browser \
+# Binary name: "chromium-browser" (Bookworm) or "chromium" (Trixie+)
+CHROMIUM=$(command -v chromium-browser 2>/dev/null || command -v chromium)
+$CHROMIUM \
   --kiosk \
   --noerrdialogs \
   --disable-infobars \
