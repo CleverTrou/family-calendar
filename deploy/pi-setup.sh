@@ -36,8 +36,11 @@ apt update && apt upgrade -y
 echo "→ Installing display stack..."
 
 # Chromium package name changed: "chromium-browser" (Bookworm) → "chromium" (Trixie)
+# apt-cache show can return 0 for virtual packages that aren't installable,
+# so we check apt-cache policy for an actual installation candidate instead.
 CHROMIUM_PKG="chromium"
-if apt-cache show chromium-browser &>/dev/null; then
+if apt-cache policy chromium-browser 2>/dev/null | grep -q "Candidate:" && \
+   ! apt-cache policy chromium-browser 2>/dev/null | grep -q "Candidate: (none)"; then
   CHROMIUM_PKG="chromium-browser"
 fi
 echo "  Using Chromium package: $CHROMIUM_PKG"
