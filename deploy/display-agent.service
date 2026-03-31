@@ -1,0 +1,27 @@
+# /etc/systemd/system/display-agent.service
+# Polls the Family Calendar server for screen on/off schedule.
+# Replaces the static display-on.timer and display-off.timer.
+#
+# Install:
+#   sudo cp deploy/display-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now display-agent
+#
+# If migrating from the old timers:
+#   sudo systemctl disable --now display-on.timer display-off.timer
+
+[Unit]
+Description=Family Calendar display schedule agent
+After=network-online.target family-calendar.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trevor
+Environment=DISPLAY=:0
+ExecStart=/home/trevor/family-calendar/deploy/display-agent.sh http://localhost:3000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

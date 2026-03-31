@@ -60,6 +60,7 @@ async function loadData() {
     renderCalendarToggles();
     renderColorPickers();
     renderThemeControls();
+    renderScreenSchedule();
     renderFontOptions();
     setupSaveButton();
     setupAccountButtons();
@@ -553,6 +554,61 @@ function formatHour(h) {
   if (h === 12) return '12:00 PM';
   if (h < 12) return h + ':00 AM';
   return (h - 12) + ':00 PM';
+}
+
+/* ── Screen Schedule ──────────────────────────────── */
+
+function renderScreenSchedule() {
+  const display = currentSettings.display;
+
+  // Enable/disable toggle
+  const toggle = document.getElementById('screen-schedule-toggle');
+  toggle.checked = display.screenSchedule !== false;
+  toggle.addEventListener('change', (e) => {
+    currentSettings.display.screenSchedule = e.target.checked;
+    updateScheduleVisibility();
+    markDirty();
+  });
+
+  // On/off times
+  const onTime = document.getElementById('screen-on-time');
+  const offTime = document.getElementById('screen-off-time');
+  onTime.value = display.screenOnTime || '06:30';
+  offTime.value = display.screenOffTime || '23:00';
+
+  onTime.addEventListener('change', (e) => {
+    currentSettings.display.screenOnTime = e.target.value;
+    markDirty();
+  });
+  offTime.addEventListener('change', (e) => {
+    currentSettings.display.screenOffTime = e.target.value;
+    markDirty();
+  });
+
+  // Day-of-week buttons
+  const activeDays = display.screenOnDays || [1, 2, 3, 4, 5, 6, 0];
+  const dayBtns = document.querySelectorAll('#screen-on-days .day-btn');
+  dayBtns.forEach((btn) => {
+    const day = parseInt(btn.dataset.day);
+    if (activeDays.includes(day)) btn.classList.add('active');
+
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('active');
+      const days = [];
+      document.querySelectorAll('#screen-on-days .day-btn.active').forEach((b) => {
+        days.push(parseInt(b.dataset.day));
+      });
+      currentSettings.display.screenOnDays = days;
+      markDirty();
+    });
+  });
+
+  updateScheduleVisibility();
+}
+
+function updateScheduleVisibility() {
+  const options = document.getElementById('screen-schedule-options');
+  options.style.display = currentSettings.display.screenSchedule !== false ? '' : 'none';
 }
 
 /* ── Font Selection ────────────────────────────────── */

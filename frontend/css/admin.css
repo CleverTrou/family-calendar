@@ -683,6 +683,41 @@ body {
   flex: 1;
 }
 
+/* ── Display Schedule ─────────────────────────────── */
+
+.day-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.day-btn {
+  padding: 8px 14px;
+  border: 2px solid var(--admin-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.day-btn:hover {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+}
+
+.day-btn.active {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: #fff;
+}
+
+#screen-schedule-options {
+  margin-top: 12px;
+}
+
 /* ── Font Selection ────────────────────────────────── */
 
 .font-grid {

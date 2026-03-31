@@ -198,6 +198,46 @@
           </div>
         </section>
 
+        <!-- Display Schedule Section -->
+        <section class="card">
+          <h2>Display Schedule</h2>
+          <p class="card-desc">Automatically turn the screen on and off. Requires the display agent running on the Raspberry Pi.</p>
+
+          <div class="toggle-item">
+            <div class="toggle-label">Enable screen schedule</div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="screen-schedule-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div id="screen-schedule-options">
+            <div class="field-row">
+              <div class="field-group">
+                <label for="screen-on-time">Screen on</label>
+                <input type="time" id="screen-on-time" value="06:30">
+              </div>
+              <div class="field-group">
+                <label for="screen-off-time">Screen off</label>
+                <input type="time" id="screen-off-time" value="23:00">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label>Active days</label>
+              <div class="day-picker" id="screen-on-days">
+                <button type="button" class="day-btn" data-day="1">Mon</button>
+                <button type="button" class="day-btn" data-day="2">Tue</button>
+                <button type="button" class="day-btn" data-day="3">Wed</button>
+                <button type="button" class="day-btn" data-day="4">Thu</button>
+                <button type="button" class="day-btn" data-day="5">Fri</button>
+                <button type="button" class="day-btn" data-day="6">Sat</button>
+                <button type="button" class="day-btn" data-day="0">Sun</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Font Section -->
         <section class="card">
           <h2>Font</h2>

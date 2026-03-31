@@ -28,6 +28,10 @@ const DEFAULTS = {
     font: 'system',          // font key from AVAILABLE_FONTS
     darkModeStart: 21,       // hour (24h) to switch to dark
     darkModeEnd: 7,          // hour (24h) to switch to light
+    screenSchedule: true,    // enable screen on/off schedule
+    screenOnTime: '06:30',   // HH:MM — when to turn screen on
+    screenOffTime: '23:00',  // HH:MM — when to turn screen off
+    screenOnDays: [1, 2, 3, 4, 5, 6, 0], // days of week (0=Sun, 1=Mon, ...)
   },
 };
 
