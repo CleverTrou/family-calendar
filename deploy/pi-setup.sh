@@ -3,7 +3,7 @@
 # Raspberry Pi 5 setup script for Family Calendar Display
 # ─────────────────────────────────────────────────────────
 #
-# Run this on a fresh Raspberry Pi OS Lite (64-bit Bookworm):
+# Run this on a fresh Raspberry Pi OS Lite (64-bit):
 #
 #   curl -fsSL https://raw.githubusercontent.com/CleverTrou/family-calendar/main/deploy/pi-setup.sh | sudo bash
 #

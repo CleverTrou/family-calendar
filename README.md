@@ -78,7 +78,7 @@ See **[SHORTCUTS-SETUP.md](SHORTCUTS-SETUP.md)** for step-by-step instructions.
 
 ### Raspberry Pi (recommended for always-on display)
 
-On a fresh Raspberry Pi OS Lite (64-bit Bookworm), run this one-liner over SSH:
+On a fresh Raspberry Pi OS Lite (64-bit), run this one-liner over SSH:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/CleverTrou/family-calendar/main/deploy/pi-setup.sh | sudo bash
