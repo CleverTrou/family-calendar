@@ -8,6 +8,7 @@ let originalJSON = '';       // snapshot for dirty-checking
 let availableFonts = {};
 let knownCalendars = [];
 let adminToken = null;       // PIN auth token (null = no PIN required)
+let systemStatsInterval = null;
 
 /* ── Initialization ─────────────────────────────────── */
 
@@ -135,6 +136,15 @@ function switchTab(tabName) {
   document.querySelectorAll('.tab-panel').forEach((p) =>
     p.classList.toggle('active', p.id === 'panel-' + tabName)
   );
+
+  // Start/stop system stats auto-refresh
+  if (tabName === 'system') {
+    loadSystemStats();
+    systemStatsInterval = setInterval(loadSystemStats, 10000);
+  } else if (systemStatsInterval) {
+    clearInterval(systemStatsInterval);
+    systemStatsInterval = null;
+  }
 }
 
 /** Handle URL hash and query params (e.g., after OAuth redirect). */
@@ -715,6 +725,183 @@ async function saveDisplaySettings() {
     btn.disabled = false;
     btn.textContent = 'Save Settings';
   }
+}
+
+/* ── System Stats (System tab) ────────────────────── */
+
+async function loadSystemStats() {
+  try {
+    const resp = await fetch('/api/system/stats');
+    if (!resp.ok) throw new Error('Failed to fetch stats');
+    const stats = await resp.json();
+    renderSystemInfo(stats);
+    renderResourceUsage(stats);
+    renderThermalInfo(stats);
+  } catch (err) {
+    document.getElementById('system-info').innerHTML =
+      '<p class="muted">Could not load system stats: ' + err.message + '</p>';
+  }
+}
+
+function renderSystemInfo(stats) {
+  const container = document.getElementById('system-info');
+  container.innerHTML = '';
+  const items = [
+    ['Hostname', stats.hostname],
+    ['Platform', stats.platform + ' / ' + stats.arch],
+    ['Node.js', stats.nodeVersion],
+    ['CPU', stats.cpu.model],
+    ['Cores', stats.cpu.cores],
+    ['System Uptime', formatUptime(stats.uptime.system)],
+    ['Server Uptime', formatUptime(stats.uptime.process)],
+  ];
+  for (const [label, value] of items) {
+    container.appendChild(statItem(label, value));
+  }
+}
+
+function renderResourceUsage(stats) {
+  const container = document.getElementById('system-resources');
+  container.innerHTML = '';
+
+  // CPU usage bar
+  container.appendChild(statBar('CPU', stats.cpu.usagePercent, '%'));
+
+  // Memory bar
+  container.appendChild(statBar(
+    'Memory',
+    stats.memory.usedPercent,
+    '% (' + formatBytes(stats.memory.used) + ' / ' + formatBytes(stats.memory.total) + ')'
+  ));
+
+  // Disk bar
+  if (stats.disk) {
+    container.appendChild(statBar(
+      'Disk',
+      stats.disk.usedPercent,
+      '% (' + formatBytes(stats.disk.used) + ' / ' + formatBytes(stats.disk.total) + ')'
+    ));
+  }
+
+  // Load averages
+  if (stats.cpu.loadAvg) {
+    const la = stats.cpu.loadAvg;
+    container.appendChild(statItem(
+      'Load Average',
+      la['1m'].toFixed(2) + ' / ' + la['5m'].toFixed(2) + ' / ' + la['15m'].toFixed(2)
+    ));
+  }
+}
+
+function renderThermalInfo(stats) {
+  const card = document.getElementById('system-thermal-card');
+  const container = document.getElementById('system-thermal');
+
+  const hasThermal = stats.cpu.temperature != null || stats.cpu.gpuTemperature != null || stats.throttled;
+  card.style.display = hasThermal ? '' : 'none';
+  if (!hasThermal) return;
+
+  container.innerHTML = '';
+
+  if (stats.cpu.temperature != null) {
+    const warn = stats.cpu.temperature >= 70;
+    const el = statItem('CPU Temp', stats.cpu.temperature.toFixed(1) + ' \u00b0C');
+    if (warn) el.classList.add('stat-warn');
+    container.appendChild(el);
+  }
+
+  if (stats.cpu.gpuTemperature != null) {
+    const warn = stats.cpu.gpuTemperature >= 70;
+    const el = statItem('GPU Temp', stats.cpu.gpuTemperature.toFixed(1) + ' \u00b0C');
+    if (warn) el.classList.add('stat-warn');
+    container.appendChild(el);
+  }
+
+  if (stats.throttled) {
+    const t = stats.throttled;
+    const issues = [];
+    if (t.underVoltageNow) issues.push('Under-voltage NOW');
+    if (t.throttledNow) issues.push('Throttled NOW');
+    if (t.frequencyCappedNow) issues.push('Frequency capped NOW');
+    if (t.underVoltageOccurred) issues.push('Under-voltage (since boot)');
+    if (t.throttledOccurred) issues.push('Throttled (since boot)');
+    if (t.frequencyCappedOccurred) issues.push('Freq capped (since boot)');
+
+    const el = statItem('Throttling', issues.length > 0 ? issues.join(', ') : 'None');
+    if (issues.some((i) => i.includes('NOW'))) el.classList.add('stat-warn');
+    container.appendChild(el);
+  }
+}
+
+/** Create a label/value stat row element. */
+function statItem(label, value) {
+  const row = document.createElement('div');
+  row.className = 'stat-item';
+
+  const lbl = document.createElement('span');
+  lbl.className = 'stat-label';
+  lbl.textContent = label;
+
+  const val = document.createElement('span');
+  val.className = 'stat-value';
+  val.textContent = value;
+
+  row.appendChild(lbl);
+  row.appendChild(val);
+  return row;
+}
+
+/** Create a stat row with a progress bar. */
+function statBar(label, percent, suffix) {
+  const row = document.createElement('div');
+  row.className = 'stat-item stat-bar-item';
+
+  const top = document.createElement('div');
+  top.className = 'stat-bar-header';
+
+  const lbl = document.createElement('span');
+  lbl.className = 'stat-label';
+  lbl.textContent = label;
+
+  const val = document.createElement('span');
+  val.className = 'stat-value';
+  val.textContent = (percent != null ? percent : '—') + (suffix || '');
+
+  top.appendChild(lbl);
+  top.appendChild(val);
+
+  const track = document.createElement('div');
+  track.className = 'stat-bar-track';
+
+  const fill = document.createElement('div');
+  fill.className = 'stat-bar-fill';
+  if (percent != null) {
+    fill.style.width = percent + '%';
+    if (percent >= 90) fill.classList.add('critical');
+    else if (percent >= 70) fill.classList.add('warning');
+  }
+
+  track.appendChild(fill);
+  row.appendChild(top);
+  row.appendChild(track);
+  return row;
+}
+
+function formatBytes(bytes) {
+  if (bytes == null) return '—';
+  if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB';
+  if (bytes >= 1048576) return (bytes / 1048576).toFixed(0) + ' MB';
+  return (bytes / 1024).toFixed(0) + ' KB';
+}
+
+function formatUptime(seconds) {
+  if (seconds == null) return '—';
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return d + 'd ' + h + 'h ' + m + 'm';
+  if (h > 0) return h + 'h ' + m + 'm';
+  return m + 'm';
 }
 
 /* ── Toast Notifications ───────────────────────────── */

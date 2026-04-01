@@ -20,6 +20,7 @@
     <nav class="tab-bar">
       <button class="tab-btn active" data-tab="accounts">Accounts</button>
       <button class="tab-btn" data-tab="display">Display</button>
+      <button class="tab-btn" data-tab="system">System</button>
     </nav>
 
     <!-- ── PIN Overlay ────────────────────────────── -->
@@ -246,6 +247,35 @@
             <!-- populated by JS -->
           </div>
         </section>
+      </div>
+
+      <!-- ════════════════════════════════════════════ -->
+      <!-- ── System Tab ───────────────────────────── -->
+      <!-- ════════════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-system">
+
+        <section class="card">
+          <h2>System Info</h2>
+          <p class="card-desc">Server host hardware and software details.</p>
+          <div id="system-info" class="stats-grid">
+            <p class="muted">Loading...</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Resource Usage</h2>
+          <p class="card-desc">Live CPU, memory, and disk utilization. Auto-refreshes every 10 seconds.</p>
+          <div id="system-resources" class="stats-grid">
+            <p class="muted">Loading...</p>
+          </div>
+        </section>
+
+        <section class="card" id="system-thermal-card" style="display:none">
+          <h2>Thermal &amp; Power</h2>
+          <p class="card-desc">Raspberry Pi temperature and throttling status.</p>
+          <div id="system-thermal" class="stats-grid"></div>
+        </section>
+
       </div>
 
     </main>

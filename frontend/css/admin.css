@@ -818,6 +818,79 @@ body {
   cursor: not-allowed;
 }
 
+/* ── System Stats ─────────────────────────────────── */
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.stat-item:hover {
+  background: #f3f4f6;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+}
+
+.stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-warn .stat-value {
+  color: var(--admin-danger);
+  font-weight: 600;
+}
+
+/* Progress bars */
+.stat-bar-item {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.stat-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-bar-track {
+  height: 8px;
+  background: #e9ebf0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: var(--admin-accent);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  min-width: 0;
+}
+
+.stat-bar-fill.warning {
+  background: #f59e0b;
+}
+
+.stat-bar-fill.critical {
+  background: var(--admin-danger);
+}
+
 /* ── Utilities ─────────────────────────────────────── */
 
 .muted {

@@ -1,3 +1,6 @@
+import os from 'node:os';
+import { readFileSync, statfsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { getCachedData, syncAllCalendars } from '../services/calendar-store.js';
 import {
   loadSettings,
@@ -120,6 +123,107 @@ export async function registerApiRoutes(fastify) {
       currentDay,
       onTime: screenOnTime,
       offTime: screenOffTime,
+    };
+  });
+
+  // ── System stats (admin panel monitoring) ───────────
+
+  fastify.get('/system/stats', async () => {
+    const cpus = os.cpus();
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const loadAvg = os.loadavg();
+
+    // CPU usage: compute from per-core idle vs total ticks
+    let cpuUsage = null;
+    try {
+      const totalIdle = cpus.reduce((sum, cpu) => sum + cpu.times.idle, 0);
+      const totalTick = cpus.reduce(
+        (sum, cpu) => sum + cpu.times.user + cpu.times.nice + cpu.times.sys + cpu.times.idle + cpu.times.irq,
+        0
+      );
+      cpuUsage = Math.round((1 - totalIdle / totalTick) * 100);
+    } catch { /* ignore */ }
+
+    // Disk usage for root filesystem
+    let disk = null;
+    try {
+      const stats = statfsSync('/');
+      const total = stats.blocks * stats.bsize;
+      const free = stats.bfree * stats.bsize;
+      disk = {
+        total,
+        free,
+        used: total - free,
+        usedPercent: Math.round(((total - free) / total) * 100),
+      };
+    } catch { /* ignore */ }
+
+    // CPU temperature (Raspberry Pi: /sys/class/thermal/)
+    let cpuTemp = null;
+    try {
+      const raw = readFileSync('/sys/class/thermal/thermal_zone0/temp', 'utf-8');
+      cpuTemp = parseInt(raw) / 1000; // millidegrees → degrees C
+    } catch { /* not a Pi or no thermal zone */ }
+
+    // GPU temperature (Pi-specific, via vcgencmd)
+    let gpuTemp = null;
+    try {
+      const raw = execFileSync('vcgencmd', ['measure_temp'], { encoding: 'utf-8' });
+      const match = raw.match(/temp=([\d.]+)/);
+      if (match) gpuTemp = parseFloat(match[1]);
+    } catch { /* not a Pi */ }
+
+    // Throttling status (Pi-specific)
+    let throttled = null;
+    try {
+      const raw = execFileSync('vcgencmd', ['get_throttled'], { encoding: 'utf-8' });
+      const match = raw.match(/throttled=(0x[0-9a-f]+)/i);
+      if (match) {
+        const bits = parseInt(match[1], 16);
+        throttled = {
+          raw: match[1],
+          underVoltageNow: !!(bits & 0x1),
+          frequencyCappedNow: !!(bits & 0x2),
+          throttledNow: !!(bits & 0x4),
+          underVoltageOccurred: !!(bits & 0x10000),
+          frequencyCappedOccurred: !!(bits & 0x20000),
+          throttledOccurred: !!(bits & 0x40000),
+        };
+      }
+    } catch { /* not a Pi */ }
+
+    return {
+      hostname: os.hostname(),
+      platform: os.platform(),
+      arch: os.arch(),
+      nodeVersion: process.version,
+      uptime: {
+        system: Math.round(os.uptime()),
+        process: Math.round(process.uptime()),
+      },
+      cpu: {
+        model: cpus[0]?.model || 'Unknown',
+        cores: cpus.length,
+        speed: cpus[0]?.speed || null,
+        usagePercent: cpuUsage,
+        loadAvg: {
+          '1m': loadAvg[0],
+          '5m': loadAvg[1],
+          '15m': loadAvg[2],
+        },
+        temperature: cpuTemp,
+        gpuTemperature: gpuTemp,
+      },
+      memory: {
+        total: totalMem,
+        used: usedMem,
+        free: freeMem,
+        usedPercent: Math.round((usedMem / totalMem) * 100),
+      },
+      disk,
+      throttled,
     };
   });
 }
