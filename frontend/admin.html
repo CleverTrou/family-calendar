@@ -239,6 +239,25 @@
           </div>
         </section>
 
+        <!-- Display Scale Section -->
+        <section class="card">
+          <h2>Display Scale</h2>
+          <p class="card-desc">Adjust the UI zoom level. Use 2× for 4K TVs viewed from across the room, 1× for 1080p or close-up displays.</p>
+          <div class="scale-control">
+            <input type="range" id="display-scale-slider" min="0.5" max="3" step="0.25" value="1">
+            <div class="scale-labels">
+              <span>0.5×</span>
+              <span id="display-scale-value" class="scale-current">1×</span>
+              <span>3×</span>
+            </div>
+          </div>
+          <div class="scale-presets">
+            <button class="btn-small scale-preset" data-scale="1">1× (1080p)</button>
+            <button class="btn-small scale-preset" data-scale="1.5">1.5×</button>
+            <button class="btn-small scale-preset" data-scale="2">2× (4K)</button>
+          </div>
+        </section>
+
         <!-- Font Section -->
         <section class="card">
           <h2>Font</h2>

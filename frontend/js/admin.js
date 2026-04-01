@@ -62,6 +62,7 @@ async function loadData() {
     renderColorPickers();
     renderThemeControls();
     renderScreenSchedule();
+    renderDisplayScale();
     renderFontOptions();
     setupSaveButton();
     setupAccountButtons();
@@ -619,6 +620,37 @@ function renderScreenSchedule() {
 function updateScheduleVisibility() {
   const options = document.getElementById('screen-schedule-options');
   options.style.display = currentSettings.display.screenSchedule !== false ? '' : 'none';
+}
+
+/* ── Display Scale ───────────────────────────────── */
+
+function renderDisplayScale() {
+  const display = currentSettings.display;
+  const scale = display.displayScale || 1;
+
+  const slider = document.getElementById('display-scale-slider');
+  const valueLabel = document.getElementById('display-scale-value');
+
+  slider.value = scale;
+  valueLabel.textContent = scale + '×';
+
+  slider.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    valueLabel.textContent = val + '×';
+    currentSettings.display.displayScale = val;
+    markDirty();
+  });
+
+  // Preset buttons
+  document.querySelectorAll('.scale-preset').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const val = parseFloat(btn.dataset.scale);
+      slider.value = val;
+      valueLabel.textContent = val + '×';
+      currentSettings.display.displayScale = val;
+      markDirty();
+    });
+  });
 }
 
 /* ── Font Selection ────────────────────────────────── */

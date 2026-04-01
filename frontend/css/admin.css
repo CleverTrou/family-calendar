@@ -718,6 +718,64 @@ body {
   margin-top: 12px;
 }
 
+/* ── Display Scale ────────────────────────────────── */
+
+.scale-control {
+  margin-bottom: 14px;
+}
+
+.scale-control input[type="range"] {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e9ebf0;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.scale-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+}
+
+.scale-control input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.scale-current {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-accent);
+}
+
+.scale-presets {
+  display: flex;
+  gap: 8px;
+}
+
 /* ── Font Selection ────────────────────────────────── */
 
 .font-grid {

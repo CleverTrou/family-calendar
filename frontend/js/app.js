@@ -79,6 +79,7 @@ function applySettings(settings) {
   if (settings.display) {
     updateThemeFromSettings(settings.display);
     applyFont(settings.display.font);
+    applyDisplayScale(settings.display.displayScale);
   }
 }
 
@@ -158,6 +159,16 @@ function applyFont(fontKey) {
   }
 
   document.documentElement.style.setProperty('--display-font', font.stack);
+}
+
+/* ── Display Scale (CSS zoom) ──────────────────────── */
+
+function applyDisplayScale(scale) {
+  if (!scale || scale === 1) {
+    document.documentElement.style.removeProperty('zoom');
+    return;
+  }
+  document.documentElement.style.zoom = scale;
 }
 
 /* ── Burn-in Prevention (subtle pixel shift) ────────── */
