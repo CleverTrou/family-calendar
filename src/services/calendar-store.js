@@ -1,10 +1,12 @@
 import { fetchGoogleEvents } from './google-calendar.js';
 import { fetchGoogleTasks } from './google-tasks.js';
 import { fetchICloudEvents } from './icloud-calendar.js';
-import { getReminders, updateGoogleTasks } from './reminders.js';
+import { fetchMicrosoftEvents } from './microsoft-calendar.js';
+import { fetchMicrosoftTasks } from './microsoft-tasks.js';
+import { getReminders, updateGoogleTasks, updateMicrosoftTasks } from './reminders.js';
 import { config, getEnabledSources } from '../config.js';
 import { registerCalendar, isCalendarVisible, loadSettings } from './settings.js';
-import { getGoogleCredentials, listAccounts } from './credential-store.js';
+import { getGoogleCredentials, getAccount, listAccounts } from './credential-store.js';
 
 let cachedEvents = [];
 let knownCalendars = []; // track all discovered calendars + task lists for admin panel
@@ -36,16 +38,24 @@ export async function syncAllCalendars() {
       promises.push(fetchICloudEvents(calendarDaysBack, calendarDaysForward));
       labels.push('icloud');
     }
+    if (sources.microsoft) {
+      promises.push(fetchMicrosoftEvents(calendarDaysBack, calendarDaysForward));
+      labels.push('microsoft');
+    }
 
-    if (promises.length === 0 && !sources.google) {
+    if (promises.length === 0 && !sources.google && !sources.microsoft) {
       console.warn('[Sync] No calendar sources configured.');
       return;
     }
 
-    // Also fetch Google Tasks if Google is connected
+    // Also fetch tasks from connected providers
     if (sources.google) {
       promises.push(fetchGoogleTasks());
       labels.push('google-tasks');
+    }
+    if (sources.microsoft) {
+      promises.push(fetchMicrosoftTasks());
+      labels.push('microsoft-tasks');
     }
 
     // Build known calendars map — seed from credential store first
@@ -77,6 +87,19 @@ export async function syncAllCalendars() {
       }
     }
 
+    // Seed Microsoft calendars and task lists from credential store
+    const msAcct = getAccount('microsoft:default');
+    if (msAcct) {
+      for (const cal of (msAcct.calendars || [])) {
+        const key = `microsoft:${cal.name}`;
+        calMap.set(key, { source: 'microsoft', name: cal.name });
+      }
+      for (const tl of (msAcct.taskLists || [])) {
+        const key = `microsoft-tasks:${tl.name}`;
+        calMap.set(key, { source: 'microsoft-tasks', name: tl.name });
+      }
+    }
+
     const results = await Promise.allSettled(promises);
     const events = [];
     const summary = [];
@@ -97,6 +120,18 @@ export async function syncAllCalendars() {
           );
           updateGoogleTasks(visibleTasks);
           summary.push(`google-tasks: ${visibleTasks.length}/${result.value.length}`);
+        } else if (labels[i] === 'microsoft-tasks') {
+          for (const task of result.value) {
+            const key = `microsoft-tasks:${task.list}`;
+            if (!calMap.has(key)) {
+              calMap.set(key, { source: 'microsoft-tasks', name: task.list });
+            }
+          }
+          const visibleTasks = result.value.filter((t) =>
+            isCalendarVisible('microsoft-tasks', t.list)
+          );
+          updateMicrosoftTasks(visibleTasks);
+          summary.push(`microsoft-tasks: ${visibleTasks.length}/${result.value.length}`);
         } else {
           events.push(...result.value);
           summary.push(`${labels[i]}: ${result.value.length}`);

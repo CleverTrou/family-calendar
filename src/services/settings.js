@@ -20,6 +20,7 @@ const DEFAULTS = {
       trevor: '#4285f4',
       larissa: '#e91e8c',
       family: '#0f9d58',
+      outlook: '#0078d4',
       default: '#78909c',
     },
   },

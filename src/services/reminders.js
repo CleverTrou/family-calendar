@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 /**
  * Unified reminders/tasks store.
  *
- * Merges items from two independent sources:
+ * Merges items from three independent sources:
  *   1. Apple Reminders — pushed via iPhone Shortcuts webhook (full snapshot)
  *   2. Google Tasks — polled during the sync cycle
+ *   3. Microsoft To Do — polled during the sync cycle
  *
  * Each source overwrites only its own items so they don't interfere.
- * Both stores are persisted to disk so they survive server restarts.
+ * All stores are persisted to disk so they survive server restarts.
  */
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,8 +29,8 @@ function loadCache() {
   }
 }
 
-function saveCache(apple, googleTasks) {
-  const data = JSON.stringify({ apple, googleTasks }, null, 2);
+function saveCache(apple, googleTasks, microsoftTasks) {
+  const data = JSON.stringify({ apple, googleTasks, microsoftTasks }, null, 2);
   // Atomic write: write to temp file, then rename
   const tmp = CACHE_PATH + '.tmp';
   mkdirSync(dirname(CACHE_PATH), { recursive: true });
@@ -52,12 +53,18 @@ let googleTasksStore = cached?.googleTasks ?? {
   lastSyncedAt: null,
 };
 
+let microsoftTasksStore = cached?.microsoftTasks ?? {
+  items: [],
+  lastSyncedAt: null,
+};
+
 if (cached) {
   const appleCount = appleStore.items.length;
   const googleCount = googleTasksStore.items.length;
+  const msCount = microsoftTasksStore.items.length;
   console.log(
-    `[Reminders] Loaded ${appleCount + googleCount} cached items ` +
-    `(apple: ${appleCount}, google-tasks: ${googleCount})`
+    `[Reminders] Loaded ${appleCount + googleCount + msCount} cached items ` +
+    `(apple: ${appleCount}, google-tasks: ${googleCount}, microsoft-tasks: ${msCount})`
   );
 }
 
@@ -68,10 +75,15 @@ export function getReminders() {
   const allItems = [
     ...appleStore.items.map((item) => ({ ...item, source: item.source || 'apple' })),
     ...googleTasksStore.items,
+    ...microsoftTasksStore.items,
   ];
 
-  // Use the most recent sync time from either source
-  const syncTimes = [appleStore.lastSyncedAt, googleTasksStore.lastSyncedAt].filter(Boolean);
+  // Use the most recent sync time from any source
+  const syncTimes = [
+    appleStore.lastSyncedAt,
+    googleTasksStore.lastSyncedAt,
+    microsoftTasksStore.lastSyncedAt,
+  ].filter(Boolean);
   const lastSyncedAt = syncTimes.length > 0
     ? syncTimes.reduce((a, b) => (a > b ? a : b))
     : null;
@@ -102,7 +114,7 @@ export function updateReminders(items, syncedBy = 'unknown') {
     lastSyncedAt: new Date().toISOString(),
     syncedBy,
   };
-  saveCache(appleStore, googleTasksStore);
+  saveCache(appleStore, googleTasksStore, microsoftTasksStore);
   return appleStore;
 }
 
@@ -124,6 +136,28 @@ export function updateGoogleTasks(items) {
     })),
     lastSyncedAt: new Date().toISOString(),
   };
-  saveCache(appleStore, googleTasksStore);
+  saveCache(appleStore, googleTasksStore, microsoftTasksStore);
   return googleTasksStore;
+}
+
+/**
+ * Replace all Microsoft To Do tasks with a fresh set from the sync cycle.
+ * Called by calendar-store after fetching from Microsoft Graph API.
+ */
+export function updateMicrosoftTasks(items) {
+  microsoftTasksStore = {
+    items: items.map((item) => ({
+      id: item.id || `mstodo:${randomUUID()}`,
+      title: item.title || '(Untitled)',
+      notes: item.notes || null,
+      dueDate: item.dueDate || null,
+      isCompleted: !!item.isCompleted,
+      priority: item.priority ?? 0,
+      list: item.list || 'To Do',
+      source: item.source || 'microsoft-tasks',
+    })),
+    lastSyncedAt: new Date().toISOString(),
+  };
+  saveCache(appleStore, googleTasksStore, microsoftTasksStore);
+  return microsoftTasksStore;
 }

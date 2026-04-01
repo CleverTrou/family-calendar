@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { getGoogleCredentials, getICloudCredentials } from './services/credential-store.js';
+import { getGoogleCredentials, getICloudCredentials, getMicrosoftCredentials } from './services/credential-store.js';
 
 export const config = {
   port: parseInt(process.env.PORT || '3000'),
@@ -52,6 +52,7 @@ export function getEnabledSources() {
   return {
     google: !!getGoogleCredentials(),
     icloud: !!getICloudCredentials(),
+    microsoft: !!getMicrosoftCredentials(),
     reminders: !!config.reminders.webhookSecret,
   };
 }

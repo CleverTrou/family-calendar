@@ -163,6 +163,9 @@ function handleUrlParams() {
   if (success === 'google') {
     showToast('Google Calendar connected successfully!', 'success');
     reloadAccounts();
+  } else if (success === 'microsoft') {
+    showToast('Microsoft Calendar connected successfully!', 'success');
+    reloadAccounts();
   } else if (error) {
     const messages = {
       'invalid_state': 'Session expired. Please try again.',
@@ -326,6 +329,18 @@ function setupAccountButtons() {
     document.getElementById('btn-connect-icloud').closest('.card').style.display = '';
   });
   document.getElementById('btn-icloud-submit').addEventListener('click', connectICloud);
+
+  // Microsoft
+  document.getElementById('btn-connect-microsoft').addEventListener('click', () => {
+    document.getElementById('microsoft-setup').style.display = '';
+    document.getElementById('btn-connect-microsoft').closest('.card').style.display = 'none';
+    updateMicrosoftRedirectUri();
+  });
+  document.getElementById('btn-microsoft-cancel').addEventListener('click', () => {
+    document.getElementById('microsoft-setup').style.display = 'none';
+    document.getElementById('btn-connect-microsoft').closest('.card').style.display = '';
+  });
+  document.getElementById('btn-microsoft-authorize').addEventListener('click', startMicrosoftAuth);
 }
 
 function updateRedirectUri() {
@@ -393,6 +408,26 @@ async function connectICloud() {
 
   btn.textContent = 'Test & Connect';
   btn.disabled = false;
+}
+
+/* ── Microsoft Auth ───────────────────────────────── */
+
+function updateMicrosoftRedirectUri() {
+  const uri = window.location.protocol + '//' + window.location.host + '/api/auth/microsoft/callback';
+  document.getElementById('microsoft-redirect-uri').textContent = uri;
+}
+
+function startMicrosoftAuth() {
+  const clientId = document.getElementById('microsoft-client-id').value.trim();
+  const clientSecret = document.getElementById('microsoft-client-secret').value.trim();
+
+  if (!clientId || !clientSecret) {
+    showToast('Please enter both Application ID and Client Secret.', 'error');
+    return;
+  }
+
+  const params = new URLSearchParams({ clientId, clientSecret });
+  window.location.href = '/api/auth/microsoft/start?' + params;
 }
 
 /* ── Calendar Toggles (Display tab) ────────────────── */

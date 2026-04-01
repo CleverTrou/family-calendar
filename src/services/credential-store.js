@@ -227,6 +227,30 @@ export function getICloudCredentials() {
   };
 }
 
+/**
+ * Get Microsoft credentials from credential store.
+ * Returns account data or null if not connected.
+ */
+export function getMicrosoftCredentials() {
+  const all = getAll();
+  const storeAccount = Object.entries(all).find(([, a]) => a.provider === 'microsoft');
+
+  if (storeAccount) {
+    const [, acct] = storeAccount;
+    if (acct.clientId && acct.refreshToken) {
+      return {
+        clientId: acct.clientId,
+        clientSecret: acct.clientSecret,
+        refreshToken: acct.refreshToken,
+        calendarIds: acct.calendarIds || [],
+        taskLists: acct.taskLists || [],
+      };
+    }
+  }
+
+  return null;
+}
+
 /** Invalidate the in-memory cache (call after external changes). */
 export function clearCache() {
   _cache = null;

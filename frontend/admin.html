@@ -63,9 +63,9 @@
               <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#333" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
               Connect iCloud Calendar
             </button>
-            <button class="btn-provider btn-microsoft" disabled>
+            <button class="btn-provider btn-microsoft" id="btn-connect-microsoft">
               <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
-              Microsoft (coming soon)
+              Connect Microsoft Calendar
             </button>
           </div>
         </section>
@@ -138,6 +138,63 @@
             <button class="btn-text" id="btn-icloud-cancel">Cancel</button>
           </div>
           <p class="status-msg" id="icloud-status"></p>
+        </section>
+
+        <!-- Microsoft Setup (shown when connecting Microsoft) -->
+        <section class="card" id="microsoft-setup" style="display:none">
+          <h2>Connect Microsoft Calendar</h2>
+          <div class="setup-steps">
+            <div class="step">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Register an app in Azure</strong>
+                <p>Go to <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank">Azure App Registrations</a> &rarr; New registration.</p>
+                <p>Set the name to "Family Calendar" and supported account types to <strong>Personal Microsoft accounts only</strong> (or "All Microsoft accounts" if you use work/school).</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Add this redirect URI</strong>
+                <p>Under Authentication &rarr; Add a platform &rarr; Web &rarr; Redirect URI:</p>
+                <div class="copy-field">
+                  <code id="microsoft-redirect-uri">Loading...</code>
+                  <button class="btn-copy" title="Copy" onclick="navigator.clipboard.writeText(document.getElementById('microsoft-redirect-uri').textContent)">Copy</button>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Create a client secret</strong>
+                <p>Under Certificates &amp; Secrets &rarr; New client secret. Copy the <strong>Value</strong> (not the Secret ID).</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">4</span>
+              <div>
+                <strong>Enter your credentials</strong>
+                <p>Find the Application (client) ID on the app's Overview page.</p>
+                <div class="field-group">
+                  <label for="microsoft-client-id">Application (Client) ID</label>
+                  <input type="text" id="microsoft-client-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                </div>
+                <div class="field-group">
+                  <label for="microsoft-client-secret">Client Secret Value</label>
+                  <input type="password" id="microsoft-client-secret" placeholder="xxxx~xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-num">5</span>
+              <div>
+                <strong>Sign in with Microsoft</strong>
+                <p>Click below to open Microsoft's consent screen. You'll be redirected back here when done.</p>
+                <button class="btn-primary" id="btn-microsoft-authorize">Authorize with Microsoft</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn-text" id="btn-microsoft-cancel">Cancel</button>
         </section>
 
         <!-- Calendar Picker (shown after connecting) -->

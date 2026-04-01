@@ -20,6 +20,8 @@ import {
 import { resetGoogleClient } from '../services/google-calendar.js';
 import { resetGoogleTasksClient } from '../services/google-tasks.js';
 import { resetICloudClient } from '../services/icloud-calendar.js';
+import { resetMicrosoftClient } from '../services/microsoft-calendar.js';
+import { resetMicrosoftTasksClient } from '../services/microsoft-tasks.js';
 
 export async function registerAccountRoutes(fastify) {
 
@@ -141,6 +143,18 @@ export async function registerAccountRoutes(fastify) {
 
         setAccount(key, { status: 'connected', calendars: calendarList });
         return { status: 'connected', calendars: calendarList };
+
+      } else if (account.provider === 'microsoft') {
+        // Test by fetching calendars via Graph API
+        const { graphGet } = await import('../services/microsoft-graph.js');
+        const data = await graphGet(key, '/me/calendars', { $top: '100', $select: 'id,name' });
+        const calendars = (data.value || []).map((cal) => ({
+          id: cal.id,
+          name: cal.name,
+        }));
+
+        setAccount(key, { status: 'connected', calendars });
+        return { status: 'connected', calendars };
       }
 
       return reply.code(400).send({ error: 'Unknown provider' });
@@ -174,6 +188,10 @@ export async function registerAccountRoutes(fastify) {
       // For iCloud, calendarIds are actually calendar names
       setAccount(key, { calendarNames: calendarIds.map((n) => n.toLowerCase()) });
       resetICloudClient();
+    } else if (account.provider === 'microsoft') {
+      setAccount(key, { calendarIds });
+      resetMicrosoftClient();
+      resetMicrosoftTasksClient();
     }
 
     return { status: 'ok' };
@@ -198,6 +216,10 @@ export async function registerAccountRoutes(fastify) {
       resetGoogleTasksClient();
     }
     if (account.provider === 'icloud') resetICloudClient();
+    if (account.provider === 'microsoft') {
+      resetMicrosoftClient();
+      resetMicrosoftTasksClient();
+    }
 
     console.log(`[Accounts] Disconnected account: ${key}`);
     return { status: 'ok' };
