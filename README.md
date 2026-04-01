@@ -2,20 +2,23 @@
 
 ![Social Preview](social-preview.png)
 
-Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 connected to a 21"+ LCD monitor. Unifies **Google Calendar**, **iCloud Calendar**, **Apple Reminders**, and **Google Tasks** into a single at-a-glance view.
+Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 connected to a 21"+ LCD monitor or 4K TV. Unifies **Google Calendar**, **iCloud Calendar**, **Microsoft Outlook Calendar**, **Apple Reminders**, **Google Tasks**, and **Microsoft To Do** into a single at-a-glance view.
 
 ## Features
 
 - **Two-week calendar grid** — Monday through Sunday, this week and next
 - **All-day events** as colored chips inside each day cell
 - **Timed events** with colored dots, time, and title
-- **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks (via API)
-- **Multi-source sync** — Google Calendar API + iCloud CalDAV, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
-- **Persistent cache** — Reminders survive server restarts
-- **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display settings
+- **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks + Microsoft To Do
+- **Multi-source sync** — Google Calendar API + iCloud CalDAV + Microsoft Graph API, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
+- **Persistent cache** — Reminders from all sources survive server restarts
+- **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display/system settings
+- **Display scale** — Configurable UI zoom (0.5×–3×) for 4K TVs or small screens
+- **System monitoring** — CPU, memory, disk, temperature, fan speed, and throttling status in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
 - **Light/dark themes** with per-person event colors
 - **Network security** — IP allowlist, rate limiting, security headers
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
+- **Display schedule** — Screen on/off times and active days, configurable from admin GUI
 - **macOS launcher apps** — double-click to start/stop the server
 - **LG webOS app** — sideloadable package for LG smart TVs
 
@@ -28,6 +31,8 @@ Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 conne
 | Google Calendar | [googleapis](https://www.npmjs.com/package/googleapis) OAuth2 |
 | Google Tasks | [googleapis](https://www.npmjs.com/package/googleapis) Tasks API |
 | iCloud Calendar | [tsdav](https://www.npmjs.com/package/tsdav) CalDAV + [ical.js](https://www.npmjs.com/package/ical.js) |
+| Microsoft Calendar | [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/resources/calendar) OAuth2 (zero dependencies — built-in `fetch()`) |
+| Microsoft To Do | [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/resources/todotask) |
 | Apple Reminders | Webhook from [Apple Shortcuts](https://support.apple.com/guide/shortcuts/welcome/ios) |
 | Scheduling | [node-cron](https://www.npmjs.com/package/node-cron) |
 | Display | Chromium kiosk mode on Raspberry Pi OS |
@@ -44,7 +49,7 @@ npm install
 
 **Option A: GUI Setup (recommended)**
 
-Start the server (`npm start`) and visit [http://localhost:3000/admin](http://localhost:3000/admin). The **Accounts** tab walks you through connecting Google and iCloud calendars. Credentials are stored encrypted on disk.
+Start the server (`npm start`) and visit [http://localhost:3000/admin](http://localhost:3000/admin). The **Accounts** tab walks you through connecting Google, iCloud, and Microsoft calendars. Credentials are stored encrypted on disk.
 
 **Option B: Manual .env Setup**
 
@@ -56,6 +61,7 @@ Edit `.env` with your credentials:
 
 - **Google Calendar** — Create OAuth2 credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials), then run `npm run auth:google` to get a refresh token
 - **iCloud Calendar** — Generate an [app-specific password](https://appleid.apple.com) (Sign-In and Security > App-Specific Passwords)
+- **Microsoft Calendar** — Register an app in [Azure App Registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) (free, no Azure subscription needed), create a client secret, and use the GUI setup wizard
 - **Apple Reminders** — Set any shared secret; you'll use it when creating the Shortcut
 
 ### 3. Run
@@ -114,8 +120,8 @@ family-calendar/
 │   ├── server.js              # Fastify server entry point
 │   ├── config.js              # Environment config with defaults
 │   ├── routes/
-│   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings, /api/display/status
-│   │   ├── auth.js            # OAuth2 callback routes (Google)
+│   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings, /api/display/status, /api/system/stats
+│   │   ├── auth.js            # OAuth2 callback routes (Google + Microsoft)
 │   │   ├── accounts.js        # Account CRUD (connect, test, disconnect)
 │   │   └── webhooks.js        # POST /api/reminders/sync
 │   └── services/
@@ -125,7 +131,10 @@ family-calendar/
 │       ├── google-calendar.js # Google Calendar API client
 │       ├── google-tasks.js    # Google Tasks API client
 │       ├── icloud-calendar.js # iCloud CalDAV client
-│       ├── reminders.js       # Unified reminders store (Apple + Google Tasks)
+│       ├── microsoft-graph.js # Microsoft Graph API helper (auth, token refresh, pagination)
+│       ├── microsoft-calendar.js # Microsoft Outlook Calendar client
+│       ├── microsoft-tasks.js # Microsoft To Do client
+│       ├── reminders.js       # Unified reminders store (Apple + Google + Microsoft)
 │       ├── settings.js        # User preferences (JSON file)
 │       └── sync-scheduler.js  # Cron-based sync loop
 ├── data/                      # Runtime data (gitignored)
