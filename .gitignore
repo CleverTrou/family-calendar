@@ -9,3 +9,4 @@ data/reminders-cache.json
 .server.pid
 deploy/*.app/
 deploy/*.iconset/
+.claude/settings.local.json
