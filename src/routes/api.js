@@ -194,6 +194,25 @@ export async function registerApiRoutes(fastify) {
       }
     } catch { /* not a Pi */ }
 
+    // Fan speed (Raspberry Pi 5 active cooler)
+    let fan = null;
+    try {
+      // hwmon index can vary; glob for the right path
+      const { readdirSync } = await import('node:fs');
+      const hwmonBase = '/sys/devices/platform/cooling_fan/hwmon';
+      const hwmonDirs = readdirSync(hwmonBase);
+      if (hwmonDirs.length > 0) {
+        const rpm = parseInt(readFileSync(`${hwmonBase}/${hwmonDirs[0]}/fan1_input`, 'utf-8'));
+        let dutyCycle = null;
+        try {
+          const cur = parseInt(readFileSync('/sys/devices/virtual/thermal/cooling_device0/cur_state', 'utf-8'));
+          const max = parseInt(readFileSync('/sys/devices/virtual/thermal/cooling_device0/max_state', 'utf-8'));
+          dutyCycle = max > 0 ? Math.round((cur / max) * 100) : null;
+        } catch { /* cur_state not available */ }
+        fan = { rpm, dutyCycle };
+      }
+    } catch { /* not a Pi 5 or no fan */ }
+
     return {
       hostname: os.hostname(),
       platform: os.platform(),
@@ -223,6 +242,7 @@ export async function registerApiRoutes(fastify) {
         usedPercent: Math.round((usedMem / totalMem) * 100),
       },
       disk,
+      fan,
       throttled,
     };
   });

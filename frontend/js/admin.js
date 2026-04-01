@@ -797,7 +797,7 @@ function renderThermalInfo(stats) {
   const card = document.getElementById('system-thermal-card');
   const container = document.getElementById('system-thermal');
 
-  const hasThermal = stats.cpu.temperature != null || stats.cpu.gpuTemperature != null || stats.throttled;
+  const hasThermal = stats.cpu.temperature != null || stats.cpu.gpuTemperature != null || stats.fan || stats.throttled;
   card.style.display = hasThermal ? '' : 'none';
   if (!hasThermal) return;
 
@@ -815,6 +815,14 @@ function renderThermalInfo(stats) {
     const el = statItem('GPU Temp', stats.cpu.gpuTemperature.toFixed(1) + ' \u00b0C');
     if (warn) el.classList.add('stat-warn');
     container.appendChild(el);
+  }
+
+  if (stats.fan) {
+    const rpm = stats.fan.rpm;
+    let fanText = rpm + ' RPM';
+    if (rpm === 0) fanText = 'Off (0 RPM)';
+    if (stats.fan.dutyCycle != null) fanText += ' \u00b7 ' + stats.fan.dutyCycle + '% duty';
+    container.appendChild(statItem('Fan', fanText));
   }
 
   if (stats.throttled) {
