@@ -88,7 +88,7 @@ export function loadSettings() {
   } catch {
     // File doesn't exist yet or is invalid — use defaults
   }
-  return deepMerge(structuredClone(DEFAULTS), saved);
+  return deepMerge(JSON.parse(JSON.stringify(DEFAULTS)), saved);
 }
 
 /** Save settings to disk. */

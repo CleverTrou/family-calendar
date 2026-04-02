@@ -25,21 +25,32 @@ except:
     print(1)
 " 2>/dev/null || echo 1)
 
-# Launch Chromium in kiosk mode (full-screen, no UI chrome)
-# Binary name: "chromium-browser" (Bookworm) or "chromium" (Trixie+)
-CHROMIUM=$(command -v chromium-browser 2>/dev/null || command -v chromium)
-$CHROMIUM \
-  --kiosk \
-  --noerrdialogs \
-  --disable-infobars \
-  --disable-session-crashed-bubble \
-  --disable-component-update \
-  --check-for-update-interval=31536000 \
-  --disable-features=TranslateUI \
-  --no-first-run \
-  --start-fullscreen \
-  --autoplay-policy=no-user-gesture-required \
-  --disable-pinch \
-  --overscroll-history-navigation=0 \
-  --force-device-scale-factor=$SCALE \
-  http://localhost:3000/ &
+# Launch browser in kiosk mode (full-screen, no UI chrome)
+# Prefer epiphany (lighter) if available; fall back to Chromium.
+if command -v epiphany 2>/dev/null; then
+  epiphany --private-instance --profile=/tmp/epiphany-kiosk \
+    http://localhost:3000/ &
+  # Wait for window, then fullscreen it via wmctrl or xdotool
+  sleep 4
+  if command -v xdotool &>/dev/null; then
+    xdotool key super+F11 2>/dev/null || xdotool key F11 2>/dev/null || true
+  fi
+else
+  # Chromium: "chromium-browser" (Bookworm) or "chromium" (Trixie+)
+  CHROMIUM=$(command -v chromium-browser 2>/dev/null || command -v chromium)
+  $CHROMIUM \
+    --kiosk \
+    --noerrdialogs \
+    --disable-infobars \
+    --disable-session-crashed-bubble \
+    --disable-component-update \
+    --check-for-update-interval=31536000 \
+    --disable-features=TranslateUI \
+    --no-first-run \
+    --start-fullscreen \
+    --autoplay-policy=no-user-gesture-required \
+    --disable-pinch \
+    --overscroll-history-navigation=0 \
+    --force-device-scale-factor=$SCALE \
+    http://localhost:3000/ &
+fi
