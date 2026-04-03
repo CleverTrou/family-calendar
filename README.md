@@ -2,7 +2,7 @@
 
 ![Social Preview](social-preview.png)
 
-Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 connected to a 21"+ LCD monitor or 4K TV. Unifies **Google Calendar**, **iCloud Calendar**, **Microsoft Outlook Calendar**, **Apple Reminders**, **Google Tasks**, and **Microsoft To Do** into a single at-a-glance view.
+Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W through Pi 5) connected to a 21"+ LCD monitor or 4K TV. Unifies **Google Calendar**, **iCloud Calendar**, **Microsoft Outlook Calendar**, **Apple Reminders**, **Google Tasks**, and **Microsoft To Do** into a single at-a-glance view.
 
 ## Features
 
@@ -26,7 +26,7 @@ Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 conne
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Node.js 20+, [Fastify 5](https://fastify.dev) |
+| Backend | Node.js 18+, [Fastify 5](https://fastify.dev) |
 | Frontend | Vanilla HTML/CSS/JS (no build step) |
 | Google Calendar | [googleapis](https://www.npmjs.com/package/googleapis) OAuth2 |
 | Google Tasks | [googleapis](https://www.npmjs.com/package/googleapis) Tasks API |
@@ -35,7 +35,7 @@ Always-on wall-mounted calendar and reminders display for a Raspberry Pi 5 conne
 | Microsoft To Do | [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/resources/todotask) |
 | Apple Reminders | Webhook from [Apple Shortcuts](https://support.apple.com/guide/shortcuts/welcome/ios) |
 | Scheduling | [node-cron](https://www.npmjs.com/package/node-cron) |
-| Display | Chromium kiosk mode on Raspberry Pi OS |
+| Display | Chromium or Epiphany kiosk mode on Raspberry Pi OS |
 
 ## Quick Start
 
@@ -82,7 +82,7 @@ See **[SHORTCUTS-SETUP.md](SHORTCUTS-SETUP.md)** for step-by-step instructions.
 
 ## Deployment Options
 
-### Raspberry Pi (recommended for always-on display)
+### Raspberry Pi 4/5 (recommended for always-on display)
 
 On a fresh Raspberry Pi OS Lite (64-bit), run this one-liner over SSH:
 
@@ -95,6 +95,23 @@ This clones the repo, installs Node.js, Chromium, a minimal X11 stack, and confi
 - **Display schedule** — Screen turns off at night, back on in the morning (configurable from the admin GUI, per day-of-week)
 - **Cursor hiding** — Mouse cursor hidden after idle
 - **Crash recovery** — Chromium auto-restarts if it crashes
+
+### Raspberry Pi Zero 2 W / Pi 3B+ (low-memory boards)
+
+For boards with 512MB–1GB RAM, use the lightweight setup script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CleverTrou/family-calendar/main/deploy/pi-zero-setup.sh | sudo bash
+```
+
+Differences from the standard setup:
+- **Epiphany browser** instead of Chromium (~150MB less RAM)
+- **256MB swap file** configured automatically
+- **Lightweight mode** enabled — syncs every 15 min, frontend polls every 2 min
+- **Node.js heap limited** to 128MB to prevent OOM
+- **Node.js 18 LTS** (lighter than 20+)
+
+> **Note:** The original Pi Zero W (ARMv6, 32-bit) is not supported — Node.js 18+ requires a 64-bit or ARMv7+ processor.
 
 ### macOS (development or temporary display)
 
@@ -153,7 +170,8 @@ family-calendar/
 │       ├── admin.js           # Admin panel logic
 │       └── utils.js           # Date parsing, formatting, color mapping
 ├── deploy/
-│   ├── pi-setup.sh            # Raspberry Pi kiosk setup script
+│   ├── pi-setup.sh            # Raspberry Pi 4/5 kiosk setup script
+│   ├── pi-zero-setup.sh       # Pi Zero 2 W / Pi 3B+ lightweight setup
 │   ├── display-agent.sh       # Screen on/off agent (polls server schedule)
 │   ├── display-agent.service  # Systemd service for display agent
 │   ├── generate-mac-icon.sh   # Generate macOS .app launchers
@@ -172,8 +190,9 @@ All configuration is via environment variables in `.env`:
 |----------|---------|-------------|
 | `PORT` | `3000` | Server port |
 | `HOST` | `0.0.0.0` | Bind address (`127.0.0.1` for localhost only) |
-| `SYNC_INTERVAL_MINUTES` | `5` | How often to re-fetch calendars |
+| `SYNC_INTERVAL_MINUTES` | `5` (`15` in lightweight) | How often to re-fetch calendars |
 | `DISPLAY_TIMEZONE` | `America/New_York` | Timezone for date display |
+| `LIGHTWEIGHT_MODE` | `false` | Reduce resource usage for Pi Zero 2 W / Pi 3B+ |
 | `CALENDAR_DAYS_BACK` | `7` | Days in the past to fetch events |
 | `CALENDAR_DAYS_FORWARD` | `14` | Days in the future to fetch events |
 | `ADMIN_PIN` | *(none)* | Optional numeric PIN to protect `/admin` |
