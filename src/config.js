@@ -3,13 +3,16 @@ dotenv.config();
 
 import { getGoogleCredentials, getICloudCredentials, getMicrosoftCredentials } from './services/credential-store.js';
 
+const lightweight = process.env.LIGHTWEIGHT_MODE === 'true' || process.env.LIGHTWEIGHT_MODE === '1';
+
 export const config = {
   port: parseInt(process.env.PORT || '3000'),
   host: process.env.HOST || '0.0.0.0',
   timezone: process.env.DISPLAY_TIMEZONE || 'America/New_York',
-  syncIntervalMinutes: parseInt(process.env.SYNC_INTERVAL_MINUTES || '5'),
+  syncIntervalMinutes: parseInt(process.env.SYNC_INTERVAL_MINUTES || (lightweight ? '15' : '5')),
   calendarDaysBack: parseInt(process.env.CALENDAR_DAYS_BACK || '7'),
   calendarDaysForward: parseInt(process.env.CALENDAR_DAYS_FORWARD || '14'),
+  lightweight,
   // Comma-separated list of allowed IP ranges (empty = allow all)
   // e.g., "10.0.0.0/24,127.0.0.1" to restrict to local network
   allowedNetworks: (process.env.ALLOWED_NETWORKS || '')

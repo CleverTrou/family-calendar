@@ -1,7 +1,9 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────
-# Raspberry Pi 5 setup script for Family Calendar Display
+# Raspberry Pi 4/5 setup script for Family Calendar Display
 # ─────────────────────────────────────────────────────────
+#
+# For Pi Zero 2 W or Pi 3B+, use pi-zero-setup.sh instead.
 #
 # Run this on a fresh Raspberry Pi OS Lite (64-bit):
 #

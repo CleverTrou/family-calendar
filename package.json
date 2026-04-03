@@ -1,7 +1,7 @@
 {
   "name": "family-calendar",
   "version": "1.0.0",
-  "description": "Always-on family calendar & reminders display for Raspberry Pi 5",
+  "description": "Always-on family calendar & reminders display for Raspberry Pi",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "auth:google": "node scripts/google-auth.js"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

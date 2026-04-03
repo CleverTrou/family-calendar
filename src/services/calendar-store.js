@@ -189,5 +189,6 @@ export function getCachedData() {
     lastSyncTime,
     lastError,
     enabledSources: getEnabledSources(),
+    lightweight: config.lightweight,
   };
 }

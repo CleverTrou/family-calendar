@@ -3,7 +3,7 @@
  * Handles data fetching, clock updates, settings-driven theming, and burn-in prevention.
  */
 
-const REFRESH_INTERVAL = 60_000;       // Fetch new data every 60 seconds
+var REFRESH_INTERVAL = 60_000;         // Fetch new data every 60 seconds
 const CLOCK_INTERVAL = 1_000;          // Update clock every second
 const THEME_CHECK_INTERVAL = 60_000;   // Check light/dark every minute
 const PIXEL_SHIFT_INTERVAL = 30 * 60_000; // Shift pixels every 30 min
@@ -31,6 +31,11 @@ async function fetchData() {
     const response = await fetch('/api/calendar');
     if (!response.ok) throw new Error('HTTP ' + response.status);
     currentData = await response.json();
+
+    // In lightweight mode (Pi Zero / low-RAM), reduce polling frequency
+    if (currentData.lightweight && REFRESH_INTERVAL < 120_000) {
+      REFRESH_INTERVAL = 120_000;
+    }
 
     // Apply settings before rendering
     if (currentData.settings) {
