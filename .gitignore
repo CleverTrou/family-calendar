@@ -4,6 +4,7 @@ settings.json
 data/credentials.enc
 data/.credential-key
 data/reminders-cache.json
+data/events-cache.json
 *.log
 .DS_Store
 .server.pid

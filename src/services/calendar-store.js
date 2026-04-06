@@ -1,3 +1,6 @@
+import { readFileSync, writeFileSync, renameSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { fetchGoogleEvents } from './google-calendar.js';
 import { fetchGoogleTasks } from './google-tasks.js';
 import { fetchICloudEvents } from './icloud-calendar.js';
@@ -9,11 +12,52 @@ import { config, getEnabledSources } from '../config.js';
 import { registerCalendar, isCalendarVisible, loadSettings } from './settings.js';
 import { getGoogleCredentials, getAccount, listAccounts } from './credential-store.js';
 
-let cachedEvents = [];
-let knownCalendars = []; // track all discovered calendars + task lists for admin panel
-let lastSyncTime = null;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CACHE_PATH = join(__dirname, '..', '..', 'data', 'events-cache.json');
+
+// ── Persistence ────────────────────────────────────────
+
+function loadEventsCache() {
+  try {
+    const raw = readFileSync(CACHE_PATH, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function saveEventsCache() {
+  try {
+    const data = JSON.stringify({
+      events: cachedEvents,
+      knownCalendars,
+      lastSyncTime,
+    }, null, 2);
+    const tmp = CACHE_PATH + '.tmp';
+    mkdirSync(dirname(CACHE_PATH), { recursive: true });
+    writeFileSync(tmp, data, 'utf-8');
+    renameSync(tmp, CACHE_PATH);
+  } catch (err) {
+    console.error('[Cache] Failed to save events cache:', err.message);
+  }
+}
+
+// ── Initialize from cache ──────────────────────────────
+
+const savedCache = loadEventsCache();
+
+let cachedEvents = savedCache?.events ?? [];
+let knownCalendars = savedCache?.knownCalendars ?? [];
+let lastSyncTime = savedCache?.lastSyncTime ?? null;
 let syncInProgress = false;
 let lastError = null;
+
+if (savedCache) {
+  console.log(
+    `[Cache] Loaded ${cachedEvents.length} cached events` +
+    (lastSyncTime ? ` (synced ${lastSyncTime})` : '')
+  );
+}
 
 /**
  * Sync calendars from all enabled sources.
@@ -167,6 +211,7 @@ export async function syncAllCalendars() {
 
     cachedEvents = visibleEvents;
     lastSyncTime = new Date().toISOString();
+    saveEventsCache();
 
     // Fetch weather alongside calendar sync (non-blocking)
     fetchWeather().catch((err) => console.error('[Sync] Weather fetch error:', err.message));

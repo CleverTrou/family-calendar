@@ -11,7 +11,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Timed events** with colored dots, time, and title
 - **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks + Microsoft To Do
 - **Multi-source sync** — Google Calendar API + iCloud CalDAV + Microsoft Graph API, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
-- **Persistent cache** — Reminders from all sources survive server restarts
+- **Persistent cache** — Calendar events and reminders survive server restarts (instant display on boot)
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display/system settings
 - **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
 - **System monitoring** — CPU, memory, disk, temperature, fan speed, and throttling status in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
@@ -158,6 +158,7 @@ family-calendar/
 │       └── weather.js         # Weather forecasts (Open-Meteo API)
 ├── data/                      # Runtime data (gitignored)
 │   ├── credentials.enc        # Encrypted provider credentials
+│   ├── events-cache.json      # Persisted calendar events across restarts
 │   └── reminders-cache.json   # Persisted reminders across restarts
 ├── frontend/
 │   ├── index.html             # Main calendar display
