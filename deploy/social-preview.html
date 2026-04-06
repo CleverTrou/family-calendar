@@ -8,21 +8,76 @@
 body {
   width: 1280px;
   height: 640px;
-  background: #0f0f14;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #f0f1f5;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  position: relative;
 }
 
+/* ── Theme layers ─────────────────────────────── */
+.theme-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.theme-layer.dark {
+  z-index: 1;
+  --bg: #0f0f14;
+  --bg-header: #1a1a24;
+  --bg-panel: #1e1e2a;
+  --border: #2a2a3a;
+  --text: #f0f1f5;
+  --text-dim: #c9cdd5;
+  --text-muted: #a0a7b4;
+  --today-bg: rgba(66, 133, 244, 0.08);
+}
+
+.theme-layer.light {
+  z-index: 2;
+  clip-path: polygon(0 0, 68% 0, 32% 100%, 0 100%);
+  --bg: #f5f6fa;
+  --bg-header: #ffffff;
+  --bg-panel: #f0f1f5;
+  --border: #e0e2e8;
+  --text: #1a1a2e;
+  --text-dim: #4a4e5a;
+  --text-muted: #6b7080;
+  --today-bg: rgba(66, 133, 244, 0.08);
+}
+
+/* ── Corner labels ────────────────────────────── */
+.corner-label {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  z-index: 10;
+  opacity: 0.35;
+}
+.corner-label.light-label {
+  top: 10px;
+  left: 14px;
+  color: #4a4e5a;
+  z-index: 10;
+}
+.corner-label.dark-label {
+  bottom: 10px;
+  right: 14px;
+  color: #a0a7b4;
+  z-index: 10;
+}
+
+/* ── Shared layout styles ─────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 20px;
-  background: #1a1a24;
-  border-bottom: 1px solid #2a2a3a;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -37,17 +92,32 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.5px;
+  color: var(--text);
 }
 
 .date-text {
   font-size: 13px;
-  color: #c9cdd5;
+  color: var(--text-dim);
+}
+
+.header-weather {
+  font-size: 14px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-weather-icon { font-size: 16px; }
+.header-weather-temp {
+  font-weight: 600;
+  color: var(--text);
 }
 
 .header-title {
   font-size: 14px;
   font-weight: 600;
-  color: #a0a7b4;
+  color: var(--text-muted);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -60,7 +130,7 @@ body {
 
 .legend {
   font-size: 11px;
-  color: #c9cdd5;
+  color: var(--text-dim);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -79,13 +149,13 @@ body {
   flex: 1;
   display: flex;
   gap: 1px;
-  background: #2a2a3a;
+  background: var(--border);
   overflow: hidden;
 }
 
 .calendar-panel {
   flex: 3;
-  background: #0f0f14;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -93,7 +163,7 @@ body {
 
 .reminders-panel {
   flex: 0.85;
-  background: #0f0f14;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -105,18 +175,18 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #a0a7b4;
+  color: var(--text-muted);
   padding: 8px 14px 6px;
-  background: #1e1e2a;
-  border-bottom: 1px solid #2a2a3a;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .week-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: #1e1e2a;
-  border-bottom: 1px solid #2a2a3a;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -126,7 +196,7 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #a0a7b4;
+  color: var(--text-muted);
   padding: 6px 0;
 }
 
@@ -135,16 +205,16 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #a0a7b4;
+  color: var(--text-muted);
   padding: 5px 10px 2px;
-  background: #0f0f14;
+  background: var(--bg);
   flex-shrink: 0;
 }
 
 .week-row {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #2a2a3a;
+  border-bottom: 1px solid var(--border);
   flex: 1;
   min-height: 0;
 }
@@ -157,46 +227,71 @@ body {
 }
 
 .day-cell {
-  border-right: 1px solid #2a2a3a;
-  border-top: 1px solid #2a2a3a;
+  border-right: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   padding: 4px 5px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  background: var(--bg);
 }
 
 .day-cell:last-child { border-right: none; }
 
-.day-cell.is-today {
-  background: rgba(66, 133, 244, 0.08);
-}
+.day-cell.is-today { background: var(--today-bg); }
+.day-cell.is-past { opacity: 0.5; }
 
-.day-cell.is-past {
-  opacity: 0.5;
-}
-
-.day-cell-date {
-  font-size: 16px;
-  font-weight: 700;
-  color: #f0f1f5;
+.day-cell-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   margin-bottom: 2px;
   flex-shrink: 0;
 }
 
-.day-cell.is-today .day-cell-date {
-  color: #4285f4;
+.day-cell-date {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
 }
+
+.day-cell.is-today .day-cell-date { color: #4285f4; }
 
 .day-cell-month {
-  font-size: 9px;
-  color: #a0a7b4;
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
+/* ── Weather badge ────────────────────────────── */
+.day-weather {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.day-weather-icon { font-size: 10px; line-height: 1; }
+.day-weather-temps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+.day-weather-hi {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.day-weather-lo {
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+/* ── Events ───────────────────────────────────── */
 .allday-event {
   border-radius: 3px;
   color: #fff;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   padding: 1px 4px;
   margin-bottom: 2px;
@@ -210,7 +305,7 @@ body {
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.3;
   margin-bottom: 1px;
 }
@@ -223,14 +318,14 @@ body {
 }
 
 .timed-event-time {
-  color: #a0a7b4;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
-  font-size: 8px;
+  font-size: 9px;
 }
 
 .timed-event-title {
-  color: #c9cdd5;
+  color: var(--text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -241,7 +336,7 @@ body {
   align-items: flex-start;
   gap: 8px;
   padding: 7px 14px;
-  border-bottom: 1px solid #2a2a3a;
+  border-bottom: 1px solid var(--border);
 }
 
 .reminder-checkbox {
@@ -253,20 +348,17 @@ body {
   margin-top: 1px;
 }
 
-.reminder-content {
-  flex: 1;
-  min-width: 0;
-}
+.reminder-content { flex: 1; min-width: 0; }
 
 .reminder-title {
   font-size: 12px;
   font-weight: 500;
-  color: #f0f1f5;
+  color: var(--text);
 }
 
 .reminder-due {
   font-size: 10px;
-  color: #a0a7b4;
+  color: var(--text-muted);
   margin-top: 1px;
 }
 
@@ -276,9 +368,9 @@ body {
   align-items: center;
   padding: 5px 20px;
   font-size: 11px;
-  color: #a0a7b4;
-  background: #1a1a24;
-  border-top: 1px solid #2a2a3a;
+  color: var(--text-muted);
+  background: var(--bg-header);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
   gap: 6px;
 }
@@ -288,10 +380,19 @@ body {
 </head>
 <body>
 
+<!-- Corner labels -->
+<div class="corner-label light-label">Light</div>
+<div class="corner-label dark-label">Dark</div>
+
+<!-- ═══════════════════════════════════════════════
+     DARK LAYER (full background)
+     ═══════════════════════════════════════════════ -->
+<div class="theme-layer dark">
 <div class="header">
   <div class="header-left">
     <div class="clock">10:30 AM</div>
     <div class="date-text">Tuesday, March 25, 2026</div>
+    <div class="header-weather"><span class="header-weather-icon">&#x2600;&#xFE0F;</span> <span class="header-weather-temp">72&#176;</span></div>
   </div>
   <div class="header-title">Family Calendar</div>
   <div class="header-right">
@@ -318,46 +419,39 @@ body {
     <div class="week-label">This Week</div>
     <div class="week-row">
       <div class="week-days">
-        <!-- Mon Mar 23 -->
         <div class="day-cell is-past">
-          <div class="day-cell-date">23</div>
+          <div class="day-cell-header"><div class="day-cell-date">23</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">68&#176;</span><span class="day-weather-lo">54&#176;</span></div></div></div>
           <div class="allday-event" style="background:#4285f4">Leg Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7:15p</span><span class="timed-event-title">Family Dinner</span></div>
         </div>
-        <!-- Tue Mar 24 -->
         <div class="day-cell is-past">
-          <div class="day-cell-date">24</div>
+          <div class="day-cell-header"><div class="day-cell-date">24</div><div class="day-weather"><span class="day-weather-icon">&#x1F326;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">65&#176;</span><span class="day-weather-lo">52&#176;</span></div></div></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">11a</span><span class="timed-event-title">Dentist</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">4p</span><span class="timed-event-title">Soccer Practice</span></div>
         </div>
-        <!-- Wed Mar 25 (today) -->
         <div class="day-cell is-today">
-          <div class="day-cell-date">25</div>
+          <div class="day-cell-header"><div class="day-cell-date">25</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">72&#176;</span><span class="day-weather-lo">58&#176;</span></div></div></div>
           <div class="allday-event" style="background:#e91e8c">Book Club</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Team Meeting</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Date Night</span></div>
         </div>
-        <!-- Thu Mar 26 -->
         <div class="day-cell">
-          <div class="day-cell-date">26</div>
+          <div class="day-cell-header"><div class="day-cell-date">26</div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">75&#176;</span><span class="day-weather-lo">60&#176;</span></div></div></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Sprint Review</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">3p</span><span class="timed-event-title">Piano Lesson</span></div>
         </div>
-        <!-- Fri Mar 27 -->
         <div class="day-cell">
-          <div class="day-cell-date">27</div>
+          <div class="day-cell-header"><div class="day-cell-date">27</div><div class="day-weather"><span class="day-weather-icon">&#x2601;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">70&#176;</span><span class="day-weather-lo">56&#176;</span></div></div></div>
           <div class="allday-event" style="background:#4285f4">Pull Routine</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Grocery Run</span></div>
         </div>
-        <!-- Sat Mar 28 -->
         <div class="day-cell">
-          <div class="day-cell-date">28</div>
+          <div class="day-cell-header"><div class="day-cell-date">28</div><div class="day-weather"><span class="day-weather-icon">&#x1F327;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">63&#176;</span><span class="day-weather-lo">49&#176;</span></div></div></div>
           <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">8a</span><span class="timed-event-title">Farmer's Market</span></div>
         </div>
-        <!-- Sun Mar 29 -->
         <div class="day-cell">
-          <div class="day-cell-date">29</div>
+          <div class="day-cell-header"><div class="day-cell-date">29</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">67&#176;</span><span class="day-weather-lo">53&#176;</span></div></div></div>
           <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Brunch</span></div>
         </div>
@@ -367,43 +461,36 @@ body {
     <div class="week-label">Next Week</div>
     <div class="week-row">
       <div class="week-days">
-        <!-- Mon Mar 30 -->
         <div class="day-cell">
-          <div class="day-cell-date">30</div>
+          <div class="day-cell-header"><div class="day-cell-date">30</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">74&#176;</span><span class="day-weather-lo">59&#176;</span></div></div></div>
           <div class="allday-event" style="background:#4285f4">Push Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Staff Meeting</span></div>
         </div>
-        <!-- Tue Mar 31 -->
         <div class="day-cell">
-          <div class="day-cell-date">31 <span class="day-cell-month">Mar</span></div>
+          <div class="day-cell-header"><div class="day-cell-date">31 <span class="day-cell-month">Mar</span></div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">76&#176;</span><span class="day-weather-lo">61&#176;</span></div></div></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">2p</span><span class="timed-event-title">1:1 w/ Manager</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7p</span><span class="timed-event-title">Game Night</span></div>
         </div>
-        <!-- Wed Apr 1 -->
         <div class="day-cell">
-          <div class="day-cell-date">1 <span class="day-cell-month">Apr</span></div>
+          <div class="day-cell-header"><div class="day-cell-date">1 <span class="day-cell-month">Apr</span></div><div class="day-weather"><span class="day-weather-icon">&#x2601;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">69&#176;</span><span class="day-weather-lo">55&#176;</span></div></div></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">12p</span><span class="timed-event-title">Lunch w/ Sarah</span></div>
         </div>
-        <!-- Thu Apr 2 -->
         <div class="day-cell">
-          <div class="day-cell-date">2</div>
+          <div class="day-cell-header"><div class="day-cell-date">2</div><div class="day-weather"><span class="day-weather-icon">&#x1F326;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">66&#176;</span><span class="day-weather-lo">51&#176;</span></div></div></div>
           <div class="allday-event" style="background:#0f9d58">School Holiday</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">3p</span><span class="timed-event-title">Vet Appointment</span></div>
         </div>
-        <!-- Fri Apr 3 -->
         <div class="day-cell">
-          <div class="day-cell-date">3</div>
+          <div class="day-cell-header"><div class="day-cell-date">3</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">78&#176;</span><span class="day-weather-lo">62&#176;</span></div></div></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Yoga Class</span></div>
         </div>
-        <!-- Sat Apr 4 -->
         <div class="day-cell">
-          <div class="day-cell-date">4</div>
+          <div class="day-cell-header"><div class="day-cell-date">4</div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">77&#176;</span><span class="day-weather-lo">60&#176;</span></div></div></div>
           <div class="allday-event" style="background:#e91e8c">Half Marathon</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">4p</span><span class="timed-event-title">BBQ at Mike's</span></div>
         </div>
-        <!-- Sun Apr 5 -->
         <div class="day-cell">
-          <div class="day-cell-date">5</div>
+          <div class="day-cell-header"><div class="day-cell-date">5</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">71&#176;</span><span class="day-weather-lo">57&#176;</span></div></div></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Park Playdate</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Meal Prep</span></div>
         </div>
@@ -414,45 +501,12 @@ body {
   <div class="reminders-panel">
     <div class="panel-header">Reminders</div>
     <div>
-      <div class="reminder-item">
-        <div class="reminder-checkbox"></div>
-        <div class="reminder-content">
-          <div class="reminder-title">Grocery list for camping</div>
-          <div class="reminder-due">Due Mar 27</div>
-        </div>
-      </div>
-      <div class="reminder-item">
-        <div class="reminder-checkbox"></div>
-        <div class="reminder-content">
-          <div class="reminder-title">Schedule oil change</div>
-        </div>
-      </div>
-      <div class="reminder-item">
-        <div class="reminder-checkbox"></div>
-        <div class="reminder-content">
-          <div class="reminder-title">Return library books</div>
-          <div class="reminder-due">Due Mar 28</div>
-        </div>
-      </div>
-      <div class="reminder-item">
-        <div class="reminder-checkbox"></div>
-        <div class="reminder-content">
-          <div class="reminder-title">Renew passports</div>
-        </div>
-      </div>
-      <div class="reminder-item">
-        <div class="reminder-checkbox"></div>
-        <div class="reminder-content">
-          <div class="reminder-title">Fix kitchen faucet</div>
-        </div>
-      </div>
-      <div class="reminder-item">
-        <div class="reminder-checkbox"></div>
-        <div class="reminder-content">
-          <div class="reminder-title">Order birthday gift</div>
-          <div class="reminder-due">Due Apr 2</div>
-        </div>
-      </div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Grocery list for camping</div><div class="reminder-due">Due Mar 27</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Schedule oil change</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Return library books</div><div class="reminder-due">Due Mar 28</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Renew passports</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Fix kitchen faucet</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Order birthday gift</div><div class="reminder-due">Due Apr 2</div></div></div>
     </div>
   </div>
 </div>
@@ -461,6 +515,140 @@ body {
   <span class="footer-icon">&#x1F4C5;</span>
   <span>Family Calendar &mdash; Wall-mounted display for Raspberry Pi</span>
 </div>
+</div><!-- end dark layer -->
+
+<!-- ═══════════════════════════════════════════════
+     LIGHT LAYER (clipped diagonal)
+     ═══════════════════════════════════════════════ -->
+<div class="theme-layer light">
+<div class="header">
+  <div class="header-left">
+    <div class="clock">10:30 AM</div>
+    <div class="date-text">Tuesday, March 25, 2026</div>
+    <div class="header-weather"><span class="header-weather-icon">&#x2600;&#xFE0F;</span> <span class="header-weather-temp">72&#176;</span></div>
+  </div>
+  <div class="header-title">Family Calendar</div>
+  <div class="header-right">
+    <div class="legend">
+      <span class="legend-dot" style="background:#4285f4"></span> Alex
+      <span class="legend-dot" style="background:#e91e8c; margin-left:8px"></span> Jordan
+      <span class="legend-dot" style="background:#0f9d58; margin-left:8px"></span> Family
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="calendar-panel">
+    <div class="week-header">
+      <div class="week-header-cell">Mon</div>
+      <div class="week-header-cell">Tue</div>
+      <div class="week-header-cell">Wed</div>
+      <div class="week-header-cell">Thu</div>
+      <div class="week-header-cell">Fri</div>
+      <div class="week-header-cell">Sat</div>
+      <div class="week-header-cell">Sun</div>
+    </div>
+
+    <div class="week-label">This Week</div>
+    <div class="week-row">
+      <div class="week-days">
+        <div class="day-cell is-past">
+          <div class="day-cell-header"><div class="day-cell-date">23</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">68&#176;</span><span class="day-weather-lo">54&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#4285f4">Leg Day</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7:15p</span><span class="timed-event-title">Family Dinner</span></div>
+        </div>
+        <div class="day-cell is-past">
+          <div class="day-cell-header"><div class="day-cell-date">24</div><div class="day-weather"><span class="day-weather-icon">&#x1F326;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">65&#176;</span><span class="day-weather-lo">52&#176;</span></div></div></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">11a</span><span class="timed-event-title">Dentist</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">4p</span><span class="timed-event-title">Soccer Practice</span></div>
+        </div>
+        <div class="day-cell is-today">
+          <div class="day-cell-header"><div class="day-cell-date">25</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">72&#176;</span><span class="day-weather-lo">58&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#e91e8c">Book Club</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Team Meeting</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Date Night</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">26</div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">75&#176;</span><span class="day-weather-lo">60&#176;</span></div></div></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Sprint Review</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">3p</span><span class="timed-event-title">Piano Lesson</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">27</div><div class="day-weather"><span class="day-weather-icon">&#x2601;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">70&#176;</span><span class="day-weather-lo">56&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#4285f4">Pull Routine</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Grocery Run</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">28</div><div class="day-weather"><span class="day-weather-icon">&#x1F327;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">63&#176;</span><span class="day-weather-lo">49&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">8a</span><span class="timed-event-title">Farmer's Market</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">29</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">67&#176;</span><span class="day-weather-lo">53&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Brunch</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="week-label">Next Week</div>
+    <div class="week-row">
+      <div class="week-days">
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">30</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">74&#176;</span><span class="day-weather-lo">59&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#4285f4">Push Day</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Staff Meeting</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">31 <span class="day-cell-month">Mar</span></div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">76&#176;</span><span class="day-weather-lo">61&#176;</span></div></div></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">2p</span><span class="timed-event-title">1:1 w/ Manager</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7p</span><span class="timed-event-title">Game Night</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">1 <span class="day-cell-month">Apr</span></div><div class="day-weather"><span class="day-weather-icon">&#x2601;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">69&#176;</span><span class="day-weather-lo">55&#176;</span></div></div></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">12p</span><span class="timed-event-title">Lunch w/ Sarah</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">2</div><div class="day-weather"><span class="day-weather-icon">&#x1F326;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">66&#176;</span><span class="day-weather-lo">51&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#0f9d58">School Holiday</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">3p</span><span class="timed-event-title">Vet Appointment</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">3</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">78&#176;</span><span class="day-weather-lo">62&#176;</span></div></div></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Yoga Class</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">4</div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">77&#176;</span><span class="day-weather-lo">60&#176;</span></div></div></div>
+          <div class="allday-event" style="background:#e91e8c">Half Marathon</div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">4p</span><span class="timed-event-title">BBQ at Mike's</span></div>
+        </div>
+        <div class="day-cell">
+          <div class="day-cell-header"><div class="day-cell-date">5</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">71&#176;</span><span class="day-weather-lo">57&#176;</span></div></div></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Park Playdate</span></div>
+          <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Meal Prep</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reminders-panel">
+    <div class="panel-header">Reminders</div>
+    <div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Grocery list for camping</div><div class="reminder-due">Due Mar 27</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Schedule oil change</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Return library books</div><div class="reminder-due">Due Mar 28</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Renew passports</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Fix kitchen faucet</div></div></div>
+      <div class="reminder-item"><div class="reminder-checkbox"></div><div class="reminder-content"><div class="reminder-title">Order birthday gift</div><div class="reminder-due">Due Apr 2</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="footer-icon">&#x1F4C5;</span>
+  <span>Family Calendar &mdash; Wall-mounted display for Raspberry Pi</span>
+</div>
+</div><!-- end light layer -->
 
 </body>
 </html>
