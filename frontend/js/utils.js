@@ -28,12 +28,13 @@ function applyColorSettings(colors) {
 }
 
 /**
- * Person-color keywords — checked against calendar name, then event
- * title/notes as a fallback.  Non-person keys like "outlook" and
- * "default" are only matched on calendar name (you don't want an
- * event titled "Outlook on life" to turn Microsoft-blue).
+ * Color keys that should NOT be matched against event title/notes.
+ * These are generic service or system names that would cause false
+ * positives (e.g. an event titled "Outlook on life" → Microsoft blue).
+ * All other color keys are treated as person/group names and will
+ * be checked against title/notes as a fallback.
  */
-const PERSON_KEYS = new Set(['trevor', 'larissa', 'family']);
+const NON_PERSON_KEYS = new Set(['default', 'outlook']);
 
 /**
  * Determine display color for an event.
@@ -53,14 +54,15 @@ function getColorForEvent(event) {
     if (name.includes(key)) return { color, label: key.charAt(0).toUpperCase() + key.slice(1) };
   }
 
-  // 2–3. Title, then notes — only match person keys
+  // 2–3. Title, then notes — only match person/group keys
   const title = (event.title || '').toLowerCase();
   const notes = (event.notes || event.description || '').toLowerCase();
+  const personKeys = Object.keys(calendarColors).filter((k) => !NON_PERSON_KEYS.has(k));
 
-  for (const key of PERSON_KEYS) {
+  for (const key of personKeys) {
     if (title.includes(key)) return { color: calendarColors[key], label: key.charAt(0).toUpperCase() + key.slice(1) };
   }
-  for (const key of PERSON_KEYS) {
+  for (const key of personKeys) {
     if (notes.includes(key)) return { color: calendarColors[key], label: key.charAt(0).toUpperCase() + key.slice(1) };
   }
 
