@@ -12,8 +12,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=trevor
-WorkingDirectory=/home/trevor/family-calendar
+User=pi
+WorkingDirectory=/home/pi/family-calendar
 ExecStart=/usr/bin/node src/server.js
 Restart=always
 RestartSec=10

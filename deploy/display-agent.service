@@ -17,9 +17,9 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=trevor
+User=pi
 Environment=DISPLAY=:0
-ExecStart=/home/trevor/family-calendar/deploy/display-agent.sh http://localhost:3000
+ExecStart=/home/pi/family-calendar/deploy/display-agent.sh http://localhost:3000
 Restart=always
 RestartSec=10
 

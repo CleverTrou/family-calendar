@@ -153,7 +153,7 @@ Everything from here goes **below** the "End Repeat" line.
 ### 4.2 Add a "Text" Action for the Final Payload
 
 1. Search for **Text** and tap it
-2. On the **first line**, type: `syncedBy:Trevor`
+2. On the **first line**, type: `syncedBy:YourName` (e.g. `syncedBy:Alex`)
 3. Press **Return** (this is the one place you DO press Enter)
 4. On the second line, tap the magic variable button and select
    **Combined Text** (from the Combine Text action above)
@@ -162,12 +162,12 @@ Everything from here goes **below** the "End Repeat" line.
 ┌──────────────────────────────────┐
 │  Text                            │
 │                                  │
-│  syncedBy:Trevor                 │
+│  syncedBy:YourName               │
 │  [Combined Text]                 │
 └──────────────────────────────────┘
 ```
 
-> **For Larissa's phone:** Change `Trevor` to `Larissa`
+> **For other family members' phones:** Change `YourName` to their name
 
 ### 4.3 Add "Get Contents of URL" (The POST Request)
 
@@ -262,7 +262,7 @@ Your finished shortcut should have these actions in this exact order:
 │     [reminderLines] with New Line        │
 │                                          │
 │  7. Text                                 │
-│     syncedBy:Trevor                      │
+│     syncedBy:YourName                    │
 │     [Combined Text]                      │
 │                                          │
 │  8. Get Contents of URL                  │
@@ -277,7 +277,7 @@ Tap the **▶ Play** button to run the shortcut manually.
 
 **What success looks like:**
 - Shortcut finishes without errors
-- Server terminal shows: `[Reminders] Received 6 items from Trevor`
+- Server terminal shows: `[Reminders] Received 6 items from YourName`
 - The display shows your reminders within 60 seconds
 
 **What failure looks like:**
@@ -330,15 +330,15 @@ Look for `"remindersCount"` > 0.
 
 ---
 
-## Part 7: Share to Larissa's Phone
+## Part 7: Share to Another Family Member's Phone
 
 1. On your iPhone, long-press **Sync Family Reminders** → **Share**
-2. **AirDrop** it to Larissa (or copy iCloud Link and text it)
-3. On Larissa's phone: accept the shortcut, then edit it
-4. In the final **Text** action (step 4.2), change `syncedBy:Trevor`
-   to `syncedBy:Larissa`
+2. **AirDrop** it to them (or copy iCloud Link and text it)
+3. On their phone: accept the shortcut, then edit it
+4. In the final **Text** action (step 4.2), change `syncedBy:YourName`
+   to `syncedBy:TheirName`
 5. Verify the URL in "Get Contents of URL" is correct
-6. Set up automations (Part 6) on Larissa's phone too
+6. Set up automations (Part 6) on their phone too
 
 ---
 
@@ -347,7 +347,7 @@ Look for `"remindersCount"` > 0.
 The Shortcut sends plain text like this:
 
 ```
-syncedBy:Trevor
+syncedBy:YourName
 Deep clean kitchen|||2026-03-22T20:00:00-0500|||Pick up supplies first|||0
 Get passports|||2026-04-01T09:00:00-0500||||0
 Call dentist|||2026-03-25T14:00:00-0500|||Ask about insurance|||1

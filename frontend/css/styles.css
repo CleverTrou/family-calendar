@@ -1,7 +1,7 @@
 /* ── Theme Variables ────────────────────────────────── */
 :root {
-  --color-trevor: #4285f4;
-  --color-larissa: #e91e8c;
+  --color-primary: #4285f4;
+  --color-secondary: #e91e8c;
   --color-family: #0f9d58;
   --color-default: #78909c;
 }
@@ -250,7 +250,7 @@ body {
 }
 
 .day-cell.is-today {
-  background: color-mix(in srgb, var(--color-trevor) 6%, var(--bg-body));
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--bg-body));
 }
 
 .day-cell.is-past {
@@ -266,7 +266,7 @@ body {
 }
 
 .day-cell.is-today .day-cell-date {
-  color: var(--color-trevor);
+  color: var(--color-primary);
 }
 
 .day-cell-month {
@@ -437,7 +437,7 @@ body {
 }
 
 .reminder-checkbox.google-task {
-  border-color: var(--color-trevor);
+  border-color: var(--color-primary);
   border-radius: 0.208vw; /* square-ish to distinguish from Apple's circles */
 }
 

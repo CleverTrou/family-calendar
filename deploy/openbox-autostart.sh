@@ -1,6 +1,6 @@
 #!/bin/bash
 # Openbox autostart script for kiosk mode.
-# Install to: /home/trevor/.config/openbox/autostart
+# Install to: /home/<user>/.config/openbox/autostart
 #
 # This is launched by LightDM after auto-login → Openbox session.
 

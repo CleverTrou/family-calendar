@@ -6,6 +6,6 @@ Description=Turn on display
 
 [Service]
 Type=oneshot
-User=trevor
+User=pi
 Environment=DISPLAY=:0
 ExecStart=/usr/bin/xset dpms force on

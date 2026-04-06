@@ -17,8 +17,8 @@ const DEFAULTS = {
     visible: {},
     // Color overrides per calendar-name keyword
     colors: {
-      trevor: '#4285f4',
-      larissa: '#e91e8c',
+      person1: '#4285f4',
+      person2: '#e91e8c',
       family: '#0f9d58',
       outlook: '#0078d4',
       default: '#78909c',
@@ -92,7 +92,20 @@ export function loadSettings() {
   } catch {
     // File doesn't exist yet or is invalid — use defaults
   }
-  return deepMerge(JSON.parse(JSON.stringify(DEFAULTS)), saved);
+  const merged = deepMerge(JSON.parse(JSON.stringify(DEFAULTS)), saved);
+
+  // Migration: if user has custom person color keys, strip generic placeholders
+  // so "person1"/"person2" don't appear alongside real names like "trevor"/"larissa"
+  if (saved.calendars && saved.calendars.colors) {
+    const SYSTEM_KEYS = new Set(['family', 'outlook', 'default', 'person1', 'person2']);
+    const hasCustomPeople = Object.keys(saved.calendars.colors).some((k) => !SYSTEM_KEYS.has(k));
+    if (hasCustomPeople) {
+      delete merged.calendars.colors.person1;
+      delete merged.calendars.colors.person2;
+    }
+  }
+
+  return merged;
 }
 
 /** Save settings to disk. */

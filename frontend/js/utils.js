@@ -6,24 +6,66 @@
 
 // Default colors (overridden by settings from the API when available)
 let calendarColors = {
-  trevor: '#4285f4',
-  larissa: '#e91e8c',
+  person1: '#4285f4',
+  person2: '#e91e8c',
   family: '#0f9d58',
   default: '#78909c',
 };
 
+/** Keys that are system/service entries, not people or groups. */
+const SYSTEM_COLOR_KEYS = new Set(['default', 'outlook']);
+
 /**
  * Update the color palette from settings.
  * Called by app.js after each data fetch.
+ *
+ * Dynamically maps the first two person/group keys to the CSS
+ * custom properties --color-primary and --color-secondary (used
+ * for today-highlight, Google Task checkboxes, etc.).
  */
 function applyColorSettings(colors) {
-  if (colors) {
-    calendarColors = { ...calendarColors, ...colors };
-    // Also update CSS custom properties so the legend dots use settings colors
-    const root = document.documentElement;
-    root.style.setProperty('--color-trevor', calendarColors.trevor);
-    root.style.setProperty('--color-larissa', calendarColors.larissa);
+  if (!colors) return;
+  calendarColors = { ...calendarColors, ...colors };
+
+  const root = document.documentElement;
+  const personKeys = Object.keys(calendarColors).filter((k) => !SYSTEM_COLOR_KEYS.has(k));
+
+  if (personKeys.length >= 1) {
+    root.style.setProperty('--color-primary', calendarColors[personKeys[0]]);
+  }
+  if (personKeys.length >= 2) {
+    root.style.setProperty('--color-secondary', calendarColors[personKeys[1]]);
+  }
+  if (calendarColors.family) {
     root.style.setProperty('--color-family', calendarColors.family);
+  }
+
+  buildLegend();
+}
+
+/**
+ * Rebuild the header legend from current color settings.
+ * Skips system keys (default, outlook) — shows only people/groups.
+ */
+function buildLegend() {
+  var legendEl = document.getElementById('legend');
+  if (!legendEl) return;
+
+  legendEl.textContent = '';
+
+  for (var key in calendarColors) {
+    if (SYSTEM_COLOR_KEYS.has(key)) continue;
+
+    var dot = document.createElement('span');
+    dot.className = 'legend-dot';
+    dot.style.backgroundColor = calendarColors[key];
+
+    var label = document.createTextNode(
+      ' ' + key.charAt(0).toUpperCase() + key.slice(1) + ' '
+    );
+
+    legendEl.appendChild(dot);
+    legendEl.appendChild(label);
   }
 }
 

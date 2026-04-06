@@ -7,7 +7,7 @@ const FIELD_SEP = '|||';
  * Parse the pipe-delimited text format from Apple Shortcuts.
  *
  * Expected format (one reminder per line):
- *   syncedBy:Trevor
+ *   syncedBy:YourName
  *   Buy groceries|||2026-03-25T10:00:00-0500|||Pick up milk and eggs|||0
  *   Call dentist|||2026-03-26T14:00:00-0500||||1
  *
