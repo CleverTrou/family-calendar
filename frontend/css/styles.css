@@ -35,6 +35,10 @@
 }
 
 /* ── Base ───────────────────────────────────────────── */
+/* All sizes use viewport-relative units (vw/vh) so the layout
+   fills any resolution with identical proportions.
+   Reference design: 1920×1080 → 1px ≈ 0.0521vw / 0.0926vh */
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -61,7 +65,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 28px;
+  padding: 1.11vh 1.458vw;
   background: var(--bg-card);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -70,52 +74,52 @@ body {
 .header-left {
   display: flex;
   align-items: baseline;
-  gap: 16px;
-  min-width: 320px;
+  gap: 0.833vw;
+  min-width: 16.667vw;
 }
 
 .clock {
-  font-size: 36px;
+  font-size: 1.875vw;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .date {
-  font-size: 16px;
+  font-size: 0.833vw;
   color: var(--text-secondary);
 }
 
 .header-title {
-  font-size: 18px;
+  font-size: 0.938vw;
   font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
-  min-width: 320px;
+  gap: 1.042vw;
+  min-width: 16.667vw;
   justify-content: flex-end;
 }
 
 .legend {
-  font-size: 13px;
+  font-size: 0.677vw;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.313vw;
 }
 
 .legend-dot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 0.521vw;
+  height: 0.521vw;
   border-radius: 50%;
-  margin-left: 10px;
+  margin-left: 0.521vw;
 }
 
 .legend-dot:first-child {
@@ -123,7 +127,7 @@ body {
 }
 
 .sync-status {
-  font-size: 14px;
+  font-size: 0.729vw;
   color: var(--text-muted);
 }
 
@@ -150,17 +154,17 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-width: 280px;
-  max-width: 380px;
+  min-width: 14.583vw;
+  max-width: 19.792vw;
 }
 
 .panel-header {
-  font-size: 20px;
+  font-size: 1.042vw;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
   color: var(--text-secondary);
-  padding: 10px 20px;
+  padding: 0.926vh 1.042vw;
   background: var(--bg-panel-header);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -194,22 +198,22 @@ body {
 
 .week-header-cell {
   text-align: center;
-  font-size: 20px;
+  font-size: 1.042vw;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
   color: var(--text-secondary);
-  padding: 10px 0;
+  padding: 0.926vh 0;
 }
 
 /* "This Week" / "Next Week" label */
 .week-label {
-  font-size: 17px;
+  font-size: 0.885vw;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
   color: var(--text-secondary);
-  padding: 8px 12px 4px;
+  padding: 0.741vh 0.625vw 0.370vh;
   background: var(--bg-body);
   flex-shrink: 0;
 }
@@ -234,10 +238,10 @@ body {
 .day-cell {
   border-right: 1px solid var(--border);
   border-top: 1px solid var(--border);
-  padding: 6px 8px;
+  padding: 0.556vh 0.417vw;
   display: flex;
   flex-direction: column;
-  min-height: 120px;
+  min-height: 11.11vh;
   overflow: hidden;
 }
 
@@ -255,10 +259,10 @@ body {
 
 /* Date number in each cell */
 .day-cell-date {
-  font-size: 28px;
+  font-size: 1.458vw;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 4px;
+  margin-bottom: 0.370vh;
   flex-shrink: 0;
 }
 
@@ -267,7 +271,7 @@ body {
 }
 
 .day-cell-month {
-  font-size: 17px;
+  font-size: 0.885vw;
   font-weight: 400;
   color: var(--text-secondary);
 }
@@ -276,17 +280,17 @@ body {
 .day-allday-events {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-bottom: 4px;
+  gap: 0.278vh;
+  margin-bottom: 0.370vh;
   flex-shrink: 0;
 }
 
 .allday-event {
-  border-radius: 4px;
+  border-radius: 0.208vw;
   color: #fff;
-  font-size: 17px;
+  font-size: 0.885vw;
   font-weight: 600;
-  padding: 3px 7px;
+  padding: 0.278vh 0.365vw;
   word-wrap: break-word;
   overflow-wrap: break-word;
   opacity: 0.95;
@@ -297,7 +301,7 @@ body {
 .day-events {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 0.278vh;
   overflow: hidden;
   flex: 1;
 }
@@ -305,24 +309,24 @@ body {
 .timed-event {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  font-size: 17px;
+  gap: 0.313vw;
+  font-size: 0.885vw;
   line-height: 1.3;
 }
 
 .timed-event-dot {
-  width: 10px;
-  height: 10px;
+  width: 0.521vw;
+  height: 0.521vw;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 6px; /* align dot with first line of wrapped text */
+  margin-top: 0.556vh; /* align dot with first line of wrapped text */
 }
 
 .timed-event-time {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: 0.833vw;
 }
 
 .timed-event-title {
@@ -333,16 +337,16 @@ body {
 }
 
 .day-events-more {
-  font-size: 15px;
+  font-size: 0.781vw;
   color: var(--text-secondary);
   font-style: italic;
-  padding-top: 1px;
+  padding-top: 0.093vh;
 }
 
 .no-events {
   color: var(--text-muted);
-  font-size: 16px;
-  padding: 16px 20px;
+  font-size: 0.833vw;
+  padding: 1.481vh 1.042vw;
   font-style: italic;
 }
 
@@ -350,7 +354,7 @@ body {
 .reminders-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 0.741vh 0;
   scrollbar-width: none;
 }
 
@@ -361,8 +365,8 @@ body {
 .reminder-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 20px;
+  gap: 0.625vw;
+  padding: 1.111vh 1.042vw;
   border-bottom: 1px solid var(--border);
 }
 
@@ -371,17 +375,17 @@ body {
 }
 
 .reminder-checkbox {
-  width: 26px;
-  height: 26px;
+  width: 1.354vw;
+  height: 1.354vw;
   border-radius: 50%;
   border: 2px solid var(--color-family);
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 0.185vh;
 }
 
 .reminder-checkbox.google-task {
   border-color: var(--color-trevor);
-  border-radius: 4px; /* square-ish to distinguish from Apple's circles */
+  border-radius: 0.208vw; /* square-ish to distinguish from Apple's circles */
 }
 
 .reminder-item.is-completed .reminder-checkbox {
@@ -395,7 +399,7 @@ body {
 }
 
 .reminder-title {
-  font-size: 22px;
+  font-size: 1.146vw;
   font-weight: 500;
 }
 
@@ -404,9 +408,9 @@ body {
 }
 
 .reminder-due {
-  font-size: 18px;
+  font-size: 0.938vw;
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-top: 0.185vh;
 }
 
 .reminder-due.is-overdue {
@@ -415,31 +419,31 @@ body {
 }
 
 .reminder-list-label {
-  font-size: 14px;
+  font-size: 0.729vw;
   color: var(--text-muted);
-  margin-top: 1px;
+  margin-top: 0.093vh;
 }
 
 .reminder-notes {
-  font-size: 17px;
+  font-size: 0.885vw;
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-top: 0.185vh;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 .reminders-meta {
-  font-size: 15px;
+  font-size: 0.781vw;
   color: var(--text-secondary);
-  padding: 8px 20px;
+  padding: 0.741vh 1.042vw;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .loading-message {
   color: var(--text-secondary);
-  font-size: 18px;
-  padding: 20px;
+  font-size: 0.938vw;
+  padding: 1.852vh;
   text-align: center;
   font-style: italic;
 }
@@ -448,8 +452,8 @@ body {
 .footer {
   display: flex;
   justify-content: space-between;
-  padding: 8px 28px;
-  font-size: 12px;
+  padding: 0.741vh 1.458vw;
+  font-size: 0.625vw;
   color: var(--text-muted);
   background: var(--bg-card);
   border-top: 1px solid var(--border);

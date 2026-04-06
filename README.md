@@ -13,7 +13,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Multi-source sync** — Google Calendar API + iCloud CalDAV + Microsoft Graph API, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
 - **Persistent cache** — Reminders from all sources survive server restarts
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display/system settings
-- **Display scale** — Configurable UI zoom (0.5×–3×) for 4K TVs or small screens
+- **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
 - **System monitoring** — CPU, memory, disk, temperature, fan speed, and throttling status in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
 - **Light/dark themes** with per-person event colors
 - **Network security** — IP allowlist, rate limiting, security headers
