@@ -28,15 +28,42 @@ function applyColorSettings(colors) {
 }
 
 /**
- * Determine display color based on calendar name.
- * Matches substrings: "Trevor's Calendar" → trevor, "Family" → family, etc.
+ * Person-color keywords — checked against calendar name, then event
+ * title/notes as a fallback.  Non-person keys like "outlook" and
+ * "default" are only matched on calendar name (you don't want an
+ * event titled "Outlook on life" to turn Microsoft-blue).
+ */
+const PERSON_KEYS = new Set(['trevor', 'larissa', 'family']);
+
+/**
+ * Determine display color for an event.
+ *
+ * Priority:
+ *   1. Calendar name contains any color key (person or non-person)
+ *   2. Event title contains a person key
+ *   3. Event notes/description contains a person key
+ *   4. Fall back to the default gray
  */
 function getColorForEvent(event) {
   const name = (event.calendarName || '').toLowerCase();
+
+  // 1. Calendar name — match all keys (person + non-person like "outlook")
   for (const [key, color] of Object.entries(calendarColors)) {
     if (key === 'default') continue;
     if (name.includes(key)) return { color, label: key.charAt(0).toUpperCase() + key.slice(1) };
   }
+
+  // 2–3. Title, then notes — only match person keys
+  const title = (event.title || '').toLowerCase();
+  const notes = (event.notes || event.description || '').toLowerCase();
+
+  for (const key of PERSON_KEYS) {
+    if (title.includes(key)) return { color: calendarColors[key], label: key.charAt(0).toUpperCase() + key.slice(1) };
+  }
+  for (const key of PERSON_KEYS) {
+    if (notes.includes(key)) return { color: calendarColors[key], label: key.charAt(0).toUpperCase() + key.slice(1) };
+  }
+
   return { color: calendarColors.default, label: event.calendarName || 'Other' };
 }
 
