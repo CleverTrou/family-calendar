@@ -60,6 +60,7 @@ async function loadData() {
     renderAccountsList(accountsData.accounts);
     renderCalendarToggles();
     renderColorPickers();
+    renderWeatherControls();
     renderThemeControls();
     renderScreenSchedule();
     renderDisplayScale();
@@ -545,6 +546,70 @@ function renderColorPickers() {
 
   container.textContent = '';
   container.appendChild(fragment);
+}
+
+/* ── Weather Location ─────────────────────────────── */
+
+function renderWeatherControls() {
+  // Ensure weather settings object exists
+  if (!currentSettings.weather) {
+    currentSettings.weather = { lat: '', lon: '' };
+  }
+
+  const latInput = document.getElementById('weather-lat');
+  const lonInput = document.getElementById('weather-lon');
+  const locateBtn = document.getElementById('btn-weather-locate');
+  const statusEl = document.getElementById('weather-status');
+
+  latInput.value = currentSettings.weather.lat || '';
+  lonInput.value = currentSettings.weather.lon || '';
+
+  latInput.addEventListener('change', () => {
+    currentSettings.weather.lat = latInput.value.trim();
+    markDirty();
+  });
+  lonInput.addEventListener('change', () => {
+    currentSettings.weather.lon = lonInput.value.trim();
+    markDirty();
+  });
+
+  locateBtn.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      statusEl.textContent = 'Geolocation not supported by this browser.';
+      statusEl.className = 'status-msg error';
+      return;
+    }
+
+    statusEl.textContent = 'Getting location...';
+    statusEl.className = 'status-msg';
+    locateBtn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(4);
+        const lon = pos.coords.longitude.toFixed(4);
+        latInput.value = lat;
+        lonInput.value = lon;
+        currentSettings.weather.lat = lat;
+        currentSettings.weather.lon = lon;
+        statusEl.textContent = 'Location set!';
+        statusEl.className = 'status-msg success';
+        locateBtn.disabled = false;
+        markDirty();
+      },
+      (err) => {
+        const messages = {
+          1: 'Location permission denied.',
+          2: 'Location unavailable.',
+          3: 'Location request timed out.',
+        };
+        statusEl.textContent = messages[err.code] || 'Could not get location.';
+        statusEl.className = 'status-msg error';
+        locateBtn.disabled = false;
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  });
 }
 
 /* ── Theme Controls ────────────────────────────────── */

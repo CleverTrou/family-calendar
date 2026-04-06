@@ -4,6 +4,7 @@ import { fetchICloudEvents } from './icloud-calendar.js';
 import { fetchMicrosoftEvents } from './microsoft-calendar.js';
 import { fetchMicrosoftTasks } from './microsoft-tasks.js';
 import { getReminders, updateGoogleTasks, updateMicrosoftTasks } from './reminders.js';
+import { fetchWeather, getCachedWeather } from './weather.js';
 import { config, getEnabledSources } from '../config.js';
 import { registerCalendar, isCalendarVisible, loadSettings } from './settings.js';
 import { getGoogleCredentials, getAccount, listAccounts } from './credential-store.js';
@@ -167,6 +168,9 @@ export async function syncAllCalendars() {
     cachedEvents = visibleEvents;
     lastSyncTime = new Date().toISOString();
 
+    // Fetch weather alongside calendar sync (non-blocking)
+    fetchWeather().catch((err) => console.error('[Sync] Weather fetch error:', err.message));
+
     console.log(
       `[Sync] ${visibleEvents.length}/${events.length} events visible (${summary.join(', ')})`
     );
@@ -184,6 +188,7 @@ export function getCachedData() {
   return {
     events: cachedEvents,
     reminders: getReminders(),
+    weather: getCachedWeather(),
     settings,
     knownCalendars,
     lastSyncTime,

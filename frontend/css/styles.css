@@ -262,7 +262,6 @@ body {
   font-size: 1.458vw;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.370vh;
   flex-shrink: 0;
 }
 
@@ -274,6 +273,57 @@ body {
   font-size: 0.885vw;
   font-weight: 400;
   color: var(--text-secondary);
+}
+
+/* Date + weather row at top of each day cell */
+.day-cell-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.370vh;
+  flex-shrink: 0;
+  gap: 0.208vw;
+}
+
+/* Weather badge in each day cell */
+.day-weather {
+  display: flex;
+  align-items: center;
+  gap: 0.156vw;
+  flex-shrink: 0;
+}
+
+.day-weather-icon {
+  font-size: 0.833vw;
+  line-height: 1;
+}
+
+.day-weather-temps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-weather-hi {
+  font-size: 0.729vw;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.day-weather-lo {
+  font-size: 0.625vw;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* Header current weather */
+.header-weather {
+  font-size: 1.25vw;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
 }
 
 /* All-day event chips (inside day cell, below date) */

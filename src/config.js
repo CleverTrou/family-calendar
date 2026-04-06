@@ -45,6 +45,11 @@ export const config = {
   },
 
   adminPin: process.env.ADMIN_PIN || '',
+
+  weather: {
+    lat: process.env.WEATHER_LAT || '',
+    lon: process.env.WEATHER_LON || '',
+  },
 };
 
 /**

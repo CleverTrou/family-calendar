@@ -35,6 +35,10 @@ const DEFAULTS = {
     screenOnDays: [1, 2, 3, 4, 5, 6, 0], // days of week (0=Sun, 1=Mon, ...)
     displayScale: 1,           // UI scale factor (0.5–3, applied as CSS zoom + Chromium flag)
   },
+  weather: {
+    lat: '',                 // latitude for weather forecasts
+    lon: '',                 // longitude for weather forecasts
+  },
 };
 
 /**

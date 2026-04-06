@@ -230,6 +230,28 @@
           </div>
         </section>
 
+        <!-- Weather Location -->
+        <section class="card">
+          <h2>Weather</h2>
+          <p class="card-desc">Show daily high/low temperatures and conditions on the calendar. Set your location to enable weather.</p>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="weather-lat">Latitude</label>
+              <input type="text" id="weather-lat" placeholder="e.g. 30.2672" inputmode="decimal">
+            </div>
+            <div class="field-group">
+              <label for="weather-lon">Longitude</label>
+              <input type="text" id="weather-lon" placeholder="e.g. -97.7431" inputmode="decimal">
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn-small" id="btn-weather-locate" type="button">📍 Use my location</button>
+            <span class="status-msg" id="weather-status"></span>
+          </div>
+        </section>
+
         <!-- Theme Section -->
         <section class="card">
           <h2>Theme</h2>

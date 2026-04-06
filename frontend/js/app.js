@@ -42,8 +42,9 @@ async function fetchData() {
       applySettings(currentData.settings);
     }
 
-    renderCalendar(currentData.events);
+    renderCalendar(currentData.events, currentData.weather);
     renderReminders(currentData.reminders);
+    updateHeaderWeather(currentData.weather);
     updateSyncStatus(currentData);
   } catch (err) {
     console.error('[App] Fetch failed:', err);
@@ -86,6 +87,19 @@ function applySettings(settings) {
     applyFont(settings.display.font);
     applyDisplayScale(settings.display.displayScale);
   }
+}
+
+/* ── Header Weather ────────────────────────────────── */
+
+function updateHeaderWeather(weather) {
+  const el = document.getElementById('header-weather');
+  if (!weather || !weather.current) {
+    el.textContent = '';
+    return;
+  }
+  const { temp, icon, label } = weather.current;
+  el.textContent = `${icon} ${temp}°`;
+  el.title = label;
 }
 
 /* ── Clock ──────────────────────────────────────────── */

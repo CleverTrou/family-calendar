@@ -26,7 +26,18 @@ const MAX_VISIBLE_EVENTS = 4;
 
 /* ── Main Entry Point ──────────────────────────────── */
 
-function renderCalendar(events) {
+/** Index weather daily array by date string for O(1) lookup. */
+function buildWeatherMap(weather) {
+  const map = {};
+  if (weather && weather.daily) {
+    for (const day of weather.daily) {
+      map[day.date] = day;
+    }
+  }
+  return map;
+}
+
+function renderCalendar(events, weather) {
   const container = document.getElementById('calendar-grid');
 
   if (!events || events.length === 0) {
@@ -41,6 +52,7 @@ function renderCalendar(events) {
   const { weekDates, weekStart1, weekStart2 } = getTwoWeekRange();
   const week1Dates = weekDates.slice(0, 7);
   const week2Dates = weekDates.slice(7, 14);
+  const weatherMap = buildWeatherMap(weather);
 
   const fragment = document.createDocumentFragment();
 
@@ -52,14 +64,14 @@ function renderCalendar(events) {
   week1Label.className = 'week-label';
   week1Label.textContent = 'This Week';
   fragment.appendChild(week1Label);
-  fragment.appendChild(buildWeekRow(week1Dates, events));
+  fragment.appendChild(buildWeekRow(week1Dates, events, weatherMap));
 
   // Week 2
   const week2Label = document.createElement('div');
   week2Label.className = 'week-label';
   week2Label.textContent = 'Next Week';
   fragment.appendChild(week2Label);
-  fragment.appendChild(buildWeekRow(week2Dates, events));
+  fragment.appendChild(buildWeekRow(week2Dates, events, weatherMap));
 
   container.textContent = '';
   container.appendChild(fragment);
@@ -81,7 +93,7 @@ function buildDayHeaders() {
 
 /* ── Week Row ──────────────────────────────────────── */
 
-function buildWeekRow(weekDates7, allEvents) {
+function buildWeekRow(weekDates7, allEvents, weatherMap) {
   const weekRow = document.createElement('div');
   weekRow.className = 'week-row';
 
@@ -89,7 +101,7 @@ function buildWeekRow(weekDates7, allEvents) {
   daysContainer.className = 'week-days';
 
   for (const dayDate of weekDates7) {
-    daysContainer.appendChild(buildDayCell(dayDate, allEvents));
+    daysContainer.appendChild(buildDayCell(dayDate, allEvents, weatherMap));
   }
 
   weekRow.appendChild(daysContainer);
@@ -98,7 +110,7 @@ function buildWeekRow(weekDates7, allEvents) {
 
 /* ── Day Cell ──────────────────────────────────────── */
 
-function buildDayCell(date, allEvents) {
+function buildDayCell(date, allEvents, weatherMap) {
   const cell = document.createElement('div');
   const today = stripTime(new Date());
   const cellDate = stripTime(date);
@@ -108,7 +120,10 @@ function buildDayCell(date, allEvents) {
   cell.className =
     'day-cell' + (isToday ? ' is-today' : '') + (isPast ? ' is-past' : '');
 
-  // ── Date number (with optional month label on the 1st) ──
+  // ── Date + Weather header row ──
+  const dateRow = document.createElement('div');
+  dateRow.className = 'day-cell-header';
+
   const dateNum = document.createElement('div');
   dateNum.className = 'day-cell-date';
   dateNum.textContent = date.getDate();
@@ -119,7 +134,41 @@ function buildDayCell(date, allEvents) {
     monthSpan.textContent = ' ' + MONTH_SHORT.format(date);
     dateNum.appendChild(monthSpan);
   }
-  cell.appendChild(dateNum);
+  dateRow.appendChild(dateNum);
+
+  // ── Weather badge (icon + hi/lo) ──
+  const dateKey = cellDate.getFullYear() + '-' +
+    String(cellDate.getMonth() + 1).padStart(2, '0') + '-' +
+    String(cellDate.getDate()).padStart(2, '0');
+  const dayWeather = weatherMap[dateKey];
+  if (dayWeather) {
+    const badge = document.createElement('div');
+    badge.className = 'day-weather';
+    badge.title = dayWeather.label;
+
+    const icon = document.createElement('span');
+    icon.className = 'day-weather-icon';
+    icon.textContent = dayWeather.icon;
+
+    const temps = document.createElement('span');
+    temps.className = 'day-weather-temps';
+
+    const hi = document.createElement('span');
+    hi.className = 'day-weather-hi';
+    hi.textContent = dayWeather.high + '\u00B0';
+
+    const lo = document.createElement('span');
+    lo.className = 'day-weather-lo';
+    lo.textContent = dayWeather.low + '\u00B0';
+
+    temps.appendChild(hi);
+    temps.appendChild(lo);
+    badge.appendChild(icon);
+    badge.appendChild(temps);
+    dateRow.appendChild(badge);
+  }
+
+  cell.appendChild(dateRow);
 
   // ── All-day events (below date, above timed events) ──
   // An all-day event with exclusive end date spans [start, end).

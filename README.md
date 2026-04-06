@@ -15,6 +15,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display/system settings
 - **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
 - **System monitoring** — CPU, memory, disk, temperature, fan speed, and throttling status in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
+- **Weather forecasts** — daily high/low temperatures and conditions icon in each day cell, current temperature in the header (via [Open-Meteo](https://open-meteo.com), free, no API key)
 - **Light/dark themes** with per-person event colors
 - **Network security** — IP allowlist, rate limiting, security headers
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
@@ -153,7 +154,8 @@ family-calendar/
 │       ├── microsoft-tasks.js # Microsoft To Do client
 │       ├── reminders.js       # Unified reminders store (Apple + Google + Microsoft)
 │       ├── settings.js        # User preferences (JSON file)
-│       └── sync-scheduler.js  # Cron-based sync loop
+│       ├── sync-scheduler.js  # Cron-based sync loop
+│       └── weather.js         # Weather forecasts (Open-Meteo API)
 ├── data/                      # Runtime data (gitignored)
 │   ├── credentials.enc        # Encrypted provider credentials
 │   └── reminders-cache.json   # Persisted reminders across restarts
@@ -197,6 +199,8 @@ All configuration is via environment variables in `.env`:
 | `CALENDAR_DAYS_FORWARD` | `14` | Days in the future to fetch events |
 | `ADMIN_PIN` | *(none)* | Optional numeric PIN to protect `/admin` |
 | `CREDENTIAL_SECRET` | *(auto)* | Encryption key for credential store (auto-generated) |
+| `WEATHER_LAT` | *(none)* | Latitude for weather forecasts (or set via admin GUI) |
+| `WEATHER_LON` | *(none)* | Longitude for weather forecasts (or set via admin GUI) |
 
 ### Network Security
 
