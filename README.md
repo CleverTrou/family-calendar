@@ -16,7 +16,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
 - **System monitoring** — CPU, memory, disk, temperature, fan speed, and throttling status in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
 - **Weather forecasts** — daily high/low temperatures and conditions icon in each day cell, current temperature in the header (via [Open-Meteo](https://open-meteo.com), free, no API key)
-- **Light/dark themes** with per-person event colors — auto-switch by fixed hours or local sunrise/sunset
+- **Light/dark themes** with 8 color palettes (Default, Nord, Ocean, Forest, Sunset, Rose, Slate, Mocha) — auto-switch by fixed hours or local sunrise/sunset
 - **Network security** — IP allowlist, rate limiting, security headers
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
 - **Display schedule** — Screen on/off times and active days, configurable from admin GUI
@@ -172,6 +172,7 @@ family-calendar/
 │       ├── reminders-view.js  # Reminders sidebar renderer
 │       ├── admin.js           # Admin panel logic
 │       ├── sun-calc.js        # Sunrise/sunset calculator (NOAA algorithm)
+│       ├── themes.js          # Color theme palettes (8 themes, light+dark)
 │       └── utils.js           # Date parsing, formatting, color mapping
 ├── deploy/
 │   ├── pi-setup.sh            # Raspberry Pi 4/5 kiosk setup script

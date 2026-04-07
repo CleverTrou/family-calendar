@@ -83,6 +83,7 @@ function applySettings(settings) {
 
   // Theme
   if (settings.display) {
+    applyColorTheme(settings.display.colorTheme || 'default');
     updateThemeFromSettings(settings.display);
     applyFont(settings.display.font);
     applyDisplayScale(settings.display.displayScale);

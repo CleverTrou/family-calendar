@@ -661,6 +661,102 @@ function renderThemeControls() {
   });
 
   updateThemePanelVisibility();
+  renderThemePalettePicker();
+}
+
+function renderThemePalettePicker() {
+  const container = document.getElementById('theme-palette-picker');
+  if (!container) return;
+
+  const current = currentSettings.display.colorTheme || 'default';
+  const fragment = document.createDocumentFragment();
+
+  COLOR_THEME_ORDER.forEach(function (key) {
+    var theme = COLOR_THEMES[key];
+    if (!theme) return;
+
+    var swatch = document.createElement('div');
+    swatch.className = 'theme-swatch' + (key === current ? ' selected' : '');
+    swatch.dataset.theme = key;
+
+    // Preview: left half = light, right half = dark
+    var preview = document.createElement('div');
+    preview.className = 'theme-swatch-preview';
+
+    var lightHalf = document.createElement('div');
+    lightHalf.className = 'theme-swatch-half';
+    var darkHalf = document.createElement('div');
+    darkHalf.className = 'theme-swatch-half';
+
+    if (theme.light && theme.dark) {
+      lightHalf.style.background = theme.light['--bg-body'];
+      darkHalf.style.background = theme.dark['--bg-body'];
+
+      // Light side: card-colored dot + text line
+      var lightDot = document.createElement('div');
+      lightDot.className = 'theme-swatch-dot';
+      lightDot.style.background = theme.light['--text-muted'];
+      var lightLine = document.createElement('div');
+      lightLine.className = 'theme-swatch-line';
+      lightLine.style.background = theme.light['--text-secondary'];
+      lightHalf.appendChild(lightDot);
+      lightHalf.appendChild(lightLine);
+
+      // Dark side: card-colored dot + text line
+      var darkDot = document.createElement('div');
+      darkDot.className = 'theme-swatch-dot';
+      darkDot.style.background = theme.dark['--text-muted'];
+      var darkLine = document.createElement('div');
+      darkLine.className = 'theme-swatch-line';
+      darkLine.style.background = theme.dark['--text-secondary'];
+      darkHalf.appendChild(darkDot);
+      darkHalf.appendChild(darkLine);
+    } else {
+      // Default theme — use styles.css hardcoded values
+      lightHalf.style.background = '#f0f2f5';
+      darkHalf.style.background = '#0f0f14';
+      var defLightDot = document.createElement('div');
+      defLightDot.className = 'theme-swatch-dot';
+      defLightDot.style.background = '#4b5563';
+      var defLightLine = document.createElement('div');
+      defLightLine.className = 'theme-swatch-line';
+      defLightLine.style.background = '#374151';
+      lightHalf.appendChild(defLightDot);
+      lightHalf.appendChild(defLightLine);
+      var defDarkDot = document.createElement('div');
+      defDarkDot.className = 'theme-swatch-dot';
+      defDarkDot.style.background = '#a0a7b4';
+      var defDarkLine = document.createElement('div');
+      defDarkLine.className = 'theme-swatch-line';
+      defDarkLine.style.background = '#c9cdd5';
+      darkHalf.appendChild(defDarkDot);
+      darkHalf.appendChild(defDarkLine);
+    }
+
+    preview.appendChild(lightHalf);
+    preview.appendChild(darkHalf);
+
+    var label = document.createElement('div');
+    label.className = 'theme-swatch-label';
+    label.textContent = theme.label;
+
+    swatch.appendChild(preview);
+    swatch.appendChild(label);
+
+    swatch.addEventListener('click', function () {
+      container.querySelectorAll('.theme-swatch').forEach(function (s) {
+        s.classList.remove('selected');
+      });
+      swatch.classList.add('selected');
+      currentSettings.display.colorTheme = key;
+      markDirty();
+    });
+
+    fragment.appendChild(swatch);
+  });
+
+  container.textContent = '';
+  container.appendChild(fragment);
 }
 
 function updateThemePanelVisibility() {
