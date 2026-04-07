@@ -436,12 +436,17 @@ function startMicrosoftAuth() {
 function renderCalendarToggles() {
   const container = document.getElementById('calendar-toggles');
 
+  // Build set from live calendars only (not stale settings keys)
   const allKeys = new Set();
   for (const cal of knownCalendars) {
     allKeys.add(cal.source + ':' + cal.name);
   }
+
+  // Prune stale visibility entries that no longer exist
   for (const key of Object.keys(currentSettings.calendars.visible)) {
-    allKeys.add(key);
+    if (!allKeys.has(key)) {
+      delete currentSettings.calendars.visible[key];
+    }
   }
 
   if (allKeys.size === 0) {

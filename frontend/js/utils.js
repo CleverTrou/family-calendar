@@ -27,6 +27,16 @@ function applyColorSettings(colors) {
   if (!colors) return;
   calendarColors = { ...calendarColors, ...colors };
 
+  // Strip placeholder keys when real person keys exist (mirrors backend migration)
+  var PLACEHOLDER_KEYS = ['person1', 'person2'];
+  var allKeys = Object.keys(calendarColors);
+  var hasCustomPeople = allKeys.some(
+    (k) => !SYSTEM_COLOR_KEYS.has(k) && PLACEHOLDER_KEYS.indexOf(k) === -1
+  );
+  if (hasCustomPeople) {
+    PLACEHOLDER_KEYS.forEach(function (k) { delete calendarColors[k]; });
+  }
+
   const root = document.documentElement;
   const personKeys = Object.keys(calendarColors).filter((k) => !SYSTEM_COLOR_KEYS.has(k));
 
