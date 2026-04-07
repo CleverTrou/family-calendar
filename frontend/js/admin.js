@@ -566,10 +566,12 @@ function renderWeatherControls() {
 
   latInput.addEventListener('change', () => {
     currentSettings.weather.lat = latInput.value.trim();
+    updateSunTimesDisplay();
     markDirty();
   });
   lonInput.addEventListener('change', () => {
     currentSettings.weather.lon = lonInput.value.trim();
+    updateSunTimesDisplay();
     markDirty();
   });
 
@@ -595,6 +597,7 @@ function renderWeatherControls() {
         statusEl.textContent = 'Location set!';
         statusEl.className = 'status-msg success';
         locateBtn.disabled = false;
+        updateSunTimesDisplay();
         markDirty();
       },
       (err) => {
@@ -619,7 +622,7 @@ function renderThemeControls() {
   themeSelect.value = currentSettings.display.theme;
   themeSelect.addEventListener('change', (e) => {
     currentSettings.display.theme = e.target.value;
-    updateDarkModeVisibility();
+    updateThemePanelVisibility();
     markDirty();
   });
 
@@ -652,12 +655,39 @@ function renderThemeControls() {
     markDirty();
   });
 
-  updateDarkModeVisibility();
+  updateThemePanelVisibility();
 }
 
-function updateDarkModeVisibility() {
+function updateThemePanelVisibility() {
+  const theme = currentSettings.display.theme;
   const hoursRow = document.getElementById('dark-mode-hours');
-  hoursRow.style.display = currentSettings.display.theme === 'auto' ? 'flex' : 'none';
+  const sunInfo = document.getElementById('sun-times-info');
+
+  hoursRow.style.display = theme === 'auto' ? 'flex' : 'none';
+  sunInfo.style.display = theme === 'auto-sun' ? 'block' : 'none';
+
+  if (theme === 'auto-sun') {
+    updateSunTimesDisplay();
+  }
+}
+
+function updateSunTimesDisplay() {
+  const textEl = document.getElementById('sun-times-text');
+  const lat = parseFloat(currentSettings.weather && currentSettings.weather.lat);
+  const lon = parseFloat(currentSettings.weather && currentSettings.weather.lon);
+
+  if (isNaN(lat) || isNaN(lon)) {
+    textEl.textContent = 'Set your location above to enable sunrise/sunset timing.';
+    return;
+  }
+
+  var formatted = getFormattedSunTimes(lat, lon);
+  if (!formatted) {
+    textEl.textContent = 'Sunrise/sunset unavailable for this location (polar region).';
+    return;
+  }
+
+  textEl.textContent = 'Today\u2019s sunrise: ' + formatted.sunrise + ' \u00B7 sunset: ' + formatted.sunset;
 }
 
 function formatHour(h) {

@@ -131,7 +131,20 @@ function updateThemeFromSettings(display) {
     return;
   }
 
-  // Auto mode: use configured hours
+  // Auto (sunrise/sunset): use sun calculator if location is available
+  if (theme === 'auto-sun') {
+    var weather = currentData && currentData.settings && currentData.settings.weather;
+    var lat = weather && parseFloat(weather.lat);
+    var lon = weather && parseFloat(weather.lon);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      var isDark = isSunDark(lat, lon);
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      return;
+    }
+    // No location configured — fall through to fixed-hours auto
+  }
+
+  // Auto (fixed hours): use configured hours
   var hour = new Date().getHours();
   var start = display.darkModeStart != null ? display.darkModeStart : 21;
   var end = display.darkModeEnd != null ? display.darkModeEnd : 7;

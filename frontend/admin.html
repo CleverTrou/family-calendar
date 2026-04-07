@@ -230,10 +230,10 @@
           </div>
         </section>
 
-        <!-- Weather Location -->
+        <!-- Location -->
         <section class="card">
-          <h2>Weather</h2>
-          <p class="card-desc">Show daily high/low temperatures and conditions on the calendar. Set your location to enable weather.</p>
+          <h2>Location</h2>
+          <p class="card-desc">Used for weather forecasts and sunrise/sunset theme timing.</p>
 
           <div class="field-row">
             <div class="field-group">
@@ -260,7 +260,8 @@
           <div class="field-group">
             <label for="theme-select">Color Mode</label>
             <select id="theme-select">
-              <option value="auto">Auto (dark at night)</option>
+              <option value="auto">Auto (fixed hours)</option>
+              <option value="auto-sun">Auto (sunrise/sunset)</option>
               <option value="light">Always Light</option>
               <option value="dark">Always Dark</option>
             </select>
@@ -275,6 +276,10 @@
               <label for="dark-end">Dark mode ends</label>
               <select id="dark-end"></select>
             </div>
+          </div>
+
+          <div id="sun-times-info" class="field-group" style="display:none">
+            <p class="card-desc" id="sun-times-text">Calculating sunrise/sunset...</p>
           </div>
         </section>
 
@@ -385,6 +390,7 @@
     </footer>
   </div>
 
+  <script src="/js/sun-calc.js"></script>
   <script src="/js/admin.js"></script>
 </body>
 </html>
