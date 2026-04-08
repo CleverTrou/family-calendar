@@ -67,6 +67,7 @@ async function loadData() {
     renderFontOptions();
     setupSaveButton();
     setupAccountButtons();
+    setupLogViewer();
     updateRedirectUri();
   } catch (err) {
     console.error('Failed to load settings:', err);
@@ -139,13 +140,15 @@ function switchTab(tabName) {
     p.classList.toggle('active', p.id === 'panel-' + tabName)
   );
 
-  // Start/stop system stats auto-refresh
+  // Start/stop system stats + log auto-refresh
   if (tabName === 'system') {
     loadSystemStats();
+    loadLogs();
     systemStatsInterval = setInterval(loadSystemStats, 10000);
-  } else if (systemStatsInterval) {
-    clearInterval(systemStatsInterval);
-    systemStatsInterval = null;
+    logInterval = setInterval(loadLogs, 10000);
+  } else {
+    if (systemStatsInterval) { clearInterval(systemStatsInterval); systemStatsInterval = null; }
+    if (logInterval) { clearInterval(logInterval); logInterval = null; }
   }
 }
 
@@ -1238,6 +1241,82 @@ function formatUptime(seconds) {
   if (d > 0) return d + 'd ' + h + 'h ' + m + 'm';
   if (h > 0) return h + 'h ' + m + 'm';
   return m + 'm';
+}
+
+/* ── Log Viewer ───────────────────────────────────── */
+
+let logInterval = null;
+
+async function loadLogs() {
+  var filter = document.getElementById('log-level-filter');
+  var level = filter ? filter.value : '';
+  try {
+    var url = '/api/logs?limit=200';
+    if (level) url += '&level=' + level;
+    var resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    renderLogs(data.entries);
+  } catch (err) {
+    var container = document.getElementById('log-viewer');
+    container.textContent = 'Could not load logs: ' + err.message;
+  }
+}
+
+function renderLogs(entries) {
+  var container = document.getElementById('log-viewer');
+  container.textContent = '';
+
+  if (!entries || entries.length === 0) {
+    var empty = document.createElement('p');
+    empty.className = 'log-empty';
+    empty.textContent = 'No log entries yet.';
+    container.appendChild(empty);
+    return;
+  }
+
+  var wasScrolledToBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 20;
+
+  var fragment = document.createDocumentFragment();
+  for (var i = 0; i < entries.length; i++) {
+    var e = entries[i];
+    var line = document.createElement('div');
+    line.className = 'log-entry';
+
+    var time = document.createElement('span');
+    time.className = 'log-time';
+    var d = new Date(e.time);
+    time.textContent = d.toLocaleTimeString() + ' ';
+    line.appendChild(time);
+
+    var lvl = document.createElement('span');
+    lvl.className = 'log-level-' + e.level;
+    lvl.textContent = e.level.toUpperCase().padEnd(5) + ' ';
+    line.appendChild(lvl);
+
+    var msg = document.createTextNode(e.message);
+    line.appendChild(msg);
+
+    fragment.appendChild(line);
+  }
+
+  container.appendChild(fragment);
+
+  // Auto-scroll to bottom if user was already there
+  if (wasScrolledToBottom) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function setupLogViewer() {
+  var filter = document.getElementById('log-level-filter');
+  if (filter) {
+    filter.addEventListener('change', loadLogs);
+  }
+  var btn = document.getElementById('btn-refresh-logs');
+  if (btn) {
+    btn.addEventListener('click', loadLogs);
+  }
 }
 
 /* ── Toast Notifications ───────────────────────────── */

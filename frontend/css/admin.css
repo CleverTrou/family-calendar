@@ -1008,6 +1008,65 @@ body {
   background: var(--admin-danger);
 }
 
+/* ── Log Viewer ───────────────────────────────────── */
+
+.log-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.log-controls select {
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  background: var(--admin-card);
+  color: var(--admin-text);
+}
+
+.log-viewer {
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.log-entry {
+  padding: 2px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.log-entry .log-time {
+  color: #6b7280;
+}
+
+.log-entry .log-level-info {
+  color: #60a5fa;
+}
+
+.log-entry .log-level-warn {
+  color: #fbbf24;
+}
+
+.log-entry .log-level-error {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.log-empty {
+  color: #6b7280;
+  font-style: italic;
+  padding: 20px 0;
+  text-align: center;
+}
+
 /* ── Utilities ─────────────────────────────────────── */
 
 .muted {

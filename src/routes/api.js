@@ -8,6 +8,7 @@ import {
   getAvailableFonts,
 } from '../services/settings.js';
 import { config } from '../config.js';
+import { getLogs } from '../services/log-buffer.js';
 
 /**
  * Register REST API routes for both the display frontend and the admin panel.
@@ -245,5 +246,13 @@ export async function registerApiRoutes(fastify) {
       fan,
       throttled,
     };
+  });
+
+  // ── Log viewer (admin panel) ────────────────────────
+
+  fastify.get('/logs', async (request) => {
+    const { level, limit } = request.query;
+    const cap = Math.min(parseInt(limit) || 200, 200);
+    return { entries: getLogs(level || null, cap) };
   });
 }

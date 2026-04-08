@@ -421,6 +421,23 @@
           <div id="system-thermal" class="stats-grid"></div>
         </section>
 
+        <section class="card">
+          <h2>Server Logs</h2>
+          <p class="card-desc">Recent server activity — sync results, errors, and connection events. Auto-refreshes every 10 seconds.</p>
+          <div class="log-controls">
+            <select id="log-level-filter">
+              <option value="">All levels</option>
+              <option value="info">Info</option>
+              <option value="warn">Warnings</option>
+              <option value="error">Errors</option>
+            </select>
+            <button class="btn-small" id="btn-refresh-logs">Refresh</button>
+          </div>
+          <div id="log-viewer" class="log-viewer">
+            <p class="muted">Loading logs...</p>
+          </div>
+        </section>
+
       </div>
 
     </main>

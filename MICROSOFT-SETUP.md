@@ -168,12 +168,10 @@ Your permissions list should look like:
 - Microsoft To Do tasks should appear in the reminders sidebar
 
 **Check the server logs:**
-```bash
-# Look for successful sync messages
-journalctl -u family-calendar --since "5 min ago" | grep -i microsoft
-# or if running locally:
-# Look for lines like: [Sync] microsoft: 18, microsoft-tasks: 5
-```
+Go to Admin > System tab > **Server Logs** and look for lines like:
+`[Sync] microsoft: 18, microsoft-tasks: 5`
+
+Use the level filter to show only errors if something isn't working.
 
 ---
 

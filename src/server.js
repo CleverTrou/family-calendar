@@ -1,3 +1,5 @@
+// Import log buffer first so it captures all subsequent console output
+import './services/log-buffer.js';
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyCors from '@fastify/cors';

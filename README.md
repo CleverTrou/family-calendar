@@ -15,7 +15,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Persistent cache** — Calendar events and reminders survive server restarts (instant display on boot)
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display/system settings
 - **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
-- **System monitoring** — CPU, memory, disk, temperature, fan speed, and throttling status in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
+- **System monitoring** — CPU, memory, disk, temperature, fan speed, throttling status, and live server logs in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
 - **Weather forecasts** — daily high/low temperatures and conditions icon in each day cell, current temperature in the header (via [Open-Meteo](https://open-meteo.com), free, no API key)
 - **Light/dark themes** with 8 color palettes (Default, Nord, Ocean, Forest, Sunset, Rose, Slate, Mocha) — auto-switch by fixed hours or local sunrise/sunset
 - **Network security** — IP allowlist, rate limiting, security headers
@@ -140,7 +140,7 @@ family-calendar/
 │   ├── server.js              # Fastify server entry point
 │   ├── config.js              # Environment config with defaults
 │   ├── routes/
-│   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings, /api/display/status, /api/system/stats
+│   │   ├── api.js             # GET /api/calendar, /api/health, /api/settings, /api/display/status, /api/system/stats, /api/logs
 │   │   ├── auth.js            # OAuth2 callback routes (Google + Microsoft)
 │   │   ├── accounts.js        # Account CRUD (connect, test, disconnect)
 │   │   └── webhooks.js        # POST /api/reminders/sync
@@ -152,6 +152,7 @@ family-calendar/
 │       ├── google-tasks.js    # Google Tasks API client
 │       ├── ics-calendar.js     # ICS feed URL client (read-only calendar subscriptions)
 │       ├── icloud-calendar.js # iCloud CalDAV client
+│       ├── log-buffer.js      # In-memory log ring buffer for admin log viewer
 │       ├── microsoft-graph.js # Microsoft Graph API helper (auth, token refresh, pagination)
 │       ├── microsoft-calendar.js # Microsoft Outlook Calendar client
 │       ├── microsoft-tasks.js # Microsoft To Do client
