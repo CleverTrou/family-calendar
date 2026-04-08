@@ -2,7 +2,7 @@
 
 ![Social Preview](social-preview.png)
 
-Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W through Pi 5) connected to a 21"+ LCD monitor or 4K TV. Unifies **Google Calendar**, **iCloud Calendar**, **Microsoft Outlook Calendar**, **Apple Reminders**, **Google Tasks**, and **Microsoft To Do** into a single at-a-glance view.
+Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W through Pi 5) connected to a 21"+ LCD monitor or 4K TV. Unifies **Google Calendar**, **iCloud Calendar**, **Microsoft Outlook Calendar**, **ICS/iCal feed URLs**, **Apple Reminders**, **Google Tasks**, and **Microsoft To Do** into a single at-a-glance view.
 
 ## Features
 
@@ -10,7 +10,8 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **All-day events** as colored chips inside each day cell
 - **Timed events** with colored dots, time, and title
 - **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks + Microsoft To Do
-- **Multi-source sync** — Google Calendar API + iCloud CalDAV + Microsoft Graph API, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
+- **ICS feed support** — Paste any ICS/iCal feed URL (Google Calendar secret address, Outlook.com published calendar, etc.) — no developer account needed, read-only
+- **Multi-source sync** — Google Calendar API + iCloud CalDAV + Microsoft Graph API + ICS feeds, every 5 minutes, with automatic calendar discovery (new subscriptions like holidays are picked up automatically)
 - **Persistent cache** — Calendar events and reminders survive server restarts (instant display on boot)
 - **Admin panel** at `/admin` — GUI setup wizard for connecting accounts + display/system settings
 - **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
@@ -32,6 +33,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 | Google Calendar | [googleapis](https://www.npmjs.com/package/googleapis) OAuth2 |
 | Google Tasks | [googleapis](https://www.npmjs.com/package/googleapis) Tasks API |
 | iCloud Calendar | [tsdav](https://www.npmjs.com/package/tsdav) CalDAV + [ical.js](https://www.npmjs.com/package/ical.js) |
+| ICS Feeds | [ical.js](https://www.npmjs.com/package/ical.js) — any standard iCalendar URL |
 | Microsoft Calendar | [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/resources/calendar) OAuth2 (zero dependencies — built-in `fetch()`) |
 | Microsoft To Do | [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/resources/todotask) |
 | Apple Reminders | Webhook from [Apple Shortcuts](https://support.apple.com/guide/shortcuts/welcome/ios) |
@@ -50,7 +52,7 @@ npm install
 
 **Option A: GUI Setup (recommended)**
 
-Start the server (`npm start`) and visit [http://localhost:3000/admin](http://localhost:3000/admin). The **Accounts** tab walks you through connecting Google, iCloud, and Microsoft calendars. Credentials are stored encrypted on disk.
+Start the server (`npm start`) and visit [http://localhost:3000/admin](http://localhost:3000/admin). The **Accounts** tab walks you through connecting calendars. The easiest option is **Add Calendar Feed (ICS URL)** — just paste a read-only feed URL from Google Calendar or Outlook.com settings, no developer account needed. For full integration (auto-discovery, tasks), connect Google, iCloud, or Microsoft accounts directly. Credentials are stored encrypted on disk.
 
 **Option B: Manual .env Setup**
 
@@ -60,9 +62,9 @@ cp .env.example .env
 
 Edit `.env` with your credentials:
 
-- **Google Calendar** — Create OAuth2 credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials), then run `npm run auth:google` to get a refresh token
+- **Google Calendar** — See **[GOOGLE-SETUP.md](GOOGLE-SETUP.md)** for full walkthrough (or use an ICS feed URL for quick setup)
 - **iCloud Calendar** — Generate an [app-specific password](https://appleid.apple.com) (Sign-In and Security > App-Specific Passwords)
-- **Microsoft Calendar** — Register an app in [Azure App Registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) (free, no Azure subscription needed), create a client secret, and use the GUI setup wizard
+- **Microsoft Calendar** — See **[MICROSOFT-SETUP.md](MICROSOFT-SETUP.md)** for full walkthrough (or use an ICS feed URL for quick setup)
 - **Apple Reminders** — Set any shared secret; you'll use it when creating the Shortcut
 
 ### 3. Run
@@ -148,6 +150,7 @@ family-calendar/
 │       ├── credential-store.js # Encrypted credential storage (AES-256-GCM)
 │       ├── google-calendar.js # Google Calendar API client
 │       ├── google-tasks.js    # Google Tasks API client
+│       ├── ics-calendar.js     # ICS feed URL client (read-only calendar subscriptions)
 │       ├── icloud-calendar.js # iCloud CalDAV client
 │       ├── microsoft-graph.js # Microsoft Graph API helper (auth, token refresh, pagination)
 │       ├── microsoft-calendar.js # Microsoft Outlook Calendar client
@@ -184,6 +187,8 @@ family-calendar/
 ├── scripts/
 │   └── google-auth.js         # One-time Google OAuth2 token helper
 ├── .env.example               # Template for credentials
+├── GOOGLE-SETUP.md            # Google Calendar & Tasks setup guide
+├── MICROSOFT-SETUP.md         # Microsoft Calendar & To Do setup guide
 └── SHORTCUTS-SETUP.md         # Apple Shortcuts setup guide
 ```
 

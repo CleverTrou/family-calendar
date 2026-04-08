@@ -96,6 +96,89 @@ export async function registerAccountRoutes(fastify) {
   });
 
   /**
+   * Connect an ICS feed URL (read-only calendar subscription).
+   * Tests the URL immediately before saving.
+   */
+  fastify.post('/ics', async (request, reply) => {
+    const { feedUrl, label } = request.body || {};
+
+    if (!feedUrl) {
+      return reply.code(400).send({ error: 'Missing required field: feedUrl' });
+    }
+
+    // Basic URL validation
+    let parsed;
+    try {
+      parsed = new URL(feedUrl);
+    } catch {
+      return reply.code(400).send({ error: 'Invalid URL format.' });
+    }
+
+    if (!parsed.protocol.startsWith('http')) {
+      return reply.code(400).send({ error: 'URL must start with http:// or https://' });
+    }
+
+    // Test the feed by fetching it
+    try {
+      const response = await fetch(feedUrl, {
+        headers: { 'User-Agent': 'FamilyCalendar/1.0' },
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      }
+
+      const icalData = await response.text();
+
+      // Verify it looks like valid iCalendar data
+      if (!icalData.includes('BEGIN:VCALENDAR')) {
+        throw new Error('Response is not a valid iCalendar feed (no VCALENDAR found).');
+      }
+
+      // Try to detect the calendar name from the feed
+      let detectedName = label || '';
+      const nameMatch = icalData.match(/X-WR-CALNAME:(.*)/);
+      if (nameMatch && !label) {
+        detectedName = nameMatch[1].trim();
+      }
+      if (!detectedName) {
+        detectedName = parsed.hostname;
+      }
+
+      // Generate a unique account key
+      const existingIcs = listAccounts().filter((a) => a.provider === 'ics');
+      const accountKey = `ics:feed${existingIcs.length + 1}`;
+
+      setAccount(accountKey, {
+        provider: 'ics',
+        label: detectedName,
+        feedUrl,
+        status: 'connected',
+        connectedAt: new Date().toISOString(),
+      });
+
+      console.log(`[Accounts] ICS feed connected: "${detectedName}"`);
+      return {
+        status: 'connected',
+        label: detectedName,
+        key: accountKey,
+      };
+    } catch (err) {
+      console.error('[Accounts] ICS feed test failed:', err.message);
+
+      let message = err.message;
+      if (message.includes('ENOTFOUND') || message.includes('ETIMEDOUT')) {
+        message = 'Could not reach the feed URL. Check the URL and your internet connection.';
+      } else if (message.includes('AbortError') || message.includes('timeout')) {
+        message = 'Request timed out. The feed URL may be unreachable.';
+      }
+
+      return reply.code(400).send({ error: message });
+    }
+  });
+
+  /**
    * Test an existing account's connection.
    * Re-authenticates and lists calendars.
    */
@@ -155,6 +238,18 @@ export async function registerAccountRoutes(fastify) {
 
         setAccount(key, { status: 'connected', calendars });
         return { status: 'connected', calendars };
+
+      } else if (account.provider === 'ics') {
+        if (!account.feedUrl) throw new Error('No feed URL stored');
+        const response = await fetch(account.feedUrl, {
+          headers: { 'User-Agent': 'FamilyCalendar/1.0' },
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Not a valid iCalendar feed');
+        setAccount(key, { status: 'connected' });
+        return { status: 'connected', calendars: [{ name: account.label }] };
       }
 
       return reply.code(400).send({ error: 'Unknown provider' });

@@ -6,6 +6,7 @@ import { fetchGoogleTasks } from './google-tasks.js';
 import { fetchICloudEvents } from './icloud-calendar.js';
 import { fetchMicrosoftEvents } from './microsoft-calendar.js';
 import { fetchMicrosoftTasks } from './microsoft-tasks.js';
+import { fetchICSEvents } from './ics-calendar.js';
 import { getReminders, updateGoogleTasks, updateMicrosoftTasks } from './reminders.js';
 import { fetchWeather, getCachedWeather } from './weather.js';
 import { config, getEnabledSources } from '../config.js';
@@ -87,8 +88,12 @@ export async function syncAllCalendars() {
       promises.push(fetchMicrosoftEvents(calendarDaysBack, calendarDaysForward));
       labels.push('microsoft');
     }
+    if (sources.ics) {
+      promises.push(fetchICSEvents(calendarDaysBack, calendarDaysForward));
+      labels.push('ics');
+    }
 
-    if (promises.length === 0 && !sources.google && !sources.microsoft) {
+    if (promises.length === 0 && !sources.google && !sources.microsoft && !sources.ics) {
       console.warn('[Sync] No calendar sources configured.');
       return;
     }
@@ -120,6 +125,11 @@ export async function syncAllCalendars() {
           const key = `icloud:${name}`;
           calMap.set(key, { source: 'icloud', name });
         }
+      } else if (acct.provider === 'ics') {
+        // Each ICS feed is its own "calendar" using the account label
+        const name = acct.label || 'ICS Feed';
+        const key = `ics:${name}`;
+        calMap.set(key, { source: 'ics', name });
       }
     }
 

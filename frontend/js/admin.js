@@ -342,6 +342,17 @@ function setupAccountButtons() {
     document.getElementById('btn-connect-microsoft').closest('.card').style.display = '';
   });
   document.getElementById('btn-microsoft-authorize').addEventListener('click', startMicrosoftAuth);
+
+  // ICS Feed
+  document.getElementById('btn-connect-ics').addEventListener('click', () => {
+    document.getElementById('ics-setup').style.display = '';
+    document.getElementById('btn-connect-ics').closest('.card').style.display = 'none';
+  });
+  document.getElementById('btn-ics-cancel').addEventListener('click', () => {
+    document.getElementById('ics-setup').style.display = 'none';
+    document.getElementById('btn-connect-ics').closest('.card').style.display = '';
+  });
+  document.getElementById('btn-ics-submit').addEventListener('click', connectICS);
 }
 
 function updateRedirectUri() {
@@ -408,6 +419,60 @@ async function connectICloud() {
   }
 
   btn.textContent = 'Test & Connect';
+  btn.disabled = false;
+}
+
+async function connectICS() {
+  var feedUrl = document.getElementById('ics-feed-url').value.trim();
+  var label = document.getElementById('ics-feed-label').value.trim();
+  var statusEl = document.getElementById('ics-status');
+  var btn = document.getElementById('btn-ics-submit');
+
+  if (!feedUrl) {
+    statusEl.textContent = 'Please enter a feed URL.';
+    statusEl.className = 'status-msg error';
+    return;
+  }
+
+  btn.textContent = 'Testing...';
+  btn.disabled = true;
+  statusEl.textContent = 'Fetching and validating feed...';
+  statusEl.className = 'status-msg';
+
+  try {
+    var resp = await authFetch('/api/accounts/ics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedUrl: feedUrl, label: label || undefined }),
+    });
+
+    var data = await resp.json();
+
+    if (resp.ok) {
+      statusEl.textContent = 'Feed connected: ' + data.label;
+      statusEl.className = 'status-msg success';
+      showToast('Calendar feed added!', 'success');
+
+      // Clear inputs
+      document.getElementById('ics-feed-url').value = '';
+      document.getElementById('ics-feed-label').value = '';
+
+      setTimeout(function () {
+        document.getElementById('ics-setup').style.display = 'none';
+        document.getElementById('btn-connect-ics').closest('.card').style.display = '';
+        statusEl.textContent = '';
+        reloadAccounts();
+      }, 1500);
+    } else {
+      statusEl.textContent = data.error;
+      statusEl.className = 'status-msg error';
+    }
+  } catch (err) {
+    statusEl.textContent = 'Connection error: ' + err.message;
+    statusEl.className = 'status-msg error';
+  }
+
+  btn.textContent = 'Test & Add Feed';
   btn.disabled = false;
 }
 

@@ -67,12 +67,20 @@
               <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
               Connect Microsoft Calendar
             </button>
+            <button class="btn-provider btn-ics" id="btn-connect-ics">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#FF6B35" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/><path fill="#FF6B35" d="M7 12h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm4 0h2v2h-2z"/></svg>
+              Add Calendar Feed (ICS URL)
+            </button>
           </div>
         </section>
 
         <!-- Google Setup (shown when connecting Google) -->
         <section class="card" id="google-setup" style="display:none">
           <h2>Connect Google Calendar</h2>
+          <p class="card-desc">Provides automatic calendar discovery + Google Tasks. Requires a free Google Cloud project.<br>
+            <a href="https://github.com/CleverTrou/family-calendar/blob/main/GOOGLE-SETUP.md" target="_blank">Full step-by-step guide &rarr;</a>
+            &nbsp;&bull;&nbsp; <em>Or use <strong>Add Calendar Feed</strong> above for a simpler read-only option.</em>
+          </p>
           <div class="setup-steps">
             <div class="step">
               <span class="step-num">1</span>
@@ -143,6 +151,10 @@
         <!-- Microsoft Setup (shown when connecting Microsoft) -->
         <section class="card" id="microsoft-setup" style="display:none">
           <h2>Connect Microsoft Calendar</h2>
+          <p class="card-desc">Provides automatic calendar discovery + Microsoft To Do. Requires a free Azure app registration (no subscription needed).<br>
+            <a href="https://github.com/CleverTrou/family-calendar/blob/main/MICROSOFT-SETUP.md" target="_blank">Full step-by-step guide &rarr;</a>
+            &nbsp;&bull;&nbsp; <em>Or use <strong>Add Calendar Feed</strong> above for a simpler read-only option.</em>
+          </p>
           <div class="setup-steps">
             <div class="step">
               <span class="step-num">1</span>
@@ -195,6 +207,29 @@
             </div>
           </div>
           <button class="btn-text" id="btn-microsoft-cancel">Cancel</button>
+        </section>
+
+        <!-- ICS Feed Setup (shown when adding a feed) -->
+        <section class="card" id="ics-setup" style="display:none">
+          <h2>Add Calendar Feed</h2>
+          <p class="card-desc">
+            Paste a calendar's ICS/iCal feed URL. This is a read-only link — no developer account needed.<br><br>
+            <strong>Google Calendar:</strong> Settings &rarr; click the calendar &rarr; "Secret address in iCal format"<br>
+            <strong>Outlook.com:</strong> Settings &rarr; Calendar &rarr; Shared calendars &rarr; Publish a calendar &rarr; ICS link
+          </p>
+          <div class="field-group">
+            <label for="ics-feed-url">Feed URL</label>
+            <input type="url" id="ics-feed-url" placeholder="https://calendar.google.com/calendar/ical/...basic.ics">
+          </div>
+          <div class="field-group">
+            <label for="ics-feed-label">Label (optional)</label>
+            <input type="text" id="ics-feed-label" placeholder="e.g. Work Calendar">
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" id="btn-ics-submit">Test &amp; Add Feed</button>
+            <button class="btn-text" id="btn-ics-cancel">Cancel</button>
+          </div>
+          <p class="status-msg" id="ics-status"></p>
         </section>
 
         <!-- Calendar Picker (shown after connecting) -->

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { getGoogleCredentials, getICloudCredentials, getMicrosoftCredentials } from './services/credential-store.js';
+import { getGoogleCredentials, getICloudCredentials, getMicrosoftCredentials, listAccounts } from './services/credential-store.js';
 
 const lightweight = process.env.LIGHTWEIGHT_MODE === 'true' || process.env.LIGHTWEIGHT_MODE === '1';
 
@@ -61,6 +61,7 @@ export function getEnabledSources() {
     google: !!getGoogleCredentials(),
     icloud: !!getICloudCredentials(),
     microsoft: !!getMicrosoftCredentials(),
+    ics: listAccounts().some((a) => a.provider === 'ics'),
     reminders: !!config.reminders.webhookSecret,
   };
 }
