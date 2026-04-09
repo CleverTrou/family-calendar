@@ -1076,7 +1076,7 @@ async function loadSystemStats() {
 
 function renderSystemInfo(stats) {
   const container = document.getElementById('system-info');
-  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
   const items = [
     ['Hostname', stats.hostname],
     ['Platform', stats.platform + ' / ' + stats.arch],
@@ -1087,19 +1087,20 @@ function renderSystemInfo(stats) {
     ['Server Uptime', formatUptime(stats.uptime.process)],
   ];
   for (const [label, value] of items) {
-    container.appendChild(statItem(label, value));
+    fragment.appendChild(statItem(label, value));
   }
+  container.replaceChildren(fragment);
 }
 
 function renderResourceUsage(stats) {
   const container = document.getElementById('system-resources');
-  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
 
   // CPU usage bar
-  container.appendChild(statBar('CPU', stats.cpu.usagePercent, '%'));
+  fragment.appendChild(statBar('CPU', stats.cpu.usagePercent, '%'));
 
   // Memory bar
-  container.appendChild(statBar(
+  fragment.appendChild(statBar(
     'Memory',
     stats.memory.usedPercent,
     '% (' + formatBytes(stats.memory.used) + ' / ' + formatBytes(stats.memory.total) + ')'
@@ -1107,7 +1108,7 @@ function renderResourceUsage(stats) {
 
   // Disk bar
   if (stats.disk) {
-    container.appendChild(statBar(
+    fragment.appendChild(statBar(
       'Disk',
       stats.disk.usedPercent,
       '% (' + formatBytes(stats.disk.used) + ' / ' + formatBytes(stats.disk.total) + ')'
@@ -1117,11 +1118,12 @@ function renderResourceUsage(stats) {
   // Load averages
   if (stats.cpu.loadAvg) {
     const la = stats.cpu.loadAvg;
-    container.appendChild(statItem(
+    fragment.appendChild(statItem(
       'Load Average',
       la['1m'].toFixed(2) + ' / ' + la['5m'].toFixed(2) + ' / ' + la['15m'].toFixed(2)
     ));
   }
+  container.replaceChildren(fragment);
 }
 
 function renderThermalInfo(stats) {
@@ -1132,20 +1134,20 @@ function renderThermalInfo(stats) {
   card.style.display = hasThermal ? '' : 'none';
   if (!hasThermal) return;
 
-  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
 
   if (stats.cpu.temperature != null) {
     const warn = stats.cpu.temperature >= 70;
     const el = statItem('CPU Temp', stats.cpu.temperature.toFixed(1) + ' \u00b0C');
     if (warn) el.classList.add('stat-warn');
-    container.appendChild(el);
+    fragment.appendChild(el);
   }
 
   if (stats.cpu.gpuTemperature != null) {
     const warn = stats.cpu.gpuTemperature >= 70;
     const el = statItem('GPU Temp', stats.cpu.gpuTemperature.toFixed(1) + ' \u00b0C');
     if (warn) el.classList.add('stat-warn');
-    container.appendChild(el);
+    fragment.appendChild(el);
   }
 
   if (stats.fan) {
@@ -1153,7 +1155,7 @@ function renderThermalInfo(stats) {
     let fanText = rpm + ' RPM';
     if (rpm === 0) fanText = 'Off (0 RPM)';
     if (stats.fan.dutyCycle != null) fanText += ' \u00b7 ' + stats.fan.dutyCycle + '% duty';
-    container.appendChild(statItem('Fan', fanText));
+    fragment.appendChild(statItem('Fan', fanText));
   }
 
   if (stats.throttled) {
@@ -1168,8 +1170,9 @@ function renderThermalInfo(stats) {
 
     const el = statItem('Throttling', issues.length > 0 ? issues.join(', ') : 'None');
     if (issues.some((i) => i.includes('NOW'))) el.classList.add('stat-warn');
-    container.appendChild(el);
+    fragment.appendChild(el);
   }
+  container.replaceChildren(fragment);
 }
 
 /** Create a label/value stat row element. */
