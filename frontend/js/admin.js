@@ -1268,16 +1268,16 @@ async function loadLogs() {
 
 function renderLogs(entries) {
   var container = document.getElementById('log-viewer');
-  container.textContent = '';
 
   if (!entries || entries.length === 0) {
     var empty = document.createElement('p');
     empty.className = 'log-empty';
     empty.textContent = 'No log entries yet.';
-    container.appendChild(empty);
+    container.replaceChildren(empty);
     return;
   }
 
+  // Check scroll position BEFORE replacing content
   var wasScrolledToBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 20;
 
   var fragment = document.createDocumentFragment();
@@ -1303,7 +1303,8 @@ function renderLogs(entries) {
     fragment.appendChild(line);
   }
 
-  container.appendChild(fragment);
+  // Atomic swap — container never collapses to zero height
+  container.replaceChildren(fragment);
 
   // Auto-scroll to bottom if user was already there
   if (wasScrolledToBottom) {

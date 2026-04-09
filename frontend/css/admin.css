@@ -1026,6 +1026,7 @@ body {
 }
 
 .log-viewer {
+  min-height: 200px;
   max-height: 400px;
   overflow-y: auto;
   font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
