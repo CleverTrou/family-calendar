@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://clevertrou.com/familycalendar" version="1.0.0" viewmodes="maximized">
+    <name>Family Calendar</name>
+    <icon src="icon.png"/>
+    <content src="index.html"/>
+
+    <tizen:application id="clevertrou.familycalendar" package="clevertrou" required_version="2.3"/>
+    <tizen:profile name="tv"/>
+
+    <!-- Allow connecting to the local network server -->
+    <access origin="*" subdomains="true"/>
+    <tizen:allow-navigation>*</tizen:allow-navigation>
+
+    <!-- Keep the app running and prevent screen dimming -->
+    <tizen:setting screen-orientation="landscape" context-menu="disable"
+                   background-support="enable" encryption="disable" install-location="auto"/>
+
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+</widget>

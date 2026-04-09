@@ -23,6 +23,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Display schedule** — Screen on/off times and active days, configurable from admin GUI
 - **macOS launcher apps** — double-click to start/stop the server
 - **LG webOS app** — sideloadable package for LG smart TVs
+- **Samsung Tizen app** — sideloadable package for Samsung smart TVs
 
 ## Tech Stack
 
@@ -132,6 +133,14 @@ See **[deploy/webos-app/README.md](deploy/webos-app/README.md)** for setup instr
 
 > **Note:** OLED TVs are not recommended for always-on display due to burn-in risk. Best used as an on-demand display.
 
+### Samsung Smart TVs (Tizen)
+
+A Tizen app package is available in `deploy/tizen-app/` for Samsung smart TVs (2015+ models). Same thin-client approach — the TV connects to your calendar server over the local network.
+
+See **[deploy/tizen-app/README.md](deploy/tizen-app/README.md)** for setup instructions.
+
+> **Samsung The Frame** TVs work particularly well as always-on calendar displays. QLED panels are safe for extended use; OLED panels carry burn-in risk.
+
 ## Project Structure
 
 ```
@@ -184,6 +193,7 @@ family-calendar/
 │   ├── display-agent.sh       # Screen on/off agent (polls server schedule)
 │   ├── display-agent.service  # Systemd service for display agent
 │   ├── generate-mac-icon.sh   # Generate macOS .app launchers
+│   ├── tizen-app/             # Samsung smart TV app package
 │   └── webos-app/             # LG smart TV app package
 ├── scripts/
 │   └── google-auth.js         # One-time Google OAuth2 token helper
