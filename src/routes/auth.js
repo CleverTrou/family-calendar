@@ -77,7 +77,18 @@ export async function registerAuthRoutes(fastify) {
       state,
     });
 
-    return reply.redirect(authUrl);
+    // Google requires device_id and device_name when the redirect URI
+    // points to a private/local IP address (10.x, 192.168.x, etc.)
+    const url = new URL(authUrl);
+    const redirectHost = new URL(redirectUri).hostname;
+    const isPrivateIP = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|localhost$)/.test(redirectHost);
+    if (isPrivateIP) {
+      // Use a stable device ID derived from the redirect host
+      url.searchParams.set('device_id', redirectHost);
+      url.searchParams.set('device_name', 'Family Calendar');
+    }
+
+    return reply.redirect(url.toString());
   });
 
   /**
