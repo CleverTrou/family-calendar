@@ -40,14 +40,10 @@ function buildWeatherMap(weather) {
 function renderCalendar(events, weather) {
   const container = document.getElementById('calendar-grid');
 
-  if (!events || events.length === 0) {
-    container.textContent = '';
-    const msg = document.createElement('div');
-    msg.className = 'no-events';
-    msg.textContent = 'No upcoming events';
-    container.appendChild(msg);
-    return;
-  }
+  // Always render the full grid (dates + weather + day cells) even when
+  // there are no events — an empty grid is informative and keeps the
+  // layout stable during sync failures or toggled-off calendars.
+  const safeEvents = events || [];
 
   const { weekDates, weekStart1, weekStart2 } = getTwoWeekRange();
   const week1Dates = weekDates.slice(0, 7);
@@ -64,17 +60,16 @@ function renderCalendar(events, weather) {
   week1Label.className = 'week-label';
   week1Label.textContent = 'This Week';
   fragment.appendChild(week1Label);
-  fragment.appendChild(buildWeekRow(week1Dates, events, weatherMap));
+  fragment.appendChild(buildWeekRow(week1Dates, safeEvents, weatherMap));
 
   // Week 2
   const week2Label = document.createElement('div');
   week2Label.className = 'week-label';
   week2Label.textContent = 'Next Week';
   fragment.appendChild(week2Label);
-  fragment.appendChild(buildWeekRow(week2Dates, events, weatherMap));
+  fragment.appendChild(buildWeekRow(week2Dates, safeEvents, weatherMap));
 
-  container.textContent = '';
-  container.appendChild(fragment);
+  container.replaceChildren(fragment);
 }
 
 /* ── Day-of-Week Header ────────────────────────────── */
