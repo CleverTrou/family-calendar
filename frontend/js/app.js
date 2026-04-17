@@ -48,21 +48,33 @@ async function fetchData() {
     updateSyncStatus(currentData);
   } catch (err) {
     console.error('[App] Fetch failed:', err);
-    document.getElementById('sync-status').textContent = '\u26A0\uFE0F Offline';
+    const statusEl = document.getElementById('sync-status');
+    const iconEl = document.getElementById('sync-status-icon');
+    const textEl = document.getElementById('sync-status-text');
+    statusEl.classList.add('is-error');
+    iconEl.textContent = '\u26A0';
+    textEl.textContent = 'Offline — check server connection';
+    statusEl.title = err.message || 'Network error';
   }
 }
 
 function updateSyncStatus(data) {
   const statusEl = document.getElementById('sync-status');
+  const iconEl = document.getElementById('sync-status-icon');
+  const textEl = document.getElementById('sync-status-text');
   const footerSyncEl = document.getElementById('footer-sync');
   const footerCountsEl = document.getElementById('footer-counts');
 
   if (data.lastError) {
-    statusEl.textContent = '\u26A0\uFE0F';
+    statusEl.classList.add('is-error');
+    iconEl.textContent = '\u26A0'; // ⚠ warning sign
+    textEl.textContent = 'Sync error — check Admin \u2192 System \u2192 Logs';
     statusEl.title = data.lastError;
   } else {
-    statusEl.textContent = '\u25CF';
-    statusEl.style.color = '#0f9d58';
+    statusEl.classList.remove('is-error');
+    iconEl.textContent = '\u25CF'; // ● filled circle
+    textEl.textContent = '';
+    statusEl.title = '';
   }
 
   footerSyncEl.textContent = 'Calendars synced ' + formatRelativeTime(data.lastSyncTime);

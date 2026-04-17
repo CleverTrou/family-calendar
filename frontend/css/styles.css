@@ -127,8 +127,48 @@ body {
 }
 
 .sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.313vw;
   font-size: 0.729vw;
   color: var(--text-muted);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sync-status-icon {
+  display: inline-flex;
+  color: #0f9d58; /* healthy green */
+}
+
+.sync-status-text {
+  display: none; /* hidden in healthy state */
+}
+
+/* Error / offline state: amber pill with text, visible from across the room */
+.sync-status.is-error {
+  background: #fff3cd;
+  color: #92400e;
+  padding: 0.463vh 0.729vw;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.833vw;
+}
+
+.sync-status.is-error .sync-status-icon {
+  color: #d97706; /* amber warning */
+}
+
+.sync-status.is-error .sync-status-text {
+  display: inline;
+}
+
+:root[data-theme="dark"] .sync-status.is-error {
+  background: rgba(217, 119, 6, 0.18);
+  color: #fbbf24;
+}
+
+:root[data-theme="dark"] .sync-status.is-error .sync-status-icon {
+  color: #fbbf24;
 }
 
 /* ── Main Content ───────────────────────────────────── */
