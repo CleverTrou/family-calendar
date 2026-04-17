@@ -92,6 +92,27 @@ Since the app is "unverified", you need to add yourself as a test user.
 
 4. Click **Back to Dashboard**
 
+### Publish the App (required for permanent tokens)
+
+> **This is the most commonly missed step.** While the consent screen is
+> in "Testing" status, Google **expires your refresh token after 7 days**.
+> After 7 days, you'll see `invalid_grant` errors and calendar sync will
+> stop. Publishing the app makes tokens last indefinitely.
+
+1. On the **OAuth consent screen** page, look for the **Publishing status** section
+2. Click **Publish App**
+3. Confirm when prompted
+
+**This does NOT submit your app for Google's verification review.** It simply
+moves the consent screen from "Testing" to "In production" status. Your app
+will still show the "unverified app" warning when authorizing — that's fine
+for personal use. The only change is that refresh tokens no longer expire.
+
+| Consent screen status | Token lifetime | Who can use it |
+|----------------------|---------------|----------------|
+| Testing | **7 days** (then `invalid_grant`) | Only added test users |
+| In production (unverified) | **Indefinite** | Anyone (with warning) |
+
 ---
 
 ## Part 4: Create OAuth2 Credentials
@@ -137,7 +158,22 @@ Since the app is "unverified", you need to add yourself as a test user.
 
 ## Part 5: Connect in the Admin Panel
 
-1. Open your calendar server: `http://YOUR_SERVER_ADDRESS:3000/admin`
+1. Open your calendar server's admin panel in **any browser on your network**:
+   ```
+   http://YOUR_PI_IP:3000/admin
+   ```
+   > **Tip: Use your Mac's browser.** You don't need a browser on the Pi
+   > itself. Open your Mac's browser, go to `http://PI_IP:3000/admin`, and
+   > do the entire setup from there. The OAuth flow works because:
+   > 1. Your Mac browser talks to the Pi's server
+   > 2. Google's consent screen opens in your Mac browser
+   > 3. After you approve, Google redirects back to `http://PI_IP:3000/...`
+   > 4. Your Mac browser follows that redirect (the Pi is on your LAN)
+   > 5. The Pi receives the auth code and stores the token
+   >
+   > The redirect URI in Google Cloud Console must match the **Pi's address**
+   > (e.g., `http://192.168.1.100:3000/api/auth/google/callback`), not `localhost`.
+
 2. Go to **Accounts** tab
 3. Click **Connect Google Calendar**
 4. Paste your **Client ID** and **Client Secret** from Part 4
@@ -177,6 +213,7 @@ Use the level filter to show only errors if something isn't working.
 
 | Error | Fix |
 |-------|-----|
+| `invalid_grant` on all calendars | **Most common issue.** Your refresh token expired — this happens after 7 days if the consent screen is still in "Testing" status. Fix: Publish the app (Part 3 > "Publish the App"), then disconnect and re-connect Google in the admin panel |
 | "Google hasn't verified this app" | Click **Advanced** > **Go to Family Calendar (unsafe)** — this is normal for personal apps |
 | "redirect_uri_mismatch" | The redirect URI in Cloud Console doesn't match your server. Check the URI in Admin > Connect Google > Step 2 and make sure it's added in Cloud Console > Credentials > Edit |
 | "Access blocked: This app's request is invalid" | The OAuth consent screen isn't configured. Complete Part 3 |
