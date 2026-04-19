@@ -17,7 +17,8 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Responsive viewport scaling** — Layout fills any resolution (720p, 1080p, 4K) with identical proportions; optional fine-tuning via display scale (0.5×–3×)
 - **System monitoring** — CPU, memory, disk, temperature, fan speed, throttling status, and live server logs in the admin panel (auto-refreshes, Pi-specific thermal data auto-detected)
 - **Weather forecasts** — daily high/low temperatures and conditions icon in each day cell, current temperature in the header (via [Open-Meteo](https://open-meteo.com), free, no API key)
-- **Light/dark themes** with 8 color palettes (Default, Nord, Ocean, Forest, Sunset, Rose, Slate, Mocha) — auto-switch by fixed hours or local sunrise/sunset
+- **Light/dark themes** with 9 color palettes (Default, Nord, Ocean, Forest, Sunset, Rose, Slate, Mocha, Kitchen Paper) — auto-switch by fixed hours or local sunrise/sunset. Kitchen Paper adds a warm-domestic paper aesthetic (cream background, pastel event pills with colored left border, dashed dividers, a rotated "today" ribbon, and a subtle paper-grain texture)
+- **Font choices** include serif options tuned for distance legibility: Fraunces, Newsreader, Merriweather, Roboto Slab, plus sans-serifs (Inter, Source Sans 3, Lato, Nunito)
 - **Network security** — IP allowlist, rate limiting, security headers
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
 - **Display schedule** — Screen on/off times and active days, configurable from admin GUI

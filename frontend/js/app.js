@@ -188,6 +188,8 @@ function applyFont(fontKey) {
     nunito:        { stack: '"Nunito", sans-serif',        imp: 'Nunito:wght@400;600;700' },
     'roboto-slab': { stack: '"Roboto Slab", serif',        imp: 'Roboto+Slab:wght@400;500;600;700' },
     merriweather:  { stack: '"Merriweather", serif',       imp: 'Merriweather:wght@400;700' },
+    fraunces:      { stack: '"Fraunces", Georgia, serif',  imp: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700' },
+    newsreader:    { stack: '"Newsreader", Georgia, serif',imp: 'Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700' },
   };
 
   var font = fontMap[fontKey];

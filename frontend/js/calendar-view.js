@@ -218,6 +218,7 @@ function buildAllDayEventCompact(event) {
   const el = document.createElement('div');
   el.className = 'allday-event';
   el.style.backgroundColor = colorInfo.color;
+  el.style.setProperty('--event-color', colorInfo.color);
   el.textContent = event.title;
   el.title = event.title; // tooltip for truncated text
   return el;
@@ -229,6 +230,7 @@ function buildTimedEventCompact(event) {
   const colorInfo = getColorForEvent(event);
   const el = document.createElement('div');
   el.className = 'timed-event';
+  el.style.setProperty('--event-color', colorInfo.color);
 
   const dot = document.createElement('span');
   dot.className = 'timed-event-dot';

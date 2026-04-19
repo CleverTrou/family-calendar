@@ -82,6 +82,16 @@ export const AVAILABLE_FONTS = {
     stack: '"Merriweather", serif',
     googleImport: 'Merriweather:wght@400;700',
   },
+  fraunces: {
+    label: 'Fraunces',
+    stack: '"Fraunces", Georgia, serif',
+    googleImport: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700',
+  },
+  newsreader: {
+    label: 'Newsreader',
+    stack: '"Newsreader", Georgia, serif',
+    googleImport: 'Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700',
+  },
 };
 
 /** Load settings from disk, merging with defaults for any missing keys. */
