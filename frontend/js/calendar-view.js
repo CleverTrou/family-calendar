@@ -21,7 +21,8 @@
  */
 
 const MONTH_SHORT = new Intl.DateTimeFormat('en-US', { month: 'short' });
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+// Sunday-indexed so we can slice by startDay (0=Sun, 1=Mon) for the grid header.
+const DAY_NAMES_SUN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MAX_VISIBLE_EVENTS = 4;
 
 /* ── Main Entry Point ──────────────────────────────── */
@@ -37,7 +38,7 @@ function buildWeatherMap(weather) {
   return map;
 }
 
-function renderCalendar(events, weather) {
+function renderCalendar(events, weather, options) {
   const container = document.getElementById('calendar-grid');
 
   // Always render the full grid (dates + weather + day cells) even when
@@ -45,7 +46,8 @@ function renderCalendar(events, weather) {
   // layout stable during sync failures or toggled-off calendars.
   const safeEvents = events || [];
 
-  const { weekDates, weekStart1, weekStart2 } = getTwoWeekRange();
+  const startDay = options && options.weekStart === 'sunday' ? 0 : 1;
+  const { weekDates, weekStart1, weekStart2 } = getTwoWeekRange(startDay);
   const week1Dates = weekDates.slice(0, 7);
   const week2Dates = weekDates.slice(7, 14);
   const weatherMap = buildWeatherMap(weather);
@@ -53,7 +55,7 @@ function renderCalendar(events, weather) {
   const fragment = document.createDocumentFragment();
 
   // Day-of-week header (shared across both weeks)
-  fragment.appendChild(buildDayHeaders());
+  fragment.appendChild(buildDayHeaders(startDay));
 
   // Week 1
   const week1Label = document.createElement('div');
@@ -74,13 +76,13 @@ function renderCalendar(events, weather) {
 
 /* ── Day-of-Week Header ────────────────────────────── */
 
-function buildDayHeaders() {
+function buildDayHeaders(startDay) {
   const header = document.createElement('div');
   header.className = 'week-header';
-  for (const name of DAY_NAMES) {
+  for (let i = 0; i < 7; i++) {
     const cell = document.createElement('div');
     cell.className = 'week-header-cell';
-    cell.textContent = name;
+    cell.textContent = DAY_NAMES_SUN[(startDay + i) % 7];
     header.appendChild(cell);
   }
   return header;

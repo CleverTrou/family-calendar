@@ -42,7 +42,8 @@ async function fetchData() {
       applySettings(currentData.settings);
     }
 
-    renderCalendar(currentData.events, currentData.weather);
+    const display = (currentData.settings && currentData.settings.display) || {};
+    renderCalendar(currentData.events, currentData.weather, { weekStart: display.weekStart });
     renderReminders(currentData.reminders);
     updateHeaderWeather(currentData.weather);
     updateSyncStatus(currentData);

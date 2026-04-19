@@ -6,7 +6,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 
 ## Features
 
-- **Two-week calendar grid** — Monday through Sunday, this week and next
+- **Two-week calendar grid** — this week and next, with a Monday or Sunday first-column option
 - **All-day events** as colored chips inside each day cell
 - **Timed events** with colored dots, time, and title
 - **Reminders sidebar** — Apple Reminders (via Shortcuts webhook) + Google Tasks + Microsoft To Do

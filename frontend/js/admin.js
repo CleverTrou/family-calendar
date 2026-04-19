@@ -728,6 +728,15 @@ function renderThemeControls() {
     markDirty();
   });
 
+  const weekStartSelect = document.getElementById('week-start-select');
+  if (weekStartSelect) {
+    weekStartSelect.value = currentSettings.display.weekStart || 'monday';
+    weekStartSelect.addEventListener('change', (e) => {
+      currentSettings.display.weekStart = e.target.value;
+      markDirty();
+    });
+  }
+
   updateThemePanelVisibility();
   renderThemePalettePicker();
 }

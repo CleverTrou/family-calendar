@@ -28,6 +28,7 @@ const DEFAULTS = {
     theme: 'auto',           // 'light', 'dark', 'auto', or 'auto-sun'
     colorTheme: 'default',   // color palette key from COLOR_THEMES
     font: 'system',          // font key from AVAILABLE_FONTS
+    weekStart: 'monday',     // 'monday' or 'sunday' — first column of the grid
     darkModeStart: 21,       // hour (24h) to switch to dark
     darkModeEnd: 7,          // hour (24h) to switch to light
     screenSchedule: true,    // enable screen on/off schedule

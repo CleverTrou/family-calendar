@@ -250,25 +250,28 @@ function groupEventsByDay(events) {
 /* ── Week-Grid Helpers ─────────────────────────────── */
 
 /**
- * Return the Monday (start of ISO week) for the given date.
- * Mon=1, Tue=2, ... Sun=7 convention.
+ * Return the start of the week for the given date.
+ * @param {Date} date
+ * @param {number} [startDay=1] — 0 (Sunday) or 1 (Monday, default = ISO week).
  */
-function getWeekStart(date) {
+function getWeekStart(date, startDay) {
+  if (startDay == null) startDay = 1;
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   const day = d.getDay(); // 0=Sun, 1=Mon, ...
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
+  const diff = (day - startDay + 7) % 7;
+  d.setDate(d.getDate() - diff);
   return d;
 }
 
 /**
- * Return the 14-day window (this week Monday → next week Sunday)
- * plus the two Monday anchor dates.
+ * Return the 14-day window anchored at the start-of-this-week
+ * plus the two week-start anchor dates.
+ * @param {number} [startDay=1] — 0 (Sunday) or 1 (Monday, default).
  */
-function getTwoWeekRange() {
+function getTwoWeekRange(startDay) {
   const today = new Date();
-  const week1Start = getWeekStart(today);
+  const week1Start = getWeekStart(today, startDay);
   const week2Start = new Date(week1Start);
   week2Start.setDate(week2Start.getDate() + 7);
 
