@@ -400,23 +400,12 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '  border-radius: 10px 10px 0 0;',
     '}',
 
-    /* Today: warm halo + rotated "today" ribbon */
+    /* Today: warm halo (ribbon label dropped — color alone is enough
+       and the ribbon collided with the weather badge on the right) */
     '[data-color-theme="kitchen-paper"] .day-cell.is-today {',
     '  background: var(--bg-body);',
     '  border-color: var(--color-family);',
     '  box-shadow: 0 0 0 3px rgba(210, 130, 55, 0.25), 0 2px 10px var(--shadow);',
-    '}',
-    '[data-color-theme="kitchen-paper"] .day-cell.is-today::after {',
-    '  content: "today";',
-    '  position: absolute; top: -0.9vh; right: 0.8vw;',
-    '  transform: rotate(3deg);',
-    '  font-size: 1vw; font-weight: 700;',
-    '  color: var(--color-family);',
-    '  background: var(--bg-body);',
-    '  padding: 0 0.45vw;',
-    '  border-radius: 4px;',
-    '  font-style: italic;',
-    '  letter-spacing: 0.02em;',
     '}',
     '[data-color-theme="kitchen-paper"] .day-cell.is-today .day-cell-date {',
     '  color: var(--color-family);',
