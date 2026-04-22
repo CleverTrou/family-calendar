@@ -15,8 +15,10 @@ unclutter -idle 3 -root &
 # Wait for the Node.js backend to be ready
 sleep 8
 
-# Fetch display scale from settings API (default: 1)
-SCALE=$(curl -sf http://localhost:3000/api/settings | python3 -c "
+# Fetch settings once; extract both display scale and the CEC opt-in.
+SETTINGS_JSON=$(curl -sf http://localhost:3000/api/settings 2>/dev/null || echo '{}')
+
+SCALE=$(echo "$SETTINGS_JSON" | python3 -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -24,6 +26,25 @@ try:
 except:
     print(1)
 " 2>/dev/null || echo 1)
+
+CONTROL_TV=$(echo "$SETTINGS_JSON" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print('true' if d.get('settings',{}).get('display',{}).get('controlTvViaCec') else 'false')
+except:
+    print('false')
+" 2>/dev/null || echo false)
+
+# If the admin toggle is on, wake the TV and switch to the Pi's input via
+# HDMI-CEC. Skipped silently if cec-ctl isn't installed (v4l-utils provides
+# it; see pi-setup.sh) or if any command fails. Runs before the browser
+# launch so the TV's backlight warms up while Chromium composites its
+# first frame.
+if [ "$CONTROL_TV" = "true" ] && command -v cec-ctl >/dev/null 2>&1; then
+  cec-ctl --playback --image-view-on --to 0 >/dev/null 2>&1 || true
+  cec-ctl --playback --active-source phys-addr=0.0.0.0 >/dev/null 2>&1 || true
+fi
 
 # Launch browser in kiosk mode (full-screen, no UI chrome)
 # Prefer epiphany (lighter) if available; fall back to Chromium.
