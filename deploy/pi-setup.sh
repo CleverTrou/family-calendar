@@ -55,6 +55,7 @@ apt install -y \
   openbox \
   unclutter \
   lightdm \
+  accountsservice \
   git \
   curl
 
@@ -106,7 +107,24 @@ cp "$REPO_DIR/deploy/openbox-autostart.sh" "$AUTOSTART_DIR/autostart"
 chmod +x "$AUTOSTART_DIR/autostart"
 chown -R "$PI_USER:$PI_USER" "$AUTOSTART_DIR"
 
-# ── 9. systemd services ───────────────────────────────
+# ── 9. Pi 5 Xorg display fix (dual-DRM card topology) ──
+# Pi 5 exposes two DRM cards: card0 (V3D GPU, no display output) and
+# card1 (vc4 HDMI controller). Xorg's auto-probe picks card0 by default
+# and hangs in uninterruptible I/O trying to render to a card with no
+# display attached. Pin Xorg to the vc4 driver so it always selects the
+# display card. Harmless on Pi 4 (vc4 exposes a single combined card).
+echo "→ Writing Xorg config for Pi display pipeline..."
+mkdir -p /etc/X11/xorg.conf.d
+cat > /etc/X11/xorg.conf.d/99-pi-display.conf << 'XORGCONF'
+Section "OutputClass"
+    Identifier "vc4"
+    MatchDriver "vc4"
+    Driver "modesetting"
+    Option "PrimaryGPU" "true"
+EndSection
+XORGCONF
+
+# ── 10. systemd services ──────────────────────────────
 echo "→ Installing systemd services..."
 
 # Generate family-calendar.service with correct paths
@@ -152,11 +170,17 @@ systemctl daemon-reload
 systemctl enable family-calendar
 systemctl enable display-agent
 
+# Boot into graphical target so LightDM launches at boot.
+# Pi OS Lite defaults to multi-user.target (console only), which leaves
+# the HDMI framebuffer black even though lightdm.service is enabled —
+# enabled units are only activated when their target is pulled in.
+systemctl set-default graphical.target
+
 # Remove old static timers if they exist
 systemctl disable --now display-on.timer 2>/dev/null || true
 systemctl disable --now display-off.timer 2>/dev/null || true
 
-# ── 10. Start the backend now ─────────────────────────
+# ── 11. Start the backend now ─────────────────────────
 echo "→ Starting family-calendar service..."
 systemctl start family-calendar
 
