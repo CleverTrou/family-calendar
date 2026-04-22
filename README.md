@@ -21,7 +21,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 - **Font choices** include serif options tuned for distance legibility: Fraunces, Newsreader, Merriweather, Roboto Slab, plus sans-serifs (Inter, Source Sans 3, Lato, Nunito)
 - **Network security** — IP allowlist, rate limiting, security headers
 - **Raspberry Pi kiosk mode** — boots directly into fullscreen Chromium
-- **Display schedule** — Screen on/off times and active days, configurable from admin GUI
+- **Display schedule** — Screen on/off times and active days, configurable from admin GUI. Optional **HDMI-CEC TV control** wakes the TV and switches to the Pi's input on schedule on (and returns it to standby at schedule off) — opt-in per install, so it's safe to skip on shared/bedroom TVs
 - **macOS launcher apps** — double-click to start/stop the server
 - **LG webOS app** — sideloadable package for LG smart TVs
 - **Samsung Tizen app** — sideloadable package for Samsung smart TVs

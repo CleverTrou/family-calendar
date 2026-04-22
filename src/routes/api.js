@@ -70,11 +70,11 @@ export async function registerApiRoutes(fastify) {
    */
   fastify.get('/display/status', async () => {
     const settings = loadSettings();
-    const { screenSchedule, screenOnTime, screenOffTime, screenOnDays } = settings.display;
+    const { screenSchedule, screenOnTime, screenOffTime, screenOnDays, controlTvViaCec } = settings.display;
 
     // If schedule is disabled, screen should always be on
     if (!screenSchedule) {
-      return { screenOn: true, schedule: false };
+      return { screenOn: true, schedule: false, controlTvViaCec: !!controlTvViaCec };
     }
 
     // Get current time in the configured display timezone
@@ -124,6 +124,7 @@ export async function registerApiRoutes(fastify) {
       currentDay,
       onTime: screenOnTime,
       offTime: screenOffTime,
+      controlTvViaCec: !!controlTvViaCec,
     };
   });
 

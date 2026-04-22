@@ -35,6 +35,7 @@ const DEFAULTS = {
     screenOnTime: '06:30',   // HH:MM — when to turn screen on
     screenOffTime: '23:00',  // HH:MM — when to turn screen off
     screenOnDays: [1, 2, 3, 4, 5, 6, 0], // days of week (0=Sun, 1=Mon, ...)
+    controlTvViaCec: false,    // send HDMI-CEC wake/standby commands to the TV on schedule transitions
     displayScale: 1,           // UI scale factor (0.5–3, applied as CSS zoom + Chromium flag)
   },
   weather: {

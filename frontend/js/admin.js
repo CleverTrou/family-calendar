@@ -922,6 +922,16 @@ function renderScreenSchedule() {
     });
   });
 
+  // HDMI-CEC control toggle (opt-in; off by default)
+  const cecToggle = document.getElementById('cec-control-toggle');
+  if (cecToggle) {
+    cecToggle.checked = display.controlTvViaCec === true;
+    cecToggle.addEventListener('change', (e) => {
+      currentSettings.display.controlTvViaCec = e.target.checked;
+      markDirty();
+    });
+  }
+
   updateScheduleVisibility();
 }
 

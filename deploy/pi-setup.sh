@@ -56,6 +56,7 @@ apt install -y \
   unclutter \
   lightdm \
   accountsservice \
+  v4l-utils \
   git \
   curl
 

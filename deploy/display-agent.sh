@@ -19,6 +19,26 @@ LAST_STATE=""         # tracks current screen state to avoid redundant xset call
 
 echo "[display-agent] Polling ${SERVER_URL}/api/display/status every ${POLL_INTERVAL}s"
 
+# Send an HDMI-CEC command to the TV when the user has opted in to TV control.
+# Silently skipped if cec-ctl isn't installed or the CEC adapter is missing.
+# Arg 1: "wake" (turn TV on + switch input) or "sleep" (put TV in standby).
+send_cec() {
+  [ "$CONTROL_TV" = "true" ] || return 0
+  command -v cec-ctl >/dev/null 2>&1 || return 0
+  case "$1" in
+    wake)
+      # --playback announces the Pi as a Playback Device on the CEC bus.
+      # --image-view-on wakes a TV in standby; --active-source asks the TV
+      # to switch its displayed input to ours (physical address auto-discovered).
+      cec-ctl --playback --image-view-on --to 0 >/dev/null 2>&1 || true
+      cec-ctl --playback --active-source phys-addr=0.0.0.0 >/dev/null 2>&1 || true
+      ;;
+    sleep)
+      cec-ctl --playback --standby --to 0 >/dev/null 2>&1 || true
+      ;;
+  esac
+}
+
 while true; do
   # Fetch display status from server
   RESPONSE=$(curl -sf --max-time 5 "${SERVER_URL}/api/display/status" 2>/dev/null)
@@ -29,16 +49,19 @@ while true; do
     continue
   fi
 
-  # Parse the screenOn boolean (simple grep, no jq dependency needed)
+  # Parse the screenOn boolean and CEC opt-in (simple grep, no jq dependency needed)
   SCREEN_ON=$(echo "$RESPONSE" | grep -o '"screenOn":[a-z]*' | cut -d: -f2)
+  CONTROL_TV=$(echo "$RESPONSE" | grep -o '"controlTvViaCec":[a-z]*' | cut -d: -f2)
 
   if [ "$SCREEN_ON" = "true" ] && [ "$LAST_STATE" != "on" ]; then
     echo "[display-agent] Screen ON"
     DISPLAY=$DISPLAY_ENV xset dpms force on 2>/dev/null
+    send_cec wake
     LAST_STATE="on"
   elif [ "$SCREEN_ON" = "false" ] && [ "$LAST_STATE" != "off" ]; then
     echo "[display-agent] Screen OFF"
     DISPLAY=$DISPLAY_ENV xset dpms force off 2>/dev/null
+    send_cec sleep
     LAST_STATE="off"
   fi
 
