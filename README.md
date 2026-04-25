@@ -142,6 +142,76 @@ See **[deploy/tizen-app/README.md](deploy/tizen-app/README.md)** for setup instr
 
 > **Samsung The Frame** TVs work particularly well as always-on calendar displays. QLED panels are safe for extended use; OLED panels carry burn-in risk.
 
+## Recommended Pi Companion Setup
+
+These aren't required by Family Calendar but pair well with a Pi running as a permanent wall display.
+
+### Automatic Security Patching
+
+Install `unattended-upgrades` to apply OS security patches overnight without manual `apt upgrade` runs. Configure it to allow only the `*-security` origin so non-security upgrades (e.g. Chromium major versions) stay queued for your review.
+
+```bash
+sudo apt install unattended-upgrades
+```
+
+### Glances System Monitor
+
+[Glances](https://github.com/nicolargo/glances) is a web-based system monitor. On a headless Pi it gives you CPU, memory, temperature, disk I/O, and — with the `apt` plugin enabled — a live list of packages with pending upgrades, accessible from any browser on your network without SSH.
+
+```bash
+pipx install glances
+```
+
+Enable the apt plugin in `/etc/glances/glances.conf` by adding:
+
+```ini
+[apt]
+disable=False
+refresh=3600
+```
+
+### ntfy Push Notifications
+
+[ntfy](https://ntfy.sh) is a lightweight HTTP push notification service. A small cron script can watch for pending package updates (or new releases of source-compiled software) and push to your phone. Create a free private topic at ntfy.sh, subscribe in the ntfy iOS/Android app, and drop a script in `/etc/cron.weekly/`.
+
+### UxPlay — AirPlay Receiver
+
+[UxPlay](https://github.com/FDH2/UxPlay) turns the Pi into an AirPlay 2 receiver, making it appear as a destination in the AirPlay picker on all Apple devices on your network.
+
+- **Audio only** (e.g. Apple Music): plays through the TV speakers while Family Calendar stays visible
+- **Video + audio** (e.g. screen mirroring): opens a window over the calendar display
+
+The Debian package lags behind upstream; build from source for the latest version and security fixes:
+
+```bash
+sudo apt install build-essential cmake libplist-dev libssl-dev \
+  libavahi-client-dev libavahi-compat-libdnssd-dev \
+  libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libdbus-1-dev
+git clone --depth 1 --branch v1.73.6 https://github.com/FDH2/UxPlay.git
+cd UxPlay && mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release && make -j4 && sudo make install
+```
+
+Run as a systemd service under your user account (required for X11 display access):
+
+```ini
+[Unit]
+Description=UxPlay AirPlay Server
+After=network.target
+
+[Service]
+Type=simple
+User=<your-username>
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/<your-username>/.Xauthority
+ExecStart=/usr/local/bin/uxplay -n "Family Room" -p -nofreeze -scrsv 1
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Project Structure
 
 ```
