@@ -11,7 +11,7 @@ html, body {
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   position: relative;
-  background: #0f0f14;
+  background: #1a140c;
 }
 
 /* ── Theme layers ─────────────────────────────── */
@@ -23,29 +23,50 @@ html, body {
   overflow: hidden;
 }
 
+/* Paper grain behind each layer's content */
+.theme-layer::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-size: 320px 320px;
+}
+
 .theme-layer.dark {
   z-index: 1;
-  --bg: #0f0f14;
-  --bg-header: #1a1a24;
-  --bg-panel: #1e1e2a;
-  --border: #2a2a3a;
-  --text: #f0f1f5;
-  --text-dim: #c9cdd5;
-  --text-muted: #a0a7b4;
-  --today-bg: rgba(66, 133, 244, 0.08);
+  --bg:        #1a140c;
+  --bg-header: #221a10;
+  --bg-panel:  #2e2416;
+  --border:    #3a2d1a;
+  --text:      #f1e5c8;
+  --text-dim:  #d4c29a;
+  --text-muted:#9b8963;
+  --shadow:    rgba(0,0,0,0.5);
+  background:
+    radial-gradient(120% 80% at 20% 0%, #221a10, #1a140c 55%, #221a10 100%);
+}
+.theme-layer.dark::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  mix-blend-mode: screen;
+  opacity: 0.6;
 }
 
 .theme-layer.light {
   z-index: 2;
   clip-path: polygon(0 0, 68% 0, 32% 100%, 0 100%);
-  --bg: #f5f6fa;
-  --bg-header: #ffffff;
-  --bg-panel: #f0f1f5;
-  --border: #e0e2e8;
-  --text: #1a1a2e;
-  --text-dim: #4a4e5a;
-  --text-muted: #6b7080;
-  --today-bg: rgba(66, 133, 244, 0.08);
+  --bg:        #fdfaf0;
+  --bg-header: #f7f0dc;
+  --bg-panel:  #f0e7cc;
+  --border:    #d0bf95;
+  --text:      #140d04;
+  --text-dim:  #2e2614;
+  --text-muted:#5a4c30;
+  --shadow:    rgba(80,50,10,0.12);
+  background:
+    radial-gradient(120% 80% at 20% 0%, #f7f0dc, #fdfaf0 55%, #f7f0dc 100%);
+}
+.theme-layer.light::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: 0.55;
 }
 
 /* ── Corner labels ────────────────────────────── */
@@ -59,26 +80,27 @@ html, body {
   opacity: 0.35;
 }
 .corner-label.light-label {
-  top: 10px;
-  left: 14px;
-  color: #4a4e5a;
+  top: 10px; left: 14px;
+  color: #5a4c30;
   z-index: 10;
 }
 .corner-label.dark-label {
-  bottom: 10px;
-  right: 14px;
-  color: #a0a7b4;
+  bottom: 10px; right: 14px;
+  color: #9b8963;
   z-index: 10;
 }
 
-/* ── Shared layout styles ─────────────────────── */
+/* ── Content above grain ──────────────────────── */
+.header, .main, .footer { position: relative; z-index: 1; }
+
+/* ── Header ───────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 20px;
-  background: var(--bg-header);
-  border-bottom: 1px solid var(--border);
+  background: transparent;
+  border-bottom: 1px dashed var(--border);
   flex-shrink: 0;
 }
 
@@ -90,14 +112,15 @@ html, body {
 
 .clock {
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 
 .date-text {
   font-size: 13px;
+  font-style: italic;
   color: var(--text-dim);
 }
 
@@ -108,19 +131,16 @@ html, body {
   align-items: center;
   gap: 4px;
 }
-
 .header-weather-icon { font-size: 16px; }
-.header-weather-temp {
-  font-weight: 600;
-  color: var(--text);
-}
+.header-weather-temp { font-weight: 600; color: var(--text); }
 
 .header-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-style: italic;
+  text-transform: lowercase;
 }
 
 .header-right {
@@ -143,20 +163,20 @@ html, body {
   border-radius: 50%;
   margin-left: 8px;
 }
-
 .legend-dot:first-child { margin-left: 0; }
 
+/* ── Main layout ──────────────────────────────── */
 .main {
   flex: 1;
   display: flex;
-  gap: 1px;
-  background: var(--border);
+  gap: 0;
+  background: transparent;
   overflow: hidden;
 }
 
 .calendar-panel {
   flex: 3;
-  background: var(--bg);
+  background: transparent;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -164,58 +184,67 @@ html, body {
 
 .reminders-panel {
   flex: 0.85;
-  background: var(--bg);
+  background: transparent;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 220px;
 }
 
+/* ── Panel header ─────────────────────────────── */
 .panel-header {
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  font-style: italic;
   color: var(--text-muted);
   padding: 8px 14px 6px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  background: transparent;
+  border-bottom: 1px dashed var(--border);
   flex-shrink: 0;
 }
 
+/* ── Week header row ──────────────────────────── */
 .week-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  background: transparent;
+  border-bottom: 1px dashed var(--border);
   flex-shrink: 0;
 }
 
 .week-header-cell {
-  text-align: center;
+  text-align: left;
+  padding-left: 6px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2em;
   color: var(--text-muted);
-  padding: 6px 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
+/* ── Week label ───────────────────────────────── */
 .week-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  padding: 5px 10px 2px;
-  background: var(--bg);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--text-primary, var(--text));
+  padding: 7px 10px 4px;
+  background: transparent;
   flex-shrink: 0;
+  border-bottom: 1px dashed var(--border);
 }
 
+/* ── Week row ─────────────────────────────────── */
 .week-row {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
   flex: 1;
   min-height: 0;
 }
@@ -223,41 +252,60 @@ html, body {
 .week-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 5px 7px;
   flex: 1;
   min-height: 0;
 }
 
+/* ── Day cells ────────────────────────────────── */
 .day-cell {
-  border-right: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-  padding: 4px 5px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 5px 5px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
-  background: var(--bg);
+  background: var(--bg-header);
+  box-shadow: 0 1px 2px var(--shadow);
+  position: relative;
 }
 
-.day-cell:last-child { border-right: none; }
+/* Subtle top-edge card shine */
+.day-cell::after {
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 14px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.04), transparent);
+  pointer-events: none;
+  border-radius: 10px 10px 0 0;
+}
 
-.day-cell.is-today { background: var(--today-bg); }
 .day-cell.is-past { opacity: 0.5; }
 
+.day-cell.is-today {
+  background: var(--bg);
+  border-color: #0f9d58;
+  box-shadow: 0 0 0 3px rgba(210,130,55,0.25), 0 2px 10px var(--shadow);
+}
+.day-cell.is-today .day-cell-date { color: #0f9d58; }
+
+/* ── Day cell header ──────────────────────────── */
 .day-cell-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   flex-shrink: 0;
 }
 
 .day-cell-date {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
   color: var(--text);
 }
-
-.day-cell.is-today .day-cell-date { color: #4285f4; }
 
 .day-cell-month {
   font-size: 10px;
@@ -274,8 +322,9 @@ html, body {
 .day-weather-icon { font-size: 10px; line-height: 1; }
 .day-weather-temps {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 2px;
   line-height: 1.1;
 }
 .day-weather-hi {
@@ -287,57 +336,72 @@ html, body {
   font-size: 8px;
   color: var(--text-muted);
 }
-
-/* ── Events ───────────────────────────────────── */
-.allday-event {
-  border-radius: 3px;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 4px;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.95;
+.day-weather-lo::before {
+  content: " / ";
+  color: var(--text-muted);
 }
 
-.timed-event {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+/* ── All-day events (Kitchen Paper: pastel pill + left border) */
+.allday-event {
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ec, #4285f4) 28%, var(--bg));
+  color: var(--text);
+  border-left: 3px solid var(--ec, #4285f4);
   font-size: 10px;
-  line-height: 1.3;
-  margin-bottom: 1px;
+  font-weight: 600;
+  padding: 2px 5px 2px 5px;
+  margin-bottom: 3px;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.2;
+}
+
+/* ── Timed events (Kitchen Paper: stacked time/title) ── */
+.timed-event {
+  display: block;
+  position: relative;
+  padding-left: 11px;
+  margin-bottom: 3px;
 }
 
 .timed-event-dot {
-  width: 5px;
-  height: 5px;
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .timed-event-time {
+  display: block;
+  font-size: 8px;
+  font-weight: 600;
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-  font-size: 9px;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  margin-bottom: 1px;
 }
 
 .timed-event-title {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--text-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.2;
 }
 
+/* ── Reminders ────────────────────────────────── */
 .reminder-item {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 7px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px dashed var(--border);
 }
 
 .reminder-checkbox {
@@ -359,10 +423,12 @@ html, body {
 
 .reminder-due {
   font-size: 10px;
+  font-style: italic;
   color: var(--text-muted);
   margin-top: 1px;
 }
 
+/* ── Footer ───────────────────────────────────── */
 .footer {
   display: flex;
   justify-content: center;
@@ -370,10 +436,12 @@ html, body {
   padding: 5px 20px;
   font-size: 11px;
   color: var(--text-muted);
-  background: var(--bg-header);
-  border-top: 1px solid var(--border);
+  background: transparent;
+  border-top: 1px dashed var(--border);
   flex-shrink: 0;
   gap: 6px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .footer-icon { font-size: 13px; }
@@ -422,7 +490,7 @@ html, body {
       <div class="week-days">
         <div class="day-cell is-past">
           <div class="day-cell-header"><div class="day-cell-date">23</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">68&#176;</span><span class="day-weather-lo">54&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Leg Day</div>
+          <div class="allday-event" style="--ec:#4285f4">Leg Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7:15p</span><span class="timed-event-title">Family Dinner</span></div>
         </div>
         <div class="day-cell is-past">
@@ -432,7 +500,7 @@ html, body {
         </div>
         <div class="day-cell is-today">
           <div class="day-cell-header"><div class="day-cell-date">25</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">72&#176;</span><span class="day-weather-lo">58&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#e91e8c">Book Club</div>
+          <div class="allday-event" style="--ec:#e91e8c">Book Club</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Team Meeting</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Date Night</span></div>
         </div>
@@ -443,17 +511,17 @@ html, body {
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">27</div><div class="day-weather"><span class="day-weather-icon">&#x2601;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">70&#176;</span><span class="day-weather-lo">56&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Pull Routine</div>
+          <div class="allday-event" style="--ec:#4285f4">Pull Routine</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Grocery Run</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">28</div><div class="day-weather"><span class="day-weather-icon">&#x1F327;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">63&#176;</span><span class="day-weather-lo">49&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="allday-event" style="--ec:#0f9d58">Camping Trip</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">8a</span><span class="timed-event-title">Farmer's Market</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">29</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">67&#176;</span><span class="day-weather-lo">53&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="allday-event" style="--ec:#0f9d58">Camping Trip</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Brunch</span></div>
         </div>
       </div>
@@ -464,7 +532,7 @@ html, body {
       <div class="week-days">
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">30</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">74&#176;</span><span class="day-weather-lo">59&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Push Day</div>
+          <div class="allday-event" style="--ec:#4285f4">Push Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Staff Meeting</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">12p</span><span class="timed-event-title">Lunch Run</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Swim Lessons</span></div>
@@ -483,19 +551,19 @@ html, body {
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">2</div><div class="day-weather"><span class="day-weather-icon">&#x1F326;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">66&#176;</span><span class="day-weather-lo">51&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#0f9d58">School Holiday</div>
+          <div class="allday-event" style="--ec:#0f9d58">School Holiday</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Vet Appointment</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">2p</span><span class="timed-event-title">Coffee w/ Lee</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">3</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">78&#176;</span><span class="day-weather-lo">62&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Leg Day</div>
+          <div class="allday-event" style="--ec:#4285f4">Leg Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">4p</span><span class="timed-event-title">Yoga Class</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7p</span><span class="timed-event-title">Movie Night</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">4</div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">77&#176;</span><span class="day-weather-lo">60&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#e91e8c">Half Marathon</div>
+          <div class="allday-event" style="--ec:#e91e8c">Half Marathon</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">12p</span><span class="timed-event-title">BBQ at Mike's</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Bike Ride</span></div>
         </div>
@@ -566,7 +634,7 @@ html, body {
       <div class="week-days">
         <div class="day-cell is-past">
           <div class="day-cell-header"><div class="day-cell-date">23</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">68&#176;</span><span class="day-weather-lo">54&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Leg Day</div>
+          <div class="allday-event" style="--ec:#4285f4">Leg Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7:15p</span><span class="timed-event-title">Family Dinner</span></div>
         </div>
         <div class="day-cell is-past">
@@ -576,7 +644,7 @@ html, body {
         </div>
         <div class="day-cell is-today">
           <div class="day-cell-header"><div class="day-cell-date">25</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">72&#176;</span><span class="day-weather-lo">58&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#e91e8c">Book Club</div>
+          <div class="allday-event" style="--ec:#e91e8c">Book Club</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Team Meeting</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Date Night</span></div>
         </div>
@@ -587,17 +655,17 @@ html, body {
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">27</div><div class="day-weather"><span class="day-weather-icon">&#x2601;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">70&#176;</span><span class="day-weather-lo">56&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Pull Routine</div>
+          <div class="allday-event" style="--ec:#4285f4">Pull Routine</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Grocery Run</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">28</div><div class="day-weather"><span class="day-weather-icon">&#x1F327;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">63&#176;</span><span class="day-weather-lo">49&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="allday-event" style="--ec:#0f9d58">Camping Trip</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">8a</span><span class="timed-event-title">Farmer's Market</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">29</div><div class="day-weather"><span class="day-weather-icon">&#x26C5;</span><div class="day-weather-temps"><span class="day-weather-hi">67&#176;</span><span class="day-weather-lo">53&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#0f9d58">Camping Trip</div>
+          <div class="allday-event" style="--ec:#0f9d58">Camping Trip</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Brunch</span></div>
         </div>
       </div>
@@ -608,7 +676,7 @@ html, body {
       <div class="week-days">
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">30</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">74&#176;</span><span class="day-weather-lo">59&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Push Day</div>
+          <div class="allday-event" style="--ec:#4285f4">Push Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">9a</span><span class="timed-event-title">Staff Meeting</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">12p</span><span class="timed-event-title">Lunch Run</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">6p</span><span class="timed-event-title">Swim Lessons</span></div>
@@ -627,19 +695,19 @@ html, body {
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">2</div><div class="day-weather"><span class="day-weather-icon">&#x1F326;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">66&#176;</span><span class="day-weather-lo">51&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#0f9d58">School Holiday</div>
+          <div class="allday-event" style="--ec:#0f9d58">School Holiday</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">10a</span><span class="timed-event-title">Vet Appointment</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">2p</span><span class="timed-event-title">Coffee w/ Lee</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">3</div><div class="day-weather"><span class="day-weather-icon">&#x2600;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">78&#176;</span><span class="day-weather-lo">62&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#4285f4">Leg Day</div>
+          <div class="allday-event" style="--ec:#4285f4">Leg Day</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#e91e8c"></span><span class="timed-event-time">4p</span><span class="timed-event-title">Yoga Class</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">7p</span><span class="timed-event-title">Movie Night</span></div>
         </div>
         <div class="day-cell">
           <div class="day-cell-header"><div class="day-cell-date">4</div><div class="day-weather"><span class="day-weather-icon">&#x1F324;&#xFE0F;</span><div class="day-weather-temps"><span class="day-weather-hi">77&#176;</span><span class="day-weather-lo">60&#176;</span></div></div></div>
-          <div class="allday-event" style="background:#e91e8c">Half Marathon</div>
+          <div class="allday-event" style="--ec:#e91e8c">Half Marathon</div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#0f9d58"></span><span class="timed-event-time">12p</span><span class="timed-event-title">BBQ at Mike's</span></div>
           <div class="timed-event"><span class="timed-event-dot" style="background:#4285f4"></span><span class="timed-event-time">5p</span><span class="timed-event-title">Bike Ride</span></div>
         </div>
