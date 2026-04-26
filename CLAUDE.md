@@ -33,3 +33,17 @@ Unifies Google Calendar, iCloud Calendar, Apple Reminders, Microsoft Calendar, a
 - `DISPLAY_TIMEZONE` in `.env` controls all time rendering (default: America/New_York)
 - Settings changes via `/admin` GUI persist to `settings.json`
 - Deploy targets: Raspberry Pi (Chromium kiosk) and LG webOS TV (`deploy/webos-app/`)
+
+## UxPlay Integration (Planned)
+
+UxPlay 1.73.6 runs as a companion service on the Pi alongside Family Calendar.
+When AirPlay audio is active, it writes to two fixed files in tmpfs:
+
+- `/tmp/uxplay-cover.jpg` — album cover art (overwritten per track)
+- `/tmp/uxplay-meta.txt` — artist and title (overwritten per track)
+
+**Planned feature:** A small overlay widget in the calendar display that appears
+when AirPlay audio is active (detect via file recency) and disappears when it
+stops. The widget should show cover art, song title, and artist — without
+disrupting the calendar layout. When AirPlay video is active, UxPlay opens its
+own full-screen window over the calendar (no widget needed).
