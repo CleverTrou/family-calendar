@@ -11,3 +11,4 @@ data/events-cache.json
 deploy/*.app/
 deploy/*.iconset/
 .claude/settings.local.json
+.claude/worktrees/
