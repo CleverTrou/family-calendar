@@ -829,6 +829,10 @@ function renderThemePalettePicker() {
       currentSettings.display.colorTheme = key;
       markDirty();
     });
+    swatch.addEventListener('mouseenter', function () {
+      showOptionPreview(swatch, function () { return buildPalettePreview(key); });
+    });
+    swatch.addEventListener('mouseleave', hideOptionPreview);
 
     fragment.appendChild(swatch);
   });
@@ -972,6 +976,218 @@ function renderDisplayScale() {
   });
 }
 
+/* ── Option Preview Tooltip ─────────────────────────── */
+
+(function () {
+  var tip = null;
+  var hideTimer = null;
+
+  function ensureTip() {
+    if (tip) return tip;
+    tip = document.createElement('div');
+    tip.id = 'option-preview-tooltip';
+    document.body.appendChild(tip);
+    return tip;
+  }
+
+  function position(anchor) {
+    var t = ensureTip();
+    var rect = anchor.getBoundingClientRect();
+    var tipW = 300;
+    var margin = 10;
+    var spaceAbove = rect.top;
+    var spaceBelow = window.innerHeight - rect.bottom;
+    var above = spaceAbove >= 240 || spaceAbove > spaceBelow;
+    var left = rect.left + rect.width / 2 - tipW / 2;
+    if (left < margin) left = margin;
+    if (left + tipW > window.innerWidth - margin) left = window.innerWidth - margin - tipW;
+    t.style.width = tipW + 'px';
+    t.style.left = left + 'px';
+    if (above) {
+      t.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+      t.style.top = 'auto';
+    } else {
+      t.style.top = (rect.bottom + (window.scrollY || 0) + 8) + 'px';
+      t.style.bottom = 'auto';
+    }
+  }
+
+  window.showOptionPreview = function (anchor, buildFn) {
+    clearTimeout(hideTimer);
+    var t = ensureTip();
+    while (t.firstChild) t.removeChild(t.firstChild);
+    t.appendChild(buildFn());
+    position(anchor);
+    requestAnimationFrame(function () { t.classList.add('visible'); });
+  };
+
+  window.hideOptionPreview = function () {
+    hideTimer = setTimeout(function () {
+      if (tip) tip.classList.remove('visible');
+    }, 80);
+  };
+})();
+
+/* ── DOM builder helper ──────────────────────────────── */
+
+function makeEl(tag, cls, styles, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (styles) Object.assign(e.style, styles);
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+/* ── Style mini-calendar preview ─────────────────────── */
+
+function buildStylePreview(key) {
+  var configs = {
+    'default': {
+      bg: '#f0f2f5', card: '#ffffff', border: '#e5e7eb', ink: '#111118',
+      muted: '#6b7280', radius: '2px', gap: '2px', shadow: 'none',
+      todayBorder: '#4285f4', todayShadow: 'inset 0 2px 0 #4285f4',
+      todayBg: '#ffffff', todayDateColor: '#4285f4',
+      pillMix: '22', hasPillBorder: false, pillRadius: '3px',
+      hdrBorderStyle: 'solid', titleStyle: 'normal',
+      label: 'Default', desc: 'Clean grid, no decoration',
+    },
+    'kitchen-paper': {
+      bg: '#fdfaf0', card: '#f7f0dc', border: '#d0bf95', ink: '#140d04',
+      muted: '#5a4c30', radius: '10px', gap: '4px',
+      shadow: '0 1px 3px rgba(80,50,10,0.14)',
+      todayBorder: '#0f9d58', todayShadow: '0 0 0 2px rgba(210,130,55,0.28)',
+      todayBg: '#fdfaf0', todayDateColor: '#0f9d58',
+      pillMix: '28', hasPillBorder: true, pillRadius: '5px',
+      hdrBorderStyle: 'dashed', titleStyle: 'italic',
+      label: 'Kitchen Paper', desc: 'Warm paper, rounded cards, dashed dividers',
+    },
+    'japandi': {
+      bg: '#f5f2ec', card: '#eceae3', border: '#ccc9bf', ink: '#1c1a14',
+      muted: '#7a7060', radius: '2px', gap: '3px', shadow: 'none',
+      todayBorder: '#4285f4', todayShadow: 'inset 0 2px 0 #4285f4',
+      todayBg: '#eceae3', todayDateColor: '#4285f4',
+      pillMix: '22', hasPillBorder: true, pillRadius: '2px',
+      hdrBorderStyle: 'solid', titleStyle: 'normal',
+      label: 'Japandi', desc: 'Minimal, quiet, restrained',
+    },
+  };
+  var c = configs[key] || configs['default'];
+
+  var card = makeEl('div', 'opt-preview-card');
+  card.appendChild(makeEl('div', 'opt-preview-label', null, c.label));
+
+  var cal = makeEl('div', 'mini-cal', { background: c.bg, padding: '10px 10px 12px' });
+
+  var hdr = makeEl('div', 'mini-cal-header', {
+    borderBottom: '1px ' + c.hdrBorderStyle + ' ' + c.border,
+    marginBottom: '8px', paddingBottom: '8px',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+  });
+  hdr.appendChild(makeEl('span', 'mini-cal-clock', { color: c.ink }, '9:42'));
+  hdr.appendChild(makeEl('span', 'mini-cal-title', { color: c.muted, fontStyle: c.titleStyle }, 'Family Calendar'));
+  cal.appendChild(hdr);
+
+  var grid = makeEl('div', 'mini-cal-grid', { gap: c.gap });
+  var dotColors = ['#4285f4', '#e91e8c', '#0f9d58', '#4285f4', '#e91e8c', '#0f9d58', '#4285f4'];
+
+  dotColors.forEach(function (dotColor, i) {
+    var isToday = i === 2;
+    var cellEl = makeEl('div', 'mini-cal-cell', {
+      background: isToday ? c.todayBg : c.card,
+      border: '1px solid ' + (isToday ? c.todayBorder : c.border),
+      borderRadius: c.radius,
+      boxShadow: isToday ? c.todayShadow : c.shadow,
+    });
+    cellEl.appendChild(makeEl('div', 'mini-cal-date',
+      { color: isToday ? c.todayDateColor : c.ink }, String(i + 19)));
+    if (i % 3 === 0) {
+      var pillStyle = {
+        background: 'color-mix(in oklab, ' + dotColor + ' ' + c.pillMix + '%, ' + c.bg + ')',
+        borderRadius: c.pillRadius,
+        borderLeft: c.hasPillBorder ? '3px solid ' + dotColor : 'none',
+      };
+      cellEl.appendChild(makeEl('div', 'mini-cal-pill', pillStyle));
+    }
+    cellEl.appendChild(makeEl('div', 'mini-cal-dot', { background: dotColor, opacity: '0.75' }));
+    grid.appendChild(cellEl);
+  });
+
+  cal.appendChild(grid);
+  card.appendChild(cal);
+  card.appendChild(makeEl('div', null,
+    { padding: '8px 14px 10px', fontSize: '11px', color: '#9ca3af' }, c.desc));
+  return card;
+}
+
+/* ── Palette color-chip preview ──────────────────────── */
+
+function buildPalettePreview(key) {
+  var themes = typeof COLOR_THEMES !== 'undefined' ? COLOR_THEMES : {};
+  var t = themes[key];
+  var lBg     = (t && t.light && t.light['--bg-body'])     || '#f0f2f5';
+  var lBorder = (t && t.light && t.light['--border'])       || '#e5e7eb';
+  var lText   = (t && t.light && t.light['--text-primary']) || '#111118';
+  var lMuted  = (t && t.light && t.light['--text-muted'])   || '#6b7280';
+  var dBg     = (t && t.dark  && t.dark['--bg-body'])       || '#0f0f14';
+  var dBorder = (t && t.dark  && t.dark['--border'])        || '#2a2a3a';
+  var dText   = (t && t.dark  && t.dark['--text-primary'])  || '#f0f1f5';
+  var dMuted  = (t && t.dark  && t.dark['--text-muted'])    || '#a0a7b4';
+  var label   = (t && t.label) || 'Default';
+
+  function makeRow(rowLabel, colors) {
+    var row = makeEl('div', 'palette-row');
+    row.appendChild(makeEl('span', null,
+      { width: '36px', flexShrink: '0', fontSize: '11px', color: '#9ca3af' }, rowLabel));
+    var group = makeEl('div', 'palette-chip-group');
+    colors.forEach(function (color) {
+      group.appendChild(makeEl('div', 'palette-chip', { background: color }));
+    });
+    row.appendChild(group);
+    return row;
+  }
+
+  var card = makeEl('div', 'opt-preview-card');
+  card.appendChild(makeEl('div', 'opt-preview-label', null, label));
+  var chips = makeEl('div', 'palette-chips');
+  chips.appendChild(makeRow('Light',  [lBg, lBorder, lText, lMuted]));
+  chips.appendChild(makeRow('Dark',   [dBg, dBorder, dText, dMuted]));
+  chips.appendChild(makeRow('Events', ['#4285f4', '#e91e8c', '#0f9d58', '#78909c']));
+  card.appendChild(chips);
+  return card;
+}
+
+/* ── Typeface font preview ───────────────────────────── */
+
+function buildTypefacePreview(key) {
+  var pairings = typeof TYPEFACE_PAIRINGS !== 'undefined' ? TYPEFACE_PAIRINGS : {};
+  var p = pairings[key];
+  if (!p) return makeEl('div');
+
+  var displayFamily = p.displayFont || 'inherit';
+  var bodyFamily    = p.bodyFont    || displayFamily;
+
+  var card = makeEl('div', 'opt-preview-card');
+  card.appendChild(makeEl('div', 'opt-preview-label', null, p.label));
+
+  var preview = makeEl('div', 'typeface-preview');
+
+  var big = makeEl('div', 'typeface-big', { fontFamily: displayFamily });
+  big.appendChild(document.createTextNode('9:42 '));
+  big.appendChild(makeEl('span', null,
+    { fontSize: '0.45em', letterSpacing: '0.04em', fontWeight: '600' }, 'AM'));
+  preview.appendChild(big);
+
+  var sample = makeEl('div', 'typeface-body-sample', { fontFamily: bodyFamily });
+  sample.appendChild(document.createTextNode('Soccer practice · 3:30 pm'));
+  sample.appendChild(document.createElement('br'));
+  sample.appendChild(document.createTextNode('Renew library books · Due today'));
+  preview.appendChild(sample);
+
+  preview.appendChild(makeEl('div', 'typeface-pair-label', null, p.description));
+  card.appendChild(preview);
+  return card;
+}
+
 /* ── Font Selection ────────────────────────────────── */
 
 function renderStylePicker() {
@@ -1009,6 +1225,10 @@ function renderStylePicker() {
       currentSettings.display.displayStyle = key;
       markDirty();
     });
+    btn.addEventListener('mouseenter', function () {
+      showOptionPreview(btn, function () { return buildStylePreview(key); });
+    });
+    btn.addEventListener('mouseleave', hideOptionPreview);
 
     fragment.appendChild(btn);
   });
@@ -1078,6 +1298,12 @@ function renderFontOptions() {
     option.appendChild(nameEl);
     option.appendChild(descEl);
     option.appendChild(preview);
+
+    option.addEventListener('mouseenter', function () {
+      showOptionPreview(option, function () { return buildTypefacePreview(key); });
+    });
+    option.addEventListener('mouseleave', hideOptionPreview);
+
     fragment.appendChild(option);
   });
 

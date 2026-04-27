@@ -538,12 +538,35 @@ body {
   letter-spacing: 0.5px;
 }
 
+.toggle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.toggle-row:hover {
+  background: #f3f4f6;
+}
+
+.toggle-row .toggle-label {
+  flex: 1;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-row .toggle-switch {
+  margin-top: 2px;
+}
+
 .toggle-hint {
-  width: 100%;
   font-size: 12px;
   color: var(--admin-text-muted);
-  margin-top: -4px;
   font-style: italic;
+  line-height: 1.45;
 }
 
 /* Toggle switch */
@@ -1122,6 +1145,186 @@ body {
   font-style: italic;
   padding: 20px 0;
   text-align: center;
+}
+
+/* ── Option Preview Tooltip ─────────────────────────── */
+
+#option-preview-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.15s, transform 0.15s;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.18)) drop-shadow(0 2px 6px rgba(0,0,0,0.10));
+}
+
+#option-preview-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.opt-preview-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  width: 300px;
+}
+
+.opt-preview-label {
+  padding: 10px 14px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+  text-transform: uppercase;
+}
+
+/* Mini calendar grid inside style/palette previews */
+.mini-cal {
+  padding: 10px 10px 12px;
+  background: var(--mc-bg, #f0f2f5);
+}
+
+.mini-cal-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 2px 8px;
+  border-bottom: var(--mc-header-border, 1px solid #e5e7eb);
+  margin-bottom: 8px;
+}
+
+.mini-cal-clock {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--mc-ink, #111118);
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-cal-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mc-muted, #6b7280);
+  font-style: var(--mc-title-style, normal);
+}
+
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--mc-gap, 2px);
+}
+
+.mini-cal-cell {
+  background: var(--mc-card, #fff);
+  border: 1px solid var(--mc-border, #e5e7eb);
+  border-radius: var(--mc-radius, 2px);
+  padding: 4px 3px 5px;
+  min-height: 52px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--mc-shadow, none);
+}
+
+.mini-cal-cell.is-today {
+  background: var(--mc-today-bg, #fff);
+  border-color: var(--mc-today-border, #4285f4);
+  box-shadow: var(--mc-today-shadow, inset 0 2px 0 #4285f4);
+}
+
+.mini-cal-date {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mc-ink, #111118);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.mini-cal-cell.is-today .mini-cal-date {
+  color: var(--mc-today-date-color, #4285f4);
+}
+
+.mini-cal-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  margin-bottom: 2px;
+}
+
+.mini-cal-pill {
+  height: 5px;
+  border-radius: var(--mc-pill-radius, 3px);
+  margin-bottom: 2px;
+  border-left: var(--mc-pill-border, none);
+}
+
+/* Palette chips strip */
+.palette-chips {
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--pc-bg, #fff);
+}
+
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.palette-chip-group {
+  display: flex;
+  gap: 4px;
+}
+
+.palette-chip {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+
+.palette-chip.dark {
+  width: 12px;
+  height: 12px;
+}
+
+/* Typeface preview */
+.typeface-preview {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.typeface-big {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #111;
+}
+
+.typeface-body-sample {
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.typeface-pair-label {
+  font-size: 11px;
+  color: #9ca3af;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
 }
 
 /* ── Utilities ─────────────────────────────────────── */
