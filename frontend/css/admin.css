@@ -48,25 +48,22 @@ body {
   margin-bottom: 24px;
 }
 
-.link-display-sticky {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 500;
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--admin-accent);
+.btn-view-display {
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--admin-accent);
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(66,133,244,0.35), 0 1px 3px rgba(0,0,0,0.12);
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 
-.link-display-sticky:hover {
-  background: var(--admin-accent-hover);
-  box-shadow: 0 4px 14px rgba(66,133,244,0.45), 0 1px 3px rgba(0,0,0,0.12);
+.btn-view-display:hover {
+  background: #f3f4f6;
+  border-color: #c0c7d0;
 }
 
 .admin-header h1 {
