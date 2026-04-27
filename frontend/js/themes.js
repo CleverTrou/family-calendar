@@ -615,9 +615,10 @@ function JAPANDI_STYLE_CSS() {
     '  font-weight: 600;',
     '  padding: 0.3vh 0.5vw;',
     '  opacity: 1;',
-    '  white-space: nowrap;',
-    '  overflow: hidden;',
-    '  text-overflow: ellipsis;',
+    '  white-space: normal;',
+    '  overflow: visible;',
+    '  text-overflow: clip;',
+    '  line-height: 1.2;',
     '}',
 
     /* Timed events: stacked time-above-title layout */
