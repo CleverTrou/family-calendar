@@ -318,7 +318,15 @@
           </div>
 
           <div class="field-group">
-            <label>Color Theme</label>
+            <label>Style</label>
+            <p class="field-hint">Decorative layer applied on top of any palette.</p>
+            <div id="display-style-picker" class="style-picker">
+              <!-- populated by JS -->
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label>Palette</label>
             <div id="theme-palette-picker" class="theme-palette-grid">
               <!-- populated by JS -->
             </div>
@@ -403,10 +411,10 @@
           </div>
         </section>
 
-        <!-- Font Section -->
+        <!-- Typefaces Section -->
         <section class="card">
-          <h2>Font</h2>
-          <p class="card-desc">Choose a typeface for the calendar display.</p>
+          <h2>Typefaces</h2>
+          <p class="card-desc">Choose a font pairing for the calendar display. Some options combine a display font for the clock and headings with a separate body font for event text.</p>
           <div id="font-options" class="font-grid">
             <!-- populated by JS -->
           </div>

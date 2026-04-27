@@ -234,8 +234,7 @@ var COLOR_THEMES = {
       '--reminder-done':   '#4a3a22',
     },
     // Extra CSS beyond variable overrides — injected only when this
-    // theme is selected. Scoped by [data-color-theme="kitchen-paper"].
-    decorative: KITCHEN_PAPER_DECORATIVE_CSS(),
+    // theme is selected. Scoped by [data-display-style="kitchen-paper"].
   },
 };
 
@@ -246,9 +245,10 @@ var COLOR_THEME_ORDER = [
 ];
 
 /**
- * Apply a color theme by injecting CSS variable overrides.
- * Also sets data-color-theme on <html> and appends any theme-specific
- * `decorative` CSS (beyond variable overrides).
+ * Apply a color palette by injecting CSS variable overrides.
+ * Sets data-color-theme on <html> for palette identification.
+ * Decorative styling (grain, rounded cards, etc.) is handled
+ * separately by applyDisplayStyle().
  * @param {string} themeName - Key from COLOR_THEMES
  */
 function applyColorTheme(themeName) {
@@ -261,7 +261,6 @@ function applyColorTheme(themeName) {
 
   var theme = COLOR_THEMES[themeName];
   if (!theme || !theme.light) {
-    // Default theme — remove overrides, fall back to styles.css
     style.textContent = '';
     document.documentElement.removeAttribute('data-color-theme');
     return;
@@ -269,47 +268,96 @@ function applyColorTheme(themeName) {
 
   document.documentElement.setAttribute('data-color-theme', themeName);
 
-  var css = '';
-
-  css += ':root[data-theme="light"] {\n';
+  var css = ':root[data-theme="light"] {\n';
   for (var kl in theme.light) {
     css += '  ' + kl + ': ' + theme.light[kl] + ';\n';
   }
   css += '}\n';
-
   css += ':root[data-theme="dark"] {\n';
   for (var kd in theme.dark) {
     css += '  ' + kd + ': ' + theme.dark[kd] + ';\n';
   }
   css += '}\n';
 
-  if (theme.decorative) {
-    css += theme.decorative;
-  }
-
   style.textContent = css;
 }
 
 /**
- * Warm-domestic "Kitchen Paper" decorative CSS. Scoped by
- * [data-color-theme="kitchen-paper"] so it only takes effect when
- * the user selects this theme. Captures the design's signature
- * treatments: paper grain texture, dashed dividers, rounded cards,
- * today-ribbon, pastel event pills with colored left border, and
- * stacked time-above-title event layout for distance legibility.
+ * Apply a display style by setting data-display-style on <html>
+ * and injecting the style's decorative CSS overlay.
+ * @param {string} styleName - Key from DISPLAY_STYLES
  */
-function KITCHEN_PAPER_DECORATIVE_CSS() {
+function applyDisplayStyle(styleName) {
+  var style = document.getElementById('display-style-css');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'display-style-css';
+    document.head.appendChild(style);
+  }
+
+  var ds = DISPLAY_STYLES[styleName];
+  if (!ds) {
+    style.textContent = '';
+    document.documentElement.removeAttribute('data-display-style');
+    return;
+  }
+
+  document.documentElement.setAttribute('data-display-style', styleName);
+  style.textContent = ds.css || '';
+}
+
+/**
+ * Apply a typeface pairing by injecting a Google Fonts link (if needed)
+ * and setting CSS font-stack variables on :root.
+ * @param {string} pairingKey - Key from TYPEFACE_PAIRINGS, or 'system'
+ */
+function applyTypefacePairing(pairingKey) {
+  var link = document.getElementById('typeface-gfont');
+
+  if (!pairingKey || pairingKey === 'system') {
+    if (link) link.remove();
+    document.documentElement.style.removeProperty('--display-font');
+    document.documentElement.style.removeProperty('--body-font');
+    document.documentElement.removeAttribute('data-font');
+    return;
+  }
+
+  var pairing = TYPEFACE_PAIRINGS[pairingKey];
+  if (!pairing) return;
+
+  document.documentElement.setAttribute('data-font', pairingKey);
+
+  var importUrl = 'https://fonts.googleapis.com/css2?family=' + pairing.googleImport + '&display=swap';
+  if (!link || link.href !== importUrl) {
+    if (link) link.remove();
+    link = document.createElement('link');
+    link.id = 'typeface-gfont';
+    link.rel = 'stylesheet';
+    link.href = importUrl;
+    document.head.appendChild(link);
+  }
+
+  document.documentElement.style.setProperty('--display-font', pairing.displayFont);
+  document.documentElement.style.setProperty('--body-font', pairing.bodyFont);
+}
+
+/**
+ * Kitchen Paper style CSS — warm-domestic aesthetic.
+ * Paper grain, rounded cards, dashed dividers, pastel event pills,
+ * stacked time/title layout. Scoped by [data-display-style="kitchen-paper"].
+ */
+function KITCHEN_PAPER_STYLE_CSS() {
   // SVG paper grain — encoded inline to avoid an extra HTTP request.
   var grainLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
   var grainDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
-    '[data-color-theme="kitchen-paper"] body {',
+    '[data-display-style="kitchen-paper"] body {',
     '  background:',
     '    radial-gradient(120% 80% at 20% 0%, var(--bg-card), var(--bg-body) 55%, var(--bg-card) 100%);',
     '  position: relative;',
     '}',
-    '[data-color-theme="kitchen-paper"] body::before {',
+    '[data-display-style="kitchen-paper"] body::before {',
     '  content: "";',
     '  position: fixed; inset: 0; pointer-events: none; z-index: 0;',
     '  background-image: ' + grainLight + ';',
@@ -317,29 +365,29 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '  mix-blend-mode: multiply;',
     '  opacity: 0.55;',
     '}',
-    '[data-color-theme="kitchen-paper"][data-theme="dark"] body::before {',
+    '[data-display-style="kitchen-paper"][data-theme="dark"] body::before {',
     '  background-image: ' + grainDark + ';',
     '  mix-blend-mode: screen;',
     '  opacity: 0.6;',
     '}',
     /* Layer everything above the grain */
-    '[data-color-theme="kitchen-paper"] .header,',
-    '[data-color-theme="kitchen-paper"] .main,',
-    '[data-color-theme="kitchen-paper"] .footer { position: relative; z-index: 1; }',
+    '[data-display-style="kitchen-paper"] .header,',
+    '[data-display-style="kitchen-paper"] .main,',
+    '[data-display-style="kitchen-paper"] .footer { position: relative; z-index: 1; }',
 
     /* Header with dashed bottom rule and warm accents */
-    '[data-color-theme="kitchen-paper"] .header {',
+    '[data-display-style="kitchen-paper"] .header {',
     '  background: transparent;',
     '  border-bottom: 1px dashed var(--border);',
     '}',
-    '[data-color-theme="kitchen-paper"] .clock {',
+    '[data-display-style="kitchen-paper"] .clock {',
     '  font-weight: 500; letter-spacing: -0.02em;',
     '}',
-    '[data-color-theme="kitchen-paper"] .date {',
+    '[data-display-style="kitchen-paper"] .date {',
     '  color: var(--text-secondary);',
     '  font-style: italic;',
     '}',
-    '[data-color-theme="kitchen-paper"] .header-title {',
+    '[data-display-style="kitchen-paper"] .header-title {',
     '  letter-spacing: 0.22em;',
     '  color: var(--text-muted);',
     '  font-style: italic;',
@@ -347,12 +395,12 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '}',
 
     /* Main: subtle paper gradient, no solid borders between panels */
-    '[data-color-theme="kitchen-paper"] .main { background: transparent; gap: 0; }',
-    '[data-color-theme="kitchen-paper"] .calendar-panel,',
-    '[data-color-theme="kitchen-paper"] .reminders-panel { background: transparent; }',
+    '[data-display-style="kitchen-paper"] .main { background: transparent; gap: 0; }',
+    '[data-display-style="kitchen-paper"] .calendar-panel,',
+    '[data-display-style="kitchen-paper"] .reminders-panel { background: transparent; }',
 
     /* Week label banner — dashed spine under the handwritten label */
-    '[data-color-theme="kitchen-paper"] .week-label {',
+    '[data-display-style="kitchen-paper"] .week-label {',
     '  background: transparent;',
     '  color: var(--text-primary);',
     '  font-weight: 600;',
@@ -365,11 +413,11 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '}',
 
     /* Day-of-week header — subtle, spaced uppercase */
-    '[data-color-theme="kitchen-paper"] .week-header {',
+    '[data-display-style="kitchen-paper"] .week-header {',
     '  background: transparent;',
     '  border-bottom: 1px dashed var(--border);',
     '}',
-    '[data-color-theme="kitchen-paper"] .week-header-cell {',
+    '[data-display-style="kitchen-paper"] .week-header-cell {',
     '  color: var(--text-muted);',
     '  letter-spacing: 0.2em;',
     '  text-align: left;',
@@ -377,14 +425,14 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '}',
 
     /* Week row: no harsh solid border */
-    '[data-color-theme="kitchen-paper"] .week-row { border-bottom: none; }',
-    '[data-color-theme="kitchen-paper"] .week-days {',
+    '[data-display-style="kitchen-paper"] .week-row { border-bottom: none; }',
+    '[data-display-style="kitchen-paper"] .week-days {',
     '  gap: 0.5vw;',
     '  padding: 0.6vh 0.6vw;',
     '}',
 
     /* Day cells become rounded "paper cards" with subtle inset shadow */
-    '[data-color-theme="kitchen-paper"] .day-cell {',
+    '[data-display-style="kitchen-paper"] .day-cell {',
     '  background: var(--bg-card);',
     '  border: 1px solid var(--border);',
     '  border-radius: 10px;',
@@ -392,7 +440,7 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '  position: relative;',
     '  padding: 0.8vh 0.6vw;',
     '}',
-    '[data-color-theme="kitchen-paper"] .day-cell::before {',
+    '[data-display-style="kitchen-paper"] .day-cell::before {',
     '  content: "";',
     '  position: absolute; inset: 0 0 auto 0; height: 16px;',
     '  background: linear-gradient(to bottom, rgba(0,0,0,0.04), transparent);',
@@ -402,34 +450,34 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
 
     /* Today: warm halo (ribbon label dropped — color alone is enough
        and the ribbon collided with the weather badge on the right) */
-    '[data-color-theme="kitchen-paper"] .day-cell.is-today {',
+    '[data-display-style="kitchen-paper"] .day-cell.is-today {',
     '  background: var(--bg-body);',
     '  border-color: var(--color-family);',
     '  box-shadow: 0 0 0 3px rgba(210, 130, 55, 0.25), 0 2px 10px var(--shadow);',
     '}',
-    '[data-color-theme="kitchen-paper"] .day-cell.is-today .day-cell-date {',
+    '[data-display-style="kitchen-paper"] .day-cell.is-today .day-cell-date {',
     '  color: var(--color-family);',
     '}',
 
     /* Date number: warmer, tighter */
-    '[data-color-theme="kitchen-paper"] .day-cell-date {',
+    '[data-display-style="kitchen-paper"] .day-cell-date {',
     '  font-weight: 600;',
     '  letter-spacing: -0.02em;',
     '  line-height: 0.9;',
     '}',
 
     /* Weather: inline (icon + hi / lo) instead of stacked, with "/" divider */
-    '[data-color-theme="kitchen-paper"] .day-weather-temps {',
+    '[data-display-style="kitchen-paper"] .day-weather-temps {',
     '  flex-direction: row;',
     '  align-items: baseline;',
     '  gap: 0.15vw;',
     '}',
-    '[data-color-theme="kitchen-paper"] .day-weather-lo::before {',
+    '[data-display-style="kitchen-paper"] .day-weather-lo::before {',
     '  content: " / ";',
     '  color: var(--text-muted);',
     '  margin: 0 0.1vw;',
     '}',
-    '[data-color-theme="kitchen-paper"] .day-weather-hi {',
+    '[data-display-style="kitchen-paper"] .day-weather-hi {',
     '  color: var(--text-secondary);',
     '  font-weight: 600;',
     '}',
@@ -438,7 +486,7 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
        !important needed to override the inline style.backgroundColor
        set in buildAllDayEventCompact. The --event-color custom prop
        is also set inline on the element so we can color-mix here. */
-    '[data-color-theme="kitchen-paper"] .allday-event {',
+    '[data-display-style="kitchen-paper"] .allday-event {',
     '  background: color-mix(in oklab, var(--event-color) 28%, var(--bg-body)) !important;',
     '  color: var(--text-primary);',
     '  border-left: 3px solid var(--event-color);',
@@ -454,18 +502,18 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
 
     /* Timed event: stack time above title so the title gets full cell
        width — addresses "hard to read from across the room". */
-    '[data-color-theme="kitchen-paper"] .timed-event {',
+    '[data-display-style="kitchen-paper"] .timed-event {',
     '  display: block;',
     '  position: relative;',
     '  padding-left: 1vw;',
     '  font-size: 1.1vw;',
     '  line-height: 1.2;',
     '}',
-    '[data-color-theme="kitchen-paper"] .timed-event-dot {',
+    '[data-display-style="kitchen-paper"] .timed-event-dot {',
     '  position: absolute; left: 0; top: 0.55vh;',
     '  width: 0.65vw; height: 0.65vw;',
     '}',
-    '[data-color-theme="kitchen-paper"] .timed-event-time {',
+    '[data-display-style="kitchen-paper"] .timed-event-time {',
     '  display: block;',
     '  font-size: 0.85vw;',
     '  font-weight: 600;',
@@ -474,7 +522,7 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '  text-transform: lowercase;',
     '  margin-bottom: 0.1vh;',
     '}',
-    '[data-color-theme="kitchen-paper"] .timed-event-title {',
+    '[data-display-style="kitchen-paper"] .timed-event-title {',
     '  display: block;',
     '  padding-left: 0;',
     '  font-weight: 600;',
@@ -484,14 +532,14 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '  overflow: visible;',
     '  text-wrap: pretty;',
     '}',
-    '[data-color-theme="kitchen-paper"] .day-events-more {',
+    '[data-display-style="kitchen-paper"] .day-events-more {',
     '  font-size: 1vw;',
     '  font-style: italic;',
     '  padding-left: 1vw;',
     '}',
 
     /* Reminders panel: dashed separators, rounded card treatment */
-    '[data-color-theme="kitchen-paper"] .panel-header {',
+    '[data-display-style="kitchen-paper"] .panel-header {',
     '  background: transparent;',
     '  border-bottom: 1px dashed var(--border);',
     '  color: var(--text-muted);',
@@ -501,28 +549,28 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     '  font-size: 1.3vw;',
     '  font-weight: 600;',
     '}',
-    '[data-color-theme="kitchen-paper"] .reminder-item {',
+    '[data-display-style="kitchen-paper"] .reminder-item {',
     '  border-bottom: 1px dashed var(--border);',
     '}',
-    '[data-color-theme="kitchen-paper"] .reminder-checkbox {',
+    '[data-display-style="kitchen-paper"] .reminder-checkbox {',
     '  border-color: var(--color-family);',
     '}',
-    '[data-color-theme="kitchen-paper"] .reminder-checkbox.google-task {',
+    '[data-display-style="kitchen-paper"] .reminder-checkbox.google-task {',
     '  border-color: var(--color-primary);',
     '  border-radius: 4px;',
     '}',
-    '[data-color-theme="kitchen-paper"] .reminder-due {',
+    '[data-display-style="kitchen-paper"] .reminder-due {',
     '  font-style: italic;',
     '  color: var(--text-muted);',
     '}',
-    '[data-color-theme="kitchen-paper"] .reminders-meta {',
+    '[data-display-style="kitchen-paper"] .reminders-meta {',
     '  background: transparent;',
     '  border-top: 1px dashed var(--border);',
     '  font-style: italic;',
     '}',
 
     /* Footer: dashed top rule, no solid background */
-    '[data-color-theme="kitchen-paper"] .footer {',
+    '[data-display-style="kitchen-paper"] .footer {',
     '  background: transparent;',
     '  border-top: 1px dashed var(--border);',
     '  letter-spacing: 0.16em;',
@@ -532,3 +580,204 @@ function KITCHEN_PAPER_DECORATIVE_CSS() {
     ''
   ].join('\n');
 }
+
+/**
+ * Japandi style CSS — minimal, quiet, restrained.
+ * Slight rounding (2px), accent top-line on today, pastel event pills,
+ * stacked time/title layout, no grain. Scoped by [data-display-style="japandi"].
+ */
+function JAPANDI_STYLE_CSS() {
+  return [
+    /* Day cells: slight rounding, card surface */
+    '[data-display-style="japandi"] .day-cell {',
+    '  background: var(--bg-card);',
+    '  border: 1px solid var(--border);',
+    '  border-radius: 2px;',
+    '  box-shadow: none;',
+    '}',
+
+    /* Today: accent top-line instead of halo */
+    '[data-display-style="japandi"] .day-cell.is-today {',
+    '  background: var(--bg-card);',
+    '  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--border));',
+    '  box-shadow: inset 0 2px 0 var(--color-primary);',
+    '}',
+    '[data-display-style="japandi"] .day-cell.is-today .day-cell-date {',
+    '  color: var(--color-primary);',
+    '}',
+
+    /* All-day events: pastel fill + colored left border */
+    '[data-display-style="japandi"] .allday-event {',
+    '  background: color-mix(in oklab, var(--event-color) 22%, var(--bg-body)) !important;',
+    '  color: var(--text-primary);',
+    '  border-left: 3px solid var(--event-color);',
+    '  border-radius: 3px;',
+    '  font-weight: 600;',
+    '  padding: 0.3vh 0.5vw;',
+    '  opacity: 1;',
+    '  white-space: nowrap;',
+    '  overflow: hidden;',
+    '  text-overflow: ellipsis;',
+    '}',
+
+    /* Timed events: stacked time-above-title layout */
+    '[data-display-style="japandi"] .timed-event {',
+    '  display: block;',
+    '  position: relative;',
+    '  padding-left: 1vw;',
+    '  font-size: 1.1vw;',
+    '  line-height: 1.2;',
+    '}',
+    '[data-display-style="japandi"] .timed-event-dot {',
+    '  position: absolute; left: 0; top: 0.55vh;',
+    '  width: 0.65vw; height: 0.65vw;',
+    '}',
+    '[data-display-style="japandi"] .timed-event-time {',
+    '  display: block;',
+    '  font-size: 0.85vw;',
+    '  font-weight: 600;',
+    '  color: var(--text-muted);',
+    '  letter-spacing: 0.02em;',
+    '  margin-bottom: 0.1vh;',
+    '}',
+    '[data-display-style="japandi"] .timed-event-title {',
+    '  display: block;',
+    '  font-weight: 600;',
+    '  font-size: 1.1vw;',
+    '  line-height: 1.2;',
+    '  white-space: normal;',
+    '  overflow: visible;',
+    '  text-wrap: pretty;',
+    '}',
+    '[data-display-style="japandi"] .day-events-more {',
+    '  font-size: 1vw;',
+    '  padding-left: 1vw;',
+    '}',
+
+    /* Reminders: hairline separators */
+    '[data-display-style="japandi"] .reminder-item {',
+    '  border-bottom: 1px solid var(--border);',
+    '}',
+    '[data-display-style="japandi"] .reminder-checkbox {',
+    '  border-color: var(--color-family);',
+    '}',
+    '[data-display-style="japandi"] .reminder-checkbox.google-task {',
+    '  border-color: var(--color-primary);',
+    '  border-radius: 4px;',
+    '}',
+
+    /* Week days: subtle gap between cells */
+    '[data-display-style="japandi"] .week-days {',
+    '  gap: 0.35vw;',
+    '  padding: 0.5vh 0.4vw;',
+    '}',
+    '[data-display-style="japandi"] .week-row { border-bottom: none; }',
+
+    /* Week label: clean, no italic */
+    '[data-display-style="japandi"] .week-label {',
+    '  background: transparent;',
+    '  border-bottom: 1px solid var(--border);',
+    '  font-size: 0.78vw;',
+    '  letter-spacing: 0.18em;',
+    '  text-transform: uppercase;',
+    '  font-weight: 600;',
+    '  padding: 0.6vh 0.5vw 0.5vh;',
+    '}',
+    '[data-display-style="japandi"] .week-header {',
+    '  background: transparent;',
+    '  border-bottom: 1px solid var(--border);',
+    '}',
+    ''
+  ].join('\n');
+}
+
+/* ── Display Styles ──────────────────────────────────────────────────── */
+
+/**
+ * Display styles define the decorative layer applied on top of any palette.
+ * Style and palette are orthogonal: any style works with any palette.
+ *
+ * 'default'       — base styles.css only; no overlay
+ * 'kitchen-paper' — warm-domestic: grain, rounded cards, dashed dividers
+ * 'japandi'       — minimal: slight rounding, accent line, hairlines
+ */
+var DISPLAY_STYLES = {
+  'default': {
+    label: 'Default',
+    description: 'Clean grid, no decoration',
+    css: '',
+  },
+  'kitchen-paper': {
+    label: 'Kitchen Paper',
+    description: 'Warm paper, rounded cards, dashed dividers',
+    css: KITCHEN_PAPER_STYLE_CSS(),
+  },
+  'japandi': {
+    label: 'Japandi',
+    description: 'Minimal, quiet, restrained',
+    css: JAPANDI_STYLE_CSS(),
+  },
+};
+
+var DISPLAY_STYLE_ORDER = ['default', 'kitchen-paper', 'japandi'];
+
+/* ── Typeface Pairings ───────────────────────────────────────────────── */
+
+/**
+ * Typeface pairings for the calendar display.
+ * Each pairing sets --display-font (clock, headings) and --body-font (text).
+ * Single-font pairings set both to the same family.
+ *
+ * 'system'    — OS default, no Google Fonts
+ * 'editorial' — Fraunces display + Inter body (confident, modern)
+ * 'mincho'    — Shippori Mincho throughout (quiet, traditional)
+ * 'gothic'    — Zen Kaku Gothic throughout (calm humanist sans)
+ * 'newsreader'— Newsreader throughout (warm, friendly, legible)
+ * 'grotesk'   — IBM Plex Sans body + Plex Mono numerals (engineered)
+ */
+var TYPEFACE_PAIRINGS = {
+  'system': {
+    label: 'System',
+    description: 'OS default',
+    displayFont: null,
+    bodyFont: null,
+    googleImport: null,
+  },
+  'editorial': {
+    label: 'Editorial',
+    description: 'Fraunces · Inter',
+    displayFont: '"Fraunces", Georgia, serif',
+    bodyFont: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+    googleImport: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700',
+  },
+  'mincho': {
+    label: 'Mincho',
+    description: 'Shippori Mincho',
+    displayFont: '"Shippori Mincho", Georgia, serif',
+    bodyFont: '"Shippori Mincho", Georgia, serif',
+    googleImport: 'Shippori+Mincho:wght@400;500;600;700;800',
+  },
+  'gothic': {
+    label: 'Gothic',
+    description: 'Zen Kaku Gothic',
+    displayFont: '"Zen Kaku Gothic New", "Inter", sans-serif',
+    bodyFont: '"Zen Kaku Gothic New", "Inter", sans-serif',
+    googleImport: 'Zen+Kaku+Gothic+New:wght@400;500;700;900',
+  },
+  'newsreader': {
+    label: 'Newsreader',
+    description: 'Newsreader',
+    displayFont: '"Newsreader", Georgia, serif',
+    bodyFont: '"Newsreader", Georgia, serif',
+    googleImport: 'Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700',
+  },
+  'grotesk': {
+    label: 'Grotesk',
+    description: 'IBM Plex Sans · Mono',
+    displayFont: '"IBM Plex Mono", ui-monospace, monospace',
+    bodyFont: '"IBM Plex Sans", "Inter", sans-serif',
+    googleImport: 'IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600',
+  },
+};
+
+var TYPEFACE_ORDER = ['system', 'editorial', 'mincho', 'gothic', 'newsreader', 'grotesk'];

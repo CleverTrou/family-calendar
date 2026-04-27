@@ -97,6 +97,7 @@ function applySettings(settings) {
   // Theme
   if (settings.display) {
     applyColorTheme(settings.display.colorTheme || 'default');
+    applyDisplayStyle(settings.display.displayStyle || 'kitchen-paper');
     updateThemeFromSettings(settings.display);
     applyFont(settings.display.font);
     applyDisplayScale(settings.display.displayScale);
@@ -166,47 +167,17 @@ function updateThemeFromSettings(display) {
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 }
 
-/* ── Font ───────────────────────────────────────────── */
+/* ── Font / Typeface ────────────────────────────────── */
 
 function applyFont(fontKey) {
-  if (!fontKey || fontKey === 'system') {
-    // Remove any Google Fonts link and reset to system font
-    if (currentFontLink) {
-      currentFontLink.remove();
-      currentFontLink = null;
-    }
-    document.documentElement.style.removeProperty('--display-font');
-    return;
+  // Delegate to themes.js applyTypefacePairing which handles
+  // multi-variable font pairings (--display-font + --body-font).
+  // Legacy single-font keys not in TYPEFACE_PAIRINGS fall back to system.
+  if (typeof applyTypefacePairing === 'function') {
+    applyTypefacePairing(fontKey);
+    // Keep currentFontLink in sync (applyTypefacePairing manages its own link)
+    currentFontLink = document.getElementById('typeface-gfont');
   }
-
-  // Font metadata is embedded in settings from the backend,
-  // but we also need the Google Fonts import URL. We can construct it
-  // from the font key using a known mapping.
-  var fontMap = {
-    inter:         { stack: '"Inter", sans-serif',         imp: 'Inter:wght@400;500;600;700' },
-    'source-sans': { stack: '"Source Sans 3", sans-serif', imp: 'Source+Sans+3:wght@400;500;600;700' },
-    lato:          { stack: '"Lato", sans-serif',          imp: 'Lato:wght@400;700' },
-    nunito:        { stack: '"Nunito", sans-serif',        imp: 'Nunito:wght@400;600;700' },
-    'roboto-slab': { stack: '"Roboto Slab", serif',        imp: 'Roboto+Slab:wght@400;500;600;700' },
-    merriweather:  { stack: '"Merriweather", serif',       imp: 'Merriweather:wght@400;700' },
-    fraunces:      { stack: '"Fraunces", Georgia, serif',  imp: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700' },
-    newsreader:    { stack: '"Newsreader", Georgia, serif',imp: 'Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700' },
-  };
-
-  var font = fontMap[fontKey];
-  if (!font) return;
-
-  // Load Google Font if not already loaded
-  var importUrl = 'https://fonts.googleapis.com/css2?family=' + font.imp + '&display=swap';
-  if (!currentFontLink || currentFontLink.href !== importUrl) {
-    if (currentFontLink) currentFontLink.remove();
-    currentFontLink = document.createElement('link');
-    currentFontLink.rel = 'stylesheet';
-    currentFontLink.href = importUrl;
-    document.head.appendChild(currentFontLink);
-  }
-
-  document.documentElement.style.setProperty('--display-font', font.stack);
 }
 
 /* ── Display Scale (CSS zoom) ──────────────────────── */

@@ -49,7 +49,9 @@ html, body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  font-family: var(--display-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  /* --body-font set by typeface pairings that split display/body fonts;
+     falls back to --display-font (single-font pairings) then system. */
+  font-family: var(--body-font, var(--display-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif));
   background: var(--bg-body);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -83,6 +85,7 @@ body {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+  font-family: var(--display-font, var(--body-font, inherit));
 }
 
 .date {

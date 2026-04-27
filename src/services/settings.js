@@ -27,7 +27,8 @@ const DEFAULTS = {
   display: {
     theme: 'auto',           // 'light', 'dark', 'auto', or 'auto-sun'
     colorTheme: 'default',   // color palette key from COLOR_THEMES
-    font: 'system',          // font key from AVAILABLE_FONTS
+    displayStyle: 'kitchen-paper', // decorative style: 'default', 'kitchen-paper', 'japandi'
+    font: 'system',          // typeface pairing key from TYPEFACE_PAIRINGS
     weekStart: 'monday',     // 'monday' or 'sunday' — first column of the grid
     darkModeStart: 21,       // hour (24h) to switch to dark
     darkModeEnd: 7,          // hour (24h) to switch to light
@@ -45,54 +46,48 @@ const DEFAULTS = {
 };
 
 /**
- * Fonts available in the settings panel.
- * 'system' uses the OS default. Others are Google Fonts loaded by the frontend.
+ * Typeface pairings available in the settings panel.
+ * Each pairing defines a display font (clock, headings) and body font (text).
+ * 'system' uses the OS default; others load from Google Fonts.
+ *
+ * Kept in sync with TYPEFACE_PAIRINGS in frontend/js/themes.js.
  */
 export const AVAILABLE_FONTS = {
   system: {
-    label: 'System Default',
+    label: 'System',
+    description: 'OS default',
     stack: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     googleImport: null,
   },
-  inter: {
-    label: 'Inter',
-    stack: '"Inter", sans-serif',
-    googleImport: 'Inter:wght@400;500;600;700',
-  },
-  'source-sans': {
-    label: 'Source Sans 3',
-    stack: '"Source Sans 3", sans-serif',
-    googleImport: 'Source+Sans+3:wght@400;500;600;700',
-  },
-  lato: {
-    label: 'Lato',
-    stack: '"Lato", sans-serif',
-    googleImport: 'Lato:wght@400;700',
-  },
-  nunito: {
-    label: 'Nunito',
-    stack: '"Nunito", sans-serif',
-    googleImport: 'Nunito:wght@400;600;700',
-  },
-  'roboto-slab': {
-    label: 'Roboto Slab',
-    stack: '"Roboto Slab", serif',
-    googleImport: 'Roboto+Slab:wght@400;500;600;700',
-  },
-  merriweather: {
-    label: 'Merriweather',
-    stack: '"Merriweather", serif',
-    googleImport: 'Merriweather:wght@400;700',
-  },
-  fraunces: {
-    label: 'Fraunces',
+  editorial: {
+    label: 'Editorial',
+    description: 'Fraunces · Inter',
     stack: '"Fraunces", Georgia, serif',
-    googleImport: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700',
+    googleImport: 'Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700',
+  },
+  mincho: {
+    label: 'Mincho',
+    description: 'Shippori Mincho',
+    stack: '"Shippori Mincho", Georgia, serif',
+    googleImport: 'Shippori+Mincho:wght@400;500;600;700;800',
+  },
+  gothic: {
+    label: 'Gothic',
+    description: 'Zen Kaku Gothic',
+    stack: '"Zen Kaku Gothic New", "Inter", sans-serif',
+    googleImport: 'Zen+Kaku+Gothic+New:wght@400;500;700;900',
   },
   newsreader: {
     label: 'Newsreader',
+    description: 'Newsreader',
     stack: '"Newsreader", Georgia, serif',
     googleImport: 'Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700',
+  },
+  grotesk: {
+    label: 'Grotesk',
+    description: 'IBM Plex Sans · Mono',
+    stack: '"IBM Plex Sans", "Inter", sans-serif',
+    googleImport: 'IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600',
   },
 };
 

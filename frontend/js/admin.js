@@ -62,6 +62,7 @@ async function loadData() {
     renderColorPickers();
     renderWeatherControls();
     renderThemeControls();
+    renderStylePicker();
     renderScreenSchedule();
     renderDisplayScale();
     renderFontOptions();
@@ -973,52 +974,112 @@ function renderDisplayScale() {
 
 /* ── Font Selection ────────────────────────────────── */
 
-function renderFontOptions() {
-  const container = document.getElementById('font-options');
-  const currentFont = currentSettings.display.font;
+function renderStylePicker() {
+  const container = document.getElementById('display-style-picker');
+  if (!container) return;
+
+  const current = (currentSettings.display && currentSettings.display.displayStyle) || 'kitchen-paper';
+  const styles = typeof DISPLAY_STYLES !== 'undefined' ? DISPLAY_STYLES : {};
+  const order = typeof DISPLAY_STYLE_ORDER !== 'undefined' ? DISPLAY_STYLE_ORDER : Object.keys(styles);
   const fragment = document.createDocumentFragment();
 
-  const googleImports = Object.values(availableFonts)
-    .filter((f) => f.googleImport)
-    .map((f) => 'family=' + f.googleImport);
+  order.forEach(function (key) {
+    var ds = styles[key];
+    if (!ds) return;
 
-  if (googleImports.length > 0) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?' + googleImports.join('&') + '&display=swap';
-    document.head.appendChild(link);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'style-btn' + (key === current ? ' selected' : '');
+    btn.dataset.style = key;
+
+    var label = document.createElement('span');
+    label.className = 'style-btn-label';
+    label.textContent = ds.label;
+
+    var desc = document.createElement('span');
+    desc.className = 'style-btn-desc';
+    desc.textContent = ds.description;
+
+    btn.appendChild(label);
+    btn.appendChild(desc);
+
+    btn.addEventListener('click', function () {
+      container.querySelectorAll('.style-btn').forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      currentSettings.display.displayStyle = key;
+      markDirty();
+    });
+
+    fragment.appendChild(btn);
+  });
+
+  container.textContent = '';
+  container.appendChild(fragment);
+}
+
+function renderFontOptions() {
+  const container = document.getElementById('font-options');
+  if (!container) return;
+
+  const currentFont = (currentSettings.display && currentSettings.display.font) || 'system';
+  const pairings = typeof TYPEFACE_PAIRINGS !== 'undefined' ? TYPEFACE_PAIRINGS : {};
+  const order = typeof TYPEFACE_ORDER !== 'undefined' ? TYPEFACE_ORDER : Object.keys(pairings);
+  const fragment = document.createDocumentFragment();
+
+  // Pre-load all Google Fonts for admin preview
+  const imports = order
+    .map((k) => pairings[k] && pairings[k].googleImport)
+    .filter(Boolean)
+    .map((imp) => 'family=' + imp);
+  if (imports.length > 0) {
+    var existingLink = document.getElementById('admin-gfonts-preview');
+    if (!existingLink) {
+      existingLink = document.createElement('link');
+      existingLink.id = 'admin-gfonts-preview';
+      existingLink.rel = 'stylesheet';
+      document.head.appendChild(existingLink);
+    }
+    existingLink.href = 'https://fonts.googleapis.com/css2?' + imports.join('&') + '&display=swap';
   }
 
-  for (const [key, font] of Object.entries(availableFonts)) {
-    const option = document.createElement('label');
+  order.forEach(function (key) {
+    var pairing = pairings[key];
+    if (!pairing) return;
+
+    var option = document.createElement('label');
     option.className = 'font-option' + (key === currentFont ? ' selected' : '');
 
-    const radio = document.createElement('input');
+    var radio = document.createElement('input');
     radio.type = 'radio';
     radio.name = 'font';
     radio.value = key;
     radio.checked = key === currentFont;
-    radio.addEventListener('change', () => {
+    radio.addEventListener('change', function () {
       currentSettings.display.font = key;
-      document.querySelectorAll('.font-option').forEach((el) => el.classList.remove('selected'));
+      document.querySelectorAll('.font-option').forEach(function (el) { el.classList.remove('selected'); });
       option.classList.add('selected');
       markDirty();
     });
 
-    const name = document.createElement('div');
-    name.className = 'font-name';
-    name.textContent = font.label;
+    var nameEl = document.createElement('div');
+    nameEl.className = 'font-name';
+    nameEl.textContent = pairing.label;
 
-    const preview = document.createElement('div');
+    var descEl = document.createElement('div');
+    descEl.className = 'font-desc';
+    descEl.textContent = pairing.description;
+
+    var preview = document.createElement('div');
     preview.className = 'font-preview';
-    preview.style.fontFamily = font.stack;
+    preview.style.fontFamily = pairing.bodyFont || pairing.displayFont || 'inherit';
     preview.textContent = 'Family Calendar';
 
     option.appendChild(radio);
-    option.appendChild(name);
+    option.appendChild(nameEl);
+    option.appendChild(descEl);
     option.appendChild(preview);
     fragment.appendChild(option);
-  }
+  });
 
   container.textContent = '';
   container.appendChild(fragment);
