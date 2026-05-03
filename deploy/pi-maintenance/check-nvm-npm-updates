@@ -42,7 +42,7 @@ nvm_latest=$(
 )
 
 if [[ -n "$nvm_latest" && -n "$nvm_current" && "$nvm_current" != "$nvm_latest" ]]; then
-  updates+=("nvm: v${nvm_current} → v${nvm_latest}")
+  updates+=("nvm: v${nvm_current} → v${nvm_latest}  →  nvm upgrade")
 fi
 
 # ── All globally installed npm packages ───────────────────────────────
@@ -59,7 +59,7 @@ for pkg, info in sorted(json.load(sys.stdin).items()):
     cur = info.get('current', '?')
     lat = info.get('latest', '?')
     if cur != lat:
-        print(f'{pkg}: {cur} → {lat}')
+        print(f'{pkg}: {cur} → {lat}  →  npm install -g {pkg}@latest')
 " 2>/dev/null
   )
 fi
