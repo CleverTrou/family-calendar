@@ -172,7 +172,20 @@ refresh=3600
 
 ### ntfy Push Notifications
 
-[ntfy](https://ntfy.sh) is a lightweight HTTP push notification service. A small cron script can watch for pending package updates (or new releases of source-compiled software) and push to your phone. Create a free private topic at ntfy.sh, subscribe in the ntfy iOS/Android app, and drop a script in `/etc/cron.weekly/`.
+[ntfy](https://ntfy.sh) is a lightweight HTTP push notification service. Small cron scripts watch for pending package updates (or new releases of source-compiled software) and push to your phone. Create a free private topic at ntfy.sh and subscribe in the ntfy iOS/Android app.
+
+#### nvm and global npm package updates
+
+`deploy/pi-maintenance/check-nvm-npm-updates` checks nvm itself (via GitHub releases API) and all globally installed npm packages (via `npm outdated -g`) weekly, sending a single ntfy notification listing anything outdated. It covers claude-code, npm, corepack, and any other package installed with `npm install -g`.
+
+Deploy once:
+
+```bash
+scp deploy/pi-maintenance/check-nvm-npm-updates parallax.local:~/bin/
+ssh parallax.local 'chmod +x ~/bin/check-nvm-npm-updates && \
+  (crontab -l 2>/dev/null | grep -v check-nvm-npm; \
+   echo "0 9 * * 1 /home/trevor/bin/check-nvm-npm-updates") | crontab -'
+```
 
 ### UxPlay — AirPlay Receiver
 

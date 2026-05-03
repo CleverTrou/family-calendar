@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Weekly check for nvm and globally installed npm package updates.
+# Sends a single ntfy notification listing every outdated item.
+#
+# npm outdated -g covers all globally installed packages automatically —
+# claude-code, npm itself, and anything else installed with npm -g.
+#
+# Deploy:
+#   scp deploy/pi-maintenance/check-nvm-npm-updates parallax.local:~/bin/
+#   ssh parallax.local chmod +x ~/bin/check-nvm-npm-updates
+#   ssh parallax.local '(crontab -l 2>/dev/null; echo "0 9 * * 1 /home/trevor/bin/check-nvm-npm-updates") | crontab -'
+
+set -euo pipefail
+
+NTFY_URL="https://ntfy.sh/a1EC57jy11KwYsm6"
+NVM_DIR="/home/trevor/.nvm"
+
+# ── Load nvm into this shell ──────────────────────────────────────────
+# Cron doesn't source ~/.bashrc, so nvm must be loaded explicitly.
+[ -s "$NVM_DIR/nvm.sh" ] || { echo "[check-updates] nvm not found at $NVM_DIR" >&2; exit 1; }
+# shellcheck disable=SC1091
+source "$NVM_DIR/nvm.sh"
+# Activate the default Node version so npm is on PATH
+nvm use default --silent 2>/dev/null \
+  || nvm use node --silent 2>/dev/null \
+  || true
+
+NPM=$(command -v npm 2>/dev/null) || {
+  echo "[check-updates] npm not on PATH after loading nvm" >&2
+  exit 1
+}
+
+updates=()
+
+# ── nvm itself ────────────────────────────────────────────────────────
+nvm_current=$(nvm --version 2>/dev/null || echo "")
+nvm_latest=$(
+  curl -sf --connect-timeout 15 \
+    "https://api.github.com/repos/nvm-sh/nvm/releases/latest" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'].lstrip('v'))" \
+  2>/dev/null || echo ""
+)
+
+if [[ -n "$nvm_latest" && -n "$nvm_current" && "$nvm_current" != "$nvm_latest" ]]; then
+  updates+=("nvm: v${nvm_current} → v${nvm_latest}")
+fi
+
+# ── All globally installed npm packages ───────────────────────────────
+# npm outdated exits 1 when packages are outdated; capture output regardless.
+outdated_json=$("$NPM" outdated -g --json 2>/dev/null || true)
+
+if [[ -n "$outdated_json" && "$outdated_json" != "{}" ]]; then
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && updates+=("$line")
+  done < <(
+    echo "$outdated_json" | python3 -c "
+import json, sys
+for pkg, info in sorted(json.load(sys.stdin).items()):
+    cur = info.get('current', '?')
+    lat = info.get('latest', '?')
+    if cur != lat:
+        print(f'{pkg}: {cur} → {lat}')
+" 2>/dev/null
+  )
+fi
+
+# ── Send notification if anything is outdated ─────────────────────────
+if [[ ${#updates[@]} -gt 0 ]]; then
+  n=${#updates[@]}
+  body=$(printf '%s\n' "${updates[@]}")
+  curl -sf --connect-timeout 15 \
+    -H "Title: ${n} nvm/npm update$([ "$n" -eq 1 ] && echo '' || echo 's') available" \
+    -H "Priority: low" \
+    -H "Tags: arrow_up" \
+    -d "$body" \
+    "$NTFY_URL" >/dev/null
+fi
