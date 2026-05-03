@@ -287,8 +287,9 @@ All configuration is via environment variables in `.env`:
 | `LIGHTWEIGHT_MODE` | `false` | Reduce resource usage for Pi Zero 2 W / Pi 3B+ |
 | `CALENDAR_DAYS_BACK` | `7` | Days in the past to fetch events |
 | `CALENDAR_DAYS_FORWARD` | `14` | Days in the future to fetch events |
-| `ADMIN_PIN` | *(none)* | Optional numeric PIN to protect `/admin` |
-| `CREDENTIAL_SECRET` | *(auto)* | Encryption key for credential store (auto-generated) |
+| `ADMIN_PIN` | *(none)* | PIN to protect `/admin`, settings, system stats, and logs — **strongly recommended** |
+| `CREDENTIAL_SECRET` | *(auto)* | Encryption key for credential store (auto-generated on first run) |
+| `REMINDERS_WEBHOOK_SECRET` | *(none)* | Shared secret for `POST /api/reminders/sync` — set a strong random value |
 | `WEATHER_LAT` | *(none)* | Latitude for weather + sunrise/sunset (or set via admin GUI) |
 | `WEATHER_LON` | *(none)* | Longitude for weather + sunrise/sunset (or set via admin GUI) |
 
@@ -298,17 +299,35 @@ All configuration is via environment variables in `.env`:
 |----------|---------|-------------|
 | `ALLOWED_NETWORKS` | *(none)* | Comma-separated CIDR ranges to allow (e.g., `10.0.0.0/24,127.0.0.1`) |
 
-When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. The admin PIN endpoint is also rate-limited to 5 attempts per minute.
+When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. The PIN endpoint is rate-limited to 5 attempts per minute.
 
 **Recommended `.env` for a home network:**
 
 ```bash
-ALLOWED_NETWORKS=192.168.1.0/24,127.0.0.1
-# or for 10.x networks:
 ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1
 # add Tailscale if you use it:
 ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1,100.64.0.0/10
+
+# Protect the admin panel and sensitive API routes
+ADMIN_PIN=your-pin-here
+
+# Required if using Apple Shortcuts reminders webhook
+REMINDERS_WEBHOOK_SECRET=your-random-secret-here
 ```
+
+#### What the PIN protects
+
+`ADMIN_PIN` gates all sensitive endpoints beyond the display frontend:
+
+- `GET /api/settings` — calendar names, colors, GPS coordinates
+- `PUT /api/settings` — write settings
+- `POST /api/sync` — force re-sync
+- `GET /api/system/stats` — hostname, CPU, memory, disk
+- `GET /api/logs` — server log tail
+- `POST /api/auth/google/start` and `POST /api/auth/microsoft/start` — OAuth initiation
+- All `/api/accounts/*` routes — credential management
+
+The display frontend (`GET /api/calendar`, `GET /api/display/status`, `GET /api/health`) remains unauthenticated so the Pi kiosk works without a token.
 
 ## License
 

@@ -9,6 +9,7 @@ import {
 } from '../services/settings.js';
 import { config } from '../config.js';
 import { getLogs } from '../services/log-buffer.js';
+import { requireAdmin } from '../services/admin-auth.js';
 
 /**
  * Register REST API routes for both the display frontend and the admin panel.
@@ -21,8 +22,11 @@ export async function registerApiRoutes(fastify) {
     return getCachedData();
   });
 
-  // Force an immediate re-sync
-  fastify.post('/sync', async () => {
+  // Force an immediate re-sync (admin only)
+  fastify.post('/sync', {
+    preHandler: requireAdmin,
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async () => {
     await syncAllCalendars();
     return { status: 'ok', ...getCachedData() };
   });
@@ -43,8 +47,8 @@ export async function registerApiRoutes(fastify) {
 
   // ── Settings endpoints (used by /admin panel) ───────
 
-  // Get current settings + metadata for the admin panel
-  fastify.get('/settings', async () => {
+  // Get current settings + metadata for the admin panel (admin only)
+  fastify.get('/settings', { preHandler: requireAdmin }, async () => {
     const data = getCachedData();
     return {
       settings: data.settings,
@@ -53,8 +57,42 @@ export async function registerApiRoutes(fastify) {
     };
   });
 
-  // Save updated settings
-  fastify.put('/settings', async (request) => {
+  const TIME_RE = '^([01]\\d|2[0-3]):[0-5]\\d$';
+  const SETTINGS_SCHEMA = {
+    body: {
+      type: 'object',
+      additionalProperties: true,
+      properties: {
+        display: {
+          type: 'object',
+          additionalProperties: true,
+          properties: {
+            theme: { type: 'string', enum: ['light', 'dark', 'auto', 'auto-sun'] },
+            weekStart: { type: 'string', enum: ['monday', 'sunday'] },
+            screenSchedule: { type: 'boolean' },
+            screenOnTime: { type: 'string', pattern: TIME_RE },
+            screenOffTime: { type: 'string', pattern: TIME_RE },
+            screenOnDays: { type: 'array', items: { type: 'integer', minimum: 0, maximum: 6 } },
+            darkModeStart: { type: 'integer', minimum: 0, maximum: 23 },
+            darkModeEnd: { type: 'integer', minimum: 0, maximum: 23 },
+            controlTvViaCec: { type: 'boolean' },
+            displayScale: { type: 'number', minimum: 0.5, maximum: 3 },
+          },
+        },
+        weather: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            lat: { type: 'string', maxLength: 20 },
+            lon: { type: 'string', maxLength: 20 },
+          },
+        },
+      },
+    },
+  };
+
+  // Save updated settings (admin only)
+  fastify.put('/settings', { preHandler: requireAdmin, schema: SETTINGS_SCHEMA }, async (request) => {
     const updated = saveSettings(request.body);
     // Trigger a re-sync so visibility changes take effect immediately
     syncAllCalendars();
@@ -130,7 +168,7 @@ export async function registerApiRoutes(fastify) {
 
   // ── System stats (admin panel monitoring) ───────────
 
-  fastify.get('/system/stats', async () => {
+  fastify.get('/system/stats', { preHandler: requireAdmin }, async () => {
     const cpus = os.cpus();
     const totalMem = os.totalmem();
     const freeMem = os.freemem();
@@ -251,7 +289,7 @@ export async function registerApiRoutes(fastify) {
 
   // ── Log viewer (admin panel) ────────────────────────
 
-  fastify.get('/logs', async (request) => {
+  fastify.get('/logs', { preHandler: requireAdmin }, async (request) => {
     const { level, limit } = request.query;
     const cap = Math.min(parseInt(limit) || 200, 200);
     return { entries: getLogs(level || null, cap) };

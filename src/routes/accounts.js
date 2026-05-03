@@ -118,11 +118,18 @@ export async function registerAccountRoutes(fastify) {
       return reply.code(400).send({ error: 'URL must start with http:// or https://' });
     }
 
-    // Test the feed by fetching it
+    // Block private/link-local IPs to prevent SSRF
+    const PRIVATE_IP = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|fc|fd)/i;
+    if (PRIVATE_IP.test(parsed.hostname)) {
+      return reply.code(400).send({ error: 'Private or internal URLs are not allowed.' });
+    }
+
+    // Test the feed by fetching it (no redirect following to prevent SSRF via open redirects)
     try {
       const response = await fetch(feedUrl, {
         headers: { 'User-Agent': 'FamilyCalendar/1.0' },
         signal: AbortSignal.timeout(15_000),
+        redirect: 'error',
       });
 
       if (!response.ok) {

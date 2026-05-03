@@ -11,9 +11,13 @@ import crypto from 'node:crypto';
 const PIN = process.env.ADMIN_PIN || '';
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+let _fallbackKey = null;
 function getHmacKey() {
-  // Use CREDENTIAL_SECRET as the HMAC key, falling back to a constant
-  return process.env.CREDENTIAL_SECRET || 'family-calendar-admin';
+  if (process.env.CREDENTIAL_SECRET) return process.env.CREDENTIAL_SECRET;
+  // Generate a random per-process key if CREDENTIAL_SECRET isn't loaded yet.
+  // Tokens will be invalidated on restart, which is fine (sessionStorage is ephemeral anyway).
+  if (!_fallbackKey) _fallbackKey = crypto.randomBytes(32).toString('hex');
+  return _fallbackKey;
 }
 
 /**
@@ -61,10 +65,14 @@ export function isPinRequired() {
   return PIN.length > 0;
 }
 
-/** Verify a PIN attempt. */
+/** Verify a PIN attempt (timing-safe). */
 export function verifyPin(attempt) {
   if (!PIN) return true; // No PIN set → always valid
-  return attempt === PIN;
+  const a = Buffer.alloc(64);
+  const b = Buffer.alloc(64);
+  Buffer.from(String(attempt)).copy(a);
+  Buffer.from(PIN).copy(b);
+  return crypto.timingSafeEqual(a, b);
 }
 
 /**

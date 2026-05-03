@@ -44,11 +44,12 @@ function getMasterSecret() {
     const envContent = fs.existsSync(ENV_FILE) ? fs.readFileSync(ENV_FILE, 'utf-8') : '';
     const separator = envContent.endsWith('\n') ? '' : '\n';
     fs.appendFileSync(ENV_FILE, `${separator}\n# Auto-generated encryption key for credential store\nCREDENTIAL_SECRET=${secret}\n`);
+    try { fs.chmodSync(ENV_FILE, 0o600); } catch { /* ignore on systems that don't support it */ }
     console.log('[CredentialStore] Generated new CREDENTIAL_SECRET and appended to .env');
   } catch (err) {
     // If .env is read-only (Docker), write to a separate file
     const keyFile = path.join(DATA_DIR, '.credential-key');
-    fs.writeFileSync(keyFile, secret, 'utf-8');
+    fs.writeFileSync(keyFile, secret, { encoding: 'utf-8', mode: 0o600 });
     console.log('[CredentialStore] Generated new encryption key in data/.credential-key');
   }
 
@@ -104,7 +105,7 @@ function loadFromDisk() {
 function saveToDisk(data) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   const encrypted = encrypt(data);
-  fs.writeFileSync(CRED_FILE, encrypted);
+  fs.writeFileSync(CRED_FILE, encrypted, { mode: 0o600 });
 }
 
 function getAll() {

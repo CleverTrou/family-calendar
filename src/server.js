@@ -20,6 +20,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Ensure data directory exists for credential store
 fs.mkdirSync(path.join(__dirname, '..', 'data'), { recursive: true });
 
+// Warn loudly at startup if the reminders webhook secret is unset or default
+const _webhookSecret = process.env.REMINDERS_WEBHOOK_SECRET || '';
+if (!_webhookSecret || _webhookSecret === 'change-me-to-a-random-string') {
+  console.warn(
+    '[Security] REMINDERS_WEBHOOK_SECRET is not set or still the default value. ' +
+    'POST /api/reminders/sync is open to anyone on the network. ' +
+    'Set a strong random value in .env to protect this endpoint.'
+  );
+}
+
 const fastify = Fastify({
   logger: {
     level: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
@@ -52,11 +62,21 @@ fastify.addHook('onSend', (request, reply, payload, done) => {
   reply.header('X-Content-Type-Options', 'nosniff');
   reply.header('X-Frame-Options', 'SAMEORIGIN');
   reply.header('Referrer-Policy', 'same-origin');
+  reply.header(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data:; " +
+    "connect-src 'self'"
+  );
   done();
 });
 
-// CORS for local development (browser on MacBook → server on Pi)
-await fastify.register(fastifyCors, { origin: true });
+// No CORS: frontend is served from the same origin as the API.
+// Disabling prevents cross-origin pages from silently reading calendar data.
+await fastify.register(fastifyCors, { origin: false });
 
 // Serve the frontend as static files
 await fastify.register(fastifyStatic, {
@@ -103,17 +123,6 @@ fastify.get('/api/admin/status', async () => {
 // Serve /admin → admin.html (settings panel for laptop access)
 fastify.get('/admin', async (request, reply) => {
   return reply.sendFile('admin.html');
-});
-
-// Protected settings endpoints
-fastify.addHook('preHandler', (request, reply, done) => {
-  // Only protect settings-write and account routes
-  const protectedPaths = ['/api/settings'];
-  if (request.method === 'PUT' && protectedPaths.some((p) => request.url.startsWith(p))) {
-    requireAdmin(request, reply, done);
-    return;
-  }
-  done();
 });
 
 // Start the periodic calendar sync scheduler
