@@ -12,6 +12,7 @@
 import { google } from 'googleapis';
 import crypto from 'node:crypto';
 import { setAccount } from '../services/credential-store.js';
+import { requireAdmin } from '../services/admin-auth.js';
 
 // In-memory CSRF state tokens (short-lived, keyed by state → timestamp)
 const pendingStates = new Map();
@@ -37,15 +38,14 @@ function getRedirectUri(request) {
 export async function registerAuthRoutes(fastify) {
 
   /**
-   * GET /google/start
+   * POST /google/start
    * Initiates Google OAuth2 consent flow.
-   * Query params:
-   *   - clientId (optional, use if not yet stored)
-   *   - clientSecret (optional, use if not yet stored)
+   * Body (JSON): { clientId, clientSecret }
+   * Returns: { url } — the admin UI navigates there to start the consent flow.
    */
-  fastify.get('/google/start', async (request, reply) => {
-    const clientId = request.query.clientId || process.env.GOOGLE_CLIENT_ID || '';
-    const clientSecret = request.query.clientSecret || process.env.GOOGLE_CLIENT_SECRET || '';
+  fastify.post('/google/start', { preHandler: requireAdmin }, async (request, reply) => {
+    const clientId = request.body?.clientId || process.env.GOOGLE_CLIENT_ID || '';
+    const clientSecret = request.body?.clientSecret || process.env.GOOGLE_CLIENT_SECRET || '';
 
     if (!clientId || !clientSecret) {
       return reply.code(400).send({
@@ -89,7 +89,8 @@ export async function registerAuthRoutes(fastify) {
       url.searchParams.set('device_name', 'Family Calendar');
     }
 
-    return reply.redirect(url.toString());
+    // Return the URL for the client to navigate to (credentials never appear in the URL)
+    return { url: url.toString() };
   });
 
   /**
@@ -190,13 +191,14 @@ export async function registerAuthRoutes(fastify) {
   }
 
   /**
-   * GET /microsoft/start
+   * POST /microsoft/start
    * Initiates Microsoft OAuth2 consent flow.
-   * Query params: clientId, clientSecret
+   * Body (JSON): { clientId, clientSecret }
+   * Returns: { url } — the admin UI navigates there to start the consent flow.
    */
-  fastify.get('/microsoft/start', async (request, reply) => {
-    const clientId = request.query.clientId || '';
-    const clientSecret = request.query.clientSecret || '';
+  fastify.post('/microsoft/start', { preHandler: requireAdmin }, async (request, reply) => {
+    const clientId = request.body?.clientId || '';
+    const clientSecret = request.body?.clientSecret || '';
 
     if (!clientId || !clientSecret) {
       return reply.code(400).send({
@@ -226,7 +228,8 @@ export async function registerAuthRoutes(fastify) {
       prompt: 'consent',
     });
 
-    return reply.redirect(`${MS_AUTH_BASE}/authorize?${params}`);
+    // Return the URL for the client to navigate to (credentials never appear in the URL)
+    return { url: `${MS_AUTH_BASE}/authorize?${params}` };
   });
 
   /**

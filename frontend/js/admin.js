@@ -364,7 +364,7 @@ function updateRedirectUri() {
   document.getElementById('google-redirect-uri').textContent = uri;
 }
 
-function startGoogleAuth() {
+async function startGoogleAuth() {
   const clientId = document.getElementById('google-client-id').value.trim();
   const clientSecret = document.getElementById('google-client-secret').value.trim();
 
@@ -373,8 +373,21 @@ function startGoogleAuth() {
     return;
   }
 
-  const params = new URLSearchParams({ clientId, clientSecret });
-  window.location.href = '/api/auth/google/start?' + params;
+  try {
+    const resp = await authFetch('/api/auth/google/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId, clientSecret }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.error || 'Failed to start Google auth.', 'error');
+      return;
+    }
+    window.location.href = data.url;
+  } catch (err) {
+    showToast('Error starting Google auth: ' + err.message, 'error');
+  }
 }
 
 async function connectICloud() {
@@ -487,7 +500,7 @@ function updateMicrosoftRedirectUri() {
   document.getElementById('microsoft-redirect-uri').textContent = uri;
 }
 
-function startMicrosoftAuth() {
+async function startMicrosoftAuth() {
   const clientId = document.getElementById('microsoft-client-id').value.trim();
   const clientSecret = document.getElementById('microsoft-client-secret').value.trim();
 
@@ -496,8 +509,21 @@ function startMicrosoftAuth() {
     return;
   }
 
-  const params = new URLSearchParams({ clientId, clientSecret });
-  window.location.href = '/api/auth/microsoft/start?' + params;
+  try {
+    const resp = await authFetch('/api/auth/microsoft/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId, clientSecret }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.error || 'Failed to start Microsoft auth.', 'error');
+      return;
+    }
+    window.location.href = data.url;
+  } catch (err) {
+    showToast('Error starting Microsoft auth: ' + err.message, 'error');
+  }
 }
 
 /* ── Calendar Toggles (Display tab) ────────────────── */

@@ -113,6 +113,7 @@ export async function fetchICSEvents(daysBack, daysForward) {
       const response = await fetch(acct.feedUrl, {
         headers: { 'User-Agent': 'FamilyCalendar/1.0' },
         signal: AbortSignal.timeout(15_000),
+        redirect: 'error',
       });
 
       if (!response.ok) {
