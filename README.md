@@ -184,8 +184,11 @@ Deploy once:
 scp deploy/pi-maintenance/check-nvm-npm-updates parallax.local:~/bin/
 ssh parallax.local 'chmod +x ~/bin/check-nvm-npm-updates && \
   (crontab -l 2>/dev/null | grep -v check-nvm-npm; \
-   echo "0 9 * * 1 /home/trevor/bin/check-nvm-npm-updates") | crontab -'
+   echo "NTFY_TOPIC_URL=https://ntfy.sh/YOUR_TOPIC_HERE"; \
+   echo "0 9 * * 1 $HOME/bin/check-nvm-npm-updates") | crontab -'
 ```
+
+Replace `YOUR_TOPIC_HERE` with your private ntfy topic. The script reads `NTFY_TOPIC_URL` from the crontab environment — no need to edit the script itself.
 
 ### UxPlay — AirPlay Receiver
 

@@ -8,12 +8,14 @@
 # Deploy:
 #   scp deploy/pi-maintenance/check-nvm-npm-updates parallax.local:~/bin/
 #   ssh parallax.local chmod +x ~/bin/check-nvm-npm-updates
-#   ssh parallax.local '(crontab -l 2>/dev/null; echo "0 9 * * 1 /home/trevor/bin/check-nvm-npm-updates") | crontab -'
+#   ssh parallax.local '(crontab -l 2>/dev/null; echo "0 9 * * 1 $HOME/bin/check-nvm-npm-updates") | crontab -'
 
 set -euo pipefail
 
-NTFY_URL="https://ntfy.sh/a1EC57jy11KwYsm6"
-NVM_DIR="/home/trevor/.nvm"
+# Set NTFY_TOPIC_URL in your crontab (add a line: NTFY_TOPIC_URL=https://ntfy.sh/yourTopic)
+# or edit this line directly after deploying.
+NTFY_URL="${NTFY_TOPIC_URL:-https://ntfy.sh/YOUR_TOPIC_HERE}"
+NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 # ── Load nvm into this shell ──────────────────────────────────────────
 # Cron doesn't source ~/.bashrc, so nvm must be loaded explicitly.
@@ -42,7 +44,7 @@ nvm_latest=$(
 )
 
 if [[ -n "$nvm_latest" && -n "$nvm_current" && "$nvm_current" != "$nvm_latest" ]]; then
-  updates+=("nvm: v${nvm_current} → v${nvm_latest}  →  nvm upgrade")
+  updates+=("nvm: v${nvm_current} → v${nvm_latest}  →  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v${nvm_latest}/install.sh | bash")
 fi
 
 # ── All globally installed npm packages ───────────────────────────────
