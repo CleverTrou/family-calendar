@@ -68,11 +68,9 @@ export function isPinRequired() {
 /** Verify a PIN attempt (timing-safe). */
 export function verifyPin(attempt) {
   if (!PIN) return true; // No PIN set → always valid
-  const a = Buffer.alloc(64);
-  const b = Buffer.alloc(64);
-  Buffer.from(String(attempt)).copy(a);
-  Buffer.from(PIN).copy(b);
-  return crypto.timingSafeEqual(a, b);
+  const aHash = crypto.createHash('sha256').update(String(attempt)).digest();
+  const bHash = crypto.createHash('sha256').update(PIN).digest();
+  return crypto.timingSafeEqual(aHash, bHash);
 }
 
 /**
