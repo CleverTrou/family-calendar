@@ -354,8 +354,13 @@ function KITCHEN_PAPER_STYLE_CSS() {
   // octave that reads as discrete "flecks" wherever the body shows through
   // transparent layout regions (top of page, left/right gutters of the grid).
   // feColorMatrix alpha (last value before "0"): per-dot opacity. Higher = denser texture.
+  // Two SVGs: a softer one for the body (subtle paper texture in gutters and
+  // header), and a stronger one for day cells (which sit on the slightly-
+  // darker var(--bg-card), where the same alpha reads as much less contrast).
   var grainLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
   var grainDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainCellLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.65 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainCellDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.30 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
     '[data-display-style="kitchen-paper"] body {',
@@ -441,9 +446,11 @@ function KITCHEN_PAPER_STYLE_CSS() {
        The grain image is layered on top of the cell color with multiply
        blend so each cell has the same paper texture as the surrounding
        gutters — otherwise opaque cells mask the body grain and the
-       texture only shows at the page edges. */
+       texture only shows at the page edges. Cells use a stronger grain
+       variant (alpha 0.65 vs body's 0.4) to compensate for multiply
+       blend producing less contrast on bg-card than on bg-body. */
     '[data-display-style="kitchen-paper"] .day-cell {',
-    '  background: ' + grainLight + ', var(--bg-card);',
+    '  background: ' + grainCellLight + ', var(--bg-card);',
     '  background-size: 320px 320px, auto;',
     '  background-blend-mode: multiply, normal;',
     '  border: 1px solid var(--border);',
@@ -453,7 +460,7 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  padding: 0.8vh 0.6vw;',
     '}',
     '[data-display-style="kitchen-paper"][data-theme="dark"] .day-cell {',
-    '  background: ' + grainDark + ', var(--bg-card);',
+    '  background: ' + grainCellDark + ', var(--bg-card);',
     '  background-blend-mode: screen, normal;',
     '}',
     '[data-display-style="kitchen-paper"] .day-cell::before {',
@@ -467,14 +474,14 @@ function KITCHEN_PAPER_STYLE_CSS() {
     /* Today: warm halo (ribbon label dropped — color alone is enough
        and the ribbon collided with the weather badge on the right) */
     '[data-display-style="kitchen-paper"] .day-cell.is-today {',
-    '  background: ' + grainLight + ', var(--bg-body);',
+    '  background: ' + grainCellLight + ', var(--bg-body);',
     '  background-size: 320px 320px, auto;',
     '  background-blend-mode: multiply, normal;',
     '  border-color: var(--color-family);',
     '  box-shadow: 0 0 0 3px rgba(210, 130, 55, 0.25), 0 2px 10px var(--shadow);',
     '}',
     '[data-display-style="kitchen-paper"][data-theme="dark"] .day-cell.is-today {',
-    '  background: ' + grainDark + ', var(--bg-body);',
+    '  background: ' + grainCellDark + ', var(--bg-body);',
     '  background-blend-mode: screen, normal;',
     '}',
     '[data-display-style="kitchen-paper"] .day-cell.is-today .day-cell-date {',
