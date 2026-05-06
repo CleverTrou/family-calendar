@@ -348,8 +348,12 @@ function applyTypefacePairing(pairingKey) {
  */
 function KITCHEN_PAPER_STYLE_CSS() {
   // SVG paper grain — encoded inline to avoid an extra HTTP request.
-  var grainLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
-  var grainDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  // baseFrequency: lower = larger grain (visible from across a room on a TV);
+  //   0.55 ≈ 1.8px dots, the sweet spot between "paper" and "noisy".
+  // numOctaves=3 layers two noise scales for organic variation.
+  // feColorMatrix alpha (last value before "0"): per-dot opacity. Higher = denser texture.
+  var grainLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
     '[data-display-style="kitchen-paper"] body {',
@@ -363,12 +367,12 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  background-image: ' + grainLight + ';',
     '  background-size: 320px 320px;',
     '  mix-blend-mode: multiply;',
-    '  opacity: 0.55;',
+    '  opacity: 0.85;',
     '}',
     '[data-display-style="kitchen-paper"][data-theme="dark"] body::before {',
     '  background-image: ' + grainDark + ';',
     '  mix-blend-mode: screen;',
-    '  opacity: 0.6;',
+    '  opacity: 0.7;',
     '}',
     /* Layer everything above the grain */
     '[data-display-style="kitchen-paper"] .header,',
