@@ -374,12 +374,19 @@ function KITCHEN_PAPER_STYLE_CSS() {
     /* Pulp grain via body::before — fixed to the viewport with mix-blend
        so it paints reliably to all four edges, no matter how the body
        element sizes. z-index 0 puts it behind body content (which gets
-       z-index 1 below). */
+       z-index 1 below).
+       background-position: -160px -160px shifts the SVG by a half-tile
+       so its denser-noise corners land at INTERIOR positions (160,160),
+       (480, 480), etc. instead of being aligned with the viewport
+       corners. Without this shift, the seed-7 turbulence creates a
+       "darker flecky perimeter, lighter middle" seam because every
+       tile's dense-corner region tiles up at the viewport edges. */
     '[data-display-style="kitchen-paper"] body::before {',
     '  content: "";',
     '  position: fixed; inset: 0; pointer-events: none; z-index: 0;',
     '  background-image: ' + grainBodyLight + ';',
     '  background-size: 320px 320px;',
+    '  background-position: -160px -160px;',
     '  mix-blend-mode: multiply;',
     '  opacity: 0.85;',
     '}',
@@ -449,12 +456,13 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  padding: 0.6vh 0.6vw;',
     '}',
 
-    /* Day cells: clean cream paper-card surfaces. No grain — the texture
-       lives in the body background. The cards visually pop against the
-       textured pulp because they're flat, not because they have their
-       own texture. Border + shadow define their boundary. */
+    /* Day cells: clean paper-card surfaces. No grain — the texture
+       lives in the body background. Use bg-panel-header (a slightly
+       warmer/darker cream than bg-card) so cells don't read as "too
+       bright white" against the multiply-darkened textured body —
+       cuts the body-vs-cell luminance contrast roughly in half. */
     '[data-display-style="kitchen-paper"] .day-cell {',
-    '  background: var(--bg-card);',
+    '  background: var(--bg-panel-header);',
     '  border: 1px solid var(--border);',
     '  border-radius: 10px;',
     '  box-shadow: 0 1px 2px var(--shadow);',
