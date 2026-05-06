@@ -57,6 +57,7 @@ apt install -y \
   lightdm \
   accountsservice \
   v4l-utils \
+  fonts-noto-color-emoji \
   git \
   curl
 

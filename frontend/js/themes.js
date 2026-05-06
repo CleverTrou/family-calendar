@@ -360,21 +360,38 @@ function KITCHEN_PAPER_STYLE_CSS() {
   var grainBodyDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
+    /* Override html and body to ensure the entire viewport is the same
+       cream color — without this, html's flat var(--bg-body) shows at the
+       viewport perimeter where body's fixed-attachment background doesn't
+       reach pixel-perfectly, producing a "yellow edge / gray middle" seam. */
+    '[data-display-style="kitchen-paper"] html,',
     '[data-display-style="kitchen-paper"] body {',
-    /* Textured pulp paper canvas. The grain is layered onto the body
-       background directly with multiply blend (light) or screen (dark),
-       so any region not covered by an opaque card shows the pulp
-       texture. Day cards have flat cream backgrounds — clean paper
-       notes laid on a textured paper surface. */
-    '  background: ' + grainBodyLight + ', var(--bg-body);',
-    '  background-size: 320px 320px, auto;',
-    '  background-blend-mode: multiply, normal;',
-    '  background-attachment: fixed, fixed;',
+    '  background: var(--bg-body);',
     '}',
-    '[data-display-style="kitchen-paper"][data-theme="dark"] body {',
-    '  background: ' + grainBodyDark + ', var(--bg-body);',
-    '  background-blend-mode: screen, normal;',
+    '[data-display-style="kitchen-paper"] body {',
+    '  position: relative;',
     '}',
+    /* Pulp grain via body::before — fixed to the viewport with mix-blend
+       so it paints reliably to all four edges, no matter how the body
+       element sizes. z-index 0 puts it behind body content (which gets
+       z-index 1 below). */
+    '[data-display-style="kitchen-paper"] body::before {',
+    '  content: "";',
+    '  position: fixed; inset: 0; pointer-events: none; z-index: 0;',
+    '  background-image: ' + grainBodyLight + ';',
+    '  background-size: 320px 320px;',
+    '  mix-blend-mode: multiply;',
+    '  opacity: 0.85;',
+    '}',
+    '[data-display-style="kitchen-paper"][data-theme="dark"] body::before {',
+    '  background-image: ' + grainBodyDark + ';',
+    '  mix-blend-mode: screen;',
+    '  opacity: 0.7;',
+    '}',
+    /* Layer body content above the grain */
+    '[data-display-style="kitchen-paper"] .header,',
+    '[data-display-style="kitchen-paper"] .main,',
+    '[data-display-style="kitchen-paper"] .footer { position: relative; z-index: 1; }',
 
     /* Header with dashed bottom rule and warm accents */
     '[data-display-style="kitchen-paper"] .header {',
