@@ -437,14 +437,24 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  padding: 0.6vh 0.6vw;',
     '}',
 
-    /* Day cells become rounded "paper cards" with subtle inset shadow */
+    /* Day cells become rounded "paper cards" with subtle inset shadow.
+       The grain image is layered on top of the cell color with multiply
+       blend so each cell has the same paper texture as the surrounding
+       gutters — otherwise opaque cells mask the body grain and the
+       texture only shows at the page edges. */
     '[data-display-style="kitchen-paper"] .day-cell {',
-    '  background: var(--bg-card);',
+    '  background: ' + grainLight + ', var(--bg-card);',
+    '  background-size: 320px 320px, auto;',
+    '  background-blend-mode: multiply, normal;',
     '  border: 1px solid var(--border);',
     '  border-radius: 10px;',
     '  box-shadow: 0 1px 2px var(--shadow);',
     '  position: relative;',
     '  padding: 0.8vh 0.6vw;',
+    '}',
+    '[data-display-style="kitchen-paper"][data-theme="dark"] .day-cell {',
+    '  background: ' + grainDark + ', var(--bg-card);',
+    '  background-blend-mode: screen, normal;',
     '}',
     '[data-display-style="kitchen-paper"] .day-cell::before {',
     '  content: "";',
@@ -457,9 +467,15 @@ function KITCHEN_PAPER_STYLE_CSS() {
     /* Today: warm halo (ribbon label dropped — color alone is enough
        and the ribbon collided with the weather badge on the right) */
     '[data-display-style="kitchen-paper"] .day-cell.is-today {',
-    '  background: var(--bg-body);',
+    '  background: ' + grainLight + ', var(--bg-body);',
+    '  background-size: 320px 320px, auto;',
+    '  background-blend-mode: multiply, normal;',
     '  border-color: var(--color-family);',
     '  box-shadow: 0 0 0 3px rgba(210, 130, 55, 0.25), 0 2px 10px var(--shadow);',
+    '}',
+    '[data-display-style="kitchen-paper"][data-theme="dark"] .day-cell.is-today {',
+    '  background: ' + grainDark + ', var(--bg-body);',
+    '  background-blend-mode: screen, normal;',
     '}',
     '[data-display-style="kitchen-paper"] .day-cell.is-today .day-cell-date {',
     '  color: var(--color-family);',
