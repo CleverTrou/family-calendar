@@ -364,8 +364,12 @@ function KITCHEN_PAPER_STYLE_CSS() {
 
   return [
     '[data-display-style="kitchen-paper"] body {',
-    '  background:',
-    '    radial-gradient(120% 80% at 20% 0%, var(--bg-card), var(--bg-body) 55%, var(--bg-card) 100%);',
+    /* Flat cream — earlier versions used a radial-gradient halo, but it
+       darkened the page corners (~12 luminance units toward bg-card) and
+       made the grain there read as denser "flecks at edges." Flat color
+       lets the cells provide visual structure via borders + shadows,
+       and the grain is the only source of tonal variation. */
+    '  background: var(--bg-body);',
     '  position: relative;',
     '}',
     '[data-display-style="kitchen-paper"] body::before {',
