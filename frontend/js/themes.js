@@ -348,47 +348,26 @@ function applyTypefacePairing(pairingKey) {
  */
 function KITCHEN_PAPER_STYLE_CSS() {
   // SVG paper grain — encoded inline to avoid an extra HTTP request.
-  // baseFrequency: lower = larger grain (visible from across a room on a TV);
-  //   0.55 ≈ 1.8px dots, the sweet spot between "paper" and "noisy".
-  // numOctaves=2 keeps grain uniformly fine. Going to 3 introduces a ~7px
-  // octave that reads as discrete "flecks" wherever the body shows through
-  // transparent layout regions (top of page, left/right gutters of the grid).
-  // feColorMatrix alpha (last value before "0"): per-dot opacity. Higher = denser texture.
-  // Two SVGs: a softer one for the body (subtle paper texture in gutters and
-  // header), and a stronger one for day cells (which sit on the slightly-
-  // darker var(--bg-card), where the same alpha reads as much less contrast).
-  var grainLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.4 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
-  var grainDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  // Applied as a multi-background layer on each .day-cell with multiply
+  // (light theme) or screen (dark theme) blend mode, so each card has
+  // visible paper texture against its solid bg-card. Body has no grain
+  // layer — see body rule below for why.
+  // Tuning knobs:
+  //   baseFrequency  — lower = larger dots; 0.55 ≈ 1.8px (paper-fiber scale)
+  //   numOctaves     — 2 keeps grain uniformly fine; 3+ adds ~7px clusters
+  //   feColorMatrix  — last alpha value = per-dot opacity (denser = punchier)
   var grainCellLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.65 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
   var grainCellDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.30 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
     '[data-display-style="kitchen-paper"] body {',
-    /* Flat cream — earlier versions used a radial-gradient halo, but it
-       darkened the page corners (~12 luminance units toward bg-card) and
-       made the grain there read as denser "flecks at edges." Flat color
-       lets the cells provide visual structure via borders + shadows,
-       and the grain is the only source of tonal variation. */
+    /* Flat cream canvas. No body grain layer — it created a thin strip
+       of visible noise around the page perimeter (top, left, right
+       edges) that the eye reads as discrete dark flecks. Texture lives
+       inside the day cards instead, so the page reads as paper cards
+       on a clean cream surface. */
     '  background: var(--bg-body);',
-    '  position: relative;',
     '}',
-    '[data-display-style="kitchen-paper"] body::before {',
-    '  content: "";',
-    '  position: fixed; inset: 0; pointer-events: none; z-index: 0;',
-    '  background-image: ' + grainLight + ';',
-    '  background-size: 320px 320px;',
-    '  mix-blend-mode: multiply;',
-    '  opacity: 0.85;',
-    '}',
-    '[data-display-style="kitchen-paper"][data-theme="dark"] body::before {',
-    '  background-image: ' + grainDark + ';',
-    '  mix-blend-mode: screen;',
-    '  opacity: 0.7;',
-    '}',
-    /* Layer everything above the grain */
-    '[data-display-style="kitchen-paper"] .header,',
-    '[data-display-style="kitchen-paper"] .main,',
-    '[data-display-style="kitchen-paper"] .footer { position: relative; z-index: 1; }',
 
     /* Header with dashed bottom rule and warm accents */
     '[data-display-style="kitchen-paper"] .header {',
@@ -467,13 +446,11 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  background: ' + grainCellDark + ', var(--bg-card);',
     '  background-blend-mode: screen, normal;',
     '}',
-    '[data-display-style="kitchen-paper"] .day-cell::before {',
-    '  content: "";',
-    '  position: absolute; inset: 0 0 auto 0; height: 16px;',
-    '  background: linear-gradient(to bottom, rgba(0,0,0,0.04), transparent);',
-    '  pointer-events: none;',
-    '  border-radius: 10px 10px 0 0;',
-    '}',
+    /* Removed the 16px linear-gradient ::before "shine" overlay — it sat
+       on top of .day-cell-header and could visually clip emoji weather
+       icons (which render above their typeface baseline). The grain
+       layer already provides surface variation, so the shine is
+       redundant. */
 
     /* Today: warm halo (ribbon label dropped — color alone is enough
        and the ribbon collided with the weather badge on the right) */
