@@ -347,26 +347,33 @@ function applyTypefacePairing(pairingKey) {
  * stacked time/title layout. Scoped by [data-display-style="kitchen-paper"].
  */
 function KITCHEN_PAPER_STYLE_CSS() {
-  // SVG paper grain — encoded inline to avoid an extra HTTP request.
-  // Applied as a multi-background layer on each .day-cell with multiply
-  // (light theme) or screen (dark theme) blend mode, so each card has
-  // visible paper texture against its solid bg-card. Body has no grain
-  // layer — see body rule below for why.
+  // SVG paper pulp grain — encoded inline to avoid an extra HTTP request.
+  // Applied to the body (the canvas around the day cards), so the page
+  // background reads as textured pulp paper while the cards stay clean.
+  // numOctaves=3 mixes ~1.8px fine grain with ~7px "pulp flecks" — the
+  // larger features are characteristic of handmade/recycled paper.
   // Tuning knobs:
   //   baseFrequency  — lower = larger dots; 0.55 ≈ 1.8px (paper-fiber scale)
-  //   numOctaves     — 2 keeps grain uniformly fine; 3+ adds ~7px clusters
+  //   numOctaves     — 2 = uniform fine grain; 3 = fine grain + pulp flecks
   //   feColorMatrix  — last alpha value = per-dot opacity (denser = punchier)
-  var grainCellLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.65 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
-  var grainCellDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.30 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainBodyLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainBodyDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
     '[data-display-style="kitchen-paper"] body {',
-    /* Flat cream canvas. No body grain layer — it created a thin strip
-       of visible noise around the page perimeter (top, left, right
-       edges) that the eye reads as discrete dark flecks. Texture lives
-       inside the day cards instead, so the page reads as paper cards
-       on a clean cream surface. */
-    '  background: var(--bg-body);',
+    /* Textured pulp paper canvas. The grain is layered onto the body
+       background directly with multiply blend (light) or screen (dark),
+       so any region not covered by an opaque card shows the pulp
+       texture. Day cards have flat cream backgrounds — clean paper
+       notes laid on a textured paper surface. */
+    '  background: ' + grainBodyLight + ', var(--bg-body);',
+    '  background-size: 320px 320px, auto;',
+    '  background-blend-mode: multiply, normal;',
+    '  background-attachment: fixed, fixed;',
+    '}',
+    '[data-display-style="kitchen-paper"][data-theme="dark"] body {',
+    '  background: ' + grainBodyDark + ', var(--bg-body);',
+    '  background-blend-mode: screen, normal;',
     '}',
 
     /* Header with dashed bottom rule and warm accents */
@@ -425,45 +432,25 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  padding: 0.6vh 0.6vw;',
     '}',
 
-    /* Day cells become rounded "paper cards" with subtle inset shadow.
-       The grain image is layered on top of the cell color with multiply
-       blend so each cell has the same paper texture as the surrounding
-       gutters — otherwise opaque cells mask the body grain and the
-       texture only shows at the page edges. Cells use a stronger grain
-       variant (alpha 0.65 vs body's 0.4) to compensate for multiply
-       blend producing less contrast on bg-card than on bg-body. */
+    /* Day cells: clean cream paper-card surfaces. No grain — the texture
+       lives in the body background. The cards visually pop against the
+       textured pulp because they're flat, not because they have their
+       own texture. Border + shadow define their boundary. */
     '[data-display-style="kitchen-paper"] .day-cell {',
-    '  background: ' + grainCellLight + ', var(--bg-card);',
-    '  background-size: 320px 320px, auto;',
-    '  background-blend-mode: multiply, normal;',
+    '  background: var(--bg-card);',
     '  border: 1px solid var(--border);',
     '  border-radius: 10px;',
     '  box-shadow: 0 1px 2px var(--shadow);',
     '  position: relative;',
     '  padding: 0.8vh 0.6vw;',
     '}',
-    '[data-display-style="kitchen-paper"][data-theme="dark"] .day-cell {',
-    '  background: ' + grainCellDark + ', var(--bg-card);',
-    '  background-blend-mode: screen, normal;',
-    '}',
-    /* Removed the 16px linear-gradient ::before "shine" overlay — it sat
-       on top of .day-cell-header and could visually clip emoji weather
-       icons (which render above their typeface baseline). The grain
-       layer already provides surface variation, so the shine is
-       redundant. */
 
-    /* Today: warm halo (ribbon label dropped — color alone is enough
-       and the ribbon collided with the weather badge on the right) */
+    /* Today: warm halo + lighter background (keeps it crisp against
+       the surrounding pulp) */
     '[data-display-style="kitchen-paper"] .day-cell.is-today {',
-    '  background: ' + grainCellLight + ', var(--bg-body);',
-    '  background-size: 320px 320px, auto;',
-    '  background-blend-mode: multiply, normal;',
+    '  background: var(--bg-body);',
     '  border-color: var(--color-family);',
     '  box-shadow: 0 0 0 3px rgba(210, 130, 55, 0.25), 0 2px 10px var(--shadow);',
-    '}',
-    '[data-display-style="kitchen-paper"][data-theme="dark"] .day-cell.is-today {',
-    '  background: ' + grainCellDark + ', var(--bg-body);',
-    '  background-blend-mode: screen, normal;',
     '}',
     '[data-display-style="kitchen-paper"] .day-cell.is-today .day-cell-date {',
     '  color: var(--color-family);',
@@ -476,7 +463,22 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  line-height: 0.9;',
     '}',
 
-    /* Weather: inline (icon + hi / lo) instead of stacked, with "/" divider */
+    /* Weather: inline (icon + hi / lo) instead of stacked, with "/" divider.
+       align-items: center on .day-cell-header keeps the small emoji icon
+       from being pushed below its baseline (which clipped the top of the
+       glyph against the cell's small padding-top). Bumping the icon size
+       too — emoji glyphs need more visual area than text at the same
+       font-size to read clearly at TV viewing distance. */
+    '[data-display-style="kitchen-paper"] .day-cell-header {',
+    '  align-items: center;',
+    '}',
+    '[data-display-style="kitchen-paper"] .day-weather {',
+    '  align-items: center;',
+    '}',
+    '[data-display-style="kitchen-paper"] .day-weather-icon {',
+    '  font-size: 1.3vw;',
+    '  line-height: 1;',
+    '}',
     '[data-display-style="kitchen-paper"] .day-weather-temps {',
     '  flex-direction: row;',
     '  align-items: baseline;',
