@@ -27,8 +27,10 @@ let currentFontLink = null;  // Track the Google Fonts <link> element
 /* ── Data Fetching ──────────────────────────────────── */
 
 async function fetchData() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
   try {
-    const response = await fetch('/api/calendar');
+    const response = await fetch('/api/calendar', { signal: controller.signal });
     if (!response.ok) throw new Error('HTTP ' + response.status);
     currentData = await response.json();
 
@@ -56,6 +58,8 @@ async function fetchData() {
     iconEl.textContent = '\u26A0';
     textEl.textContent = 'Offline — check server connection';
     statusEl.title = err.message || 'Network error';
+  } finally {
+    clearTimeout(timer);
   }
 }
 
