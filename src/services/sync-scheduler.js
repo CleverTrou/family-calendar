@@ -9,14 +9,27 @@ import { config } from '../config.js';
 export function startSyncScheduler() {
   const intervalMin = config.syncIntervalMinutes;
 
+  let syncInProgress = false;
+
+  async function runSync() {
+    if (syncInProgress) {
+      console.warn('[Scheduler] Sync already in progress, skipping.');
+      return;
+    }
+    syncInProgress = true;
+    try {
+      await syncAllCalendars();
+    } finally {
+      syncInProgress = false;
+    }
+  }
+
   // Initial sync on startup
   console.log('[Scheduler] Running initial calendar sync...');
-  syncAllCalendars();
+  runSync();
 
   // Schedule recurring syncs
-  cron.schedule(`*/${intervalMin} * * * *`, () => {
-    syncAllCalendars();
-  });
+  cron.schedule(`*/${intervalMin} * * * *`, runSync);
 
   console.log(`[Scheduler] Syncing every ${intervalMin} minutes.`);
 }
