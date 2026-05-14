@@ -15,9 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Gitleaks (skipped on private repos — add GITLEAKS_LICENSE secret to enable)
-        if: ${{ !github.event.repository.private }}
-        uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
