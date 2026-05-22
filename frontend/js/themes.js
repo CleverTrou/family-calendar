@@ -347,17 +347,20 @@ function applyTypefacePairing(pairingKey) {
  * stacked time/title layout. Scoped by [data-display-style="kitchen-paper"].
  */
 function KITCHEN_PAPER_STYLE_CSS() {
-  // SVG paper pulp grain — encoded inline to avoid an extra HTTP request.
-  // Applied to the body (the canvas around the day cards), so the page
-  // background reads as textured pulp paper while the cards stay clean.
-  // numOctaves=3 mixes ~1.8px fine grain with ~7px "pulp flecks" — the
-  // larger features are characteristic of handmade/recycled paper.
+  // SVG paper pulp flecks — encoded inline to avoid an extra HTTP request.
+  // KEY INSIGHT: alpha is *inversely linked* to the noise value via the last
+  // row of feColorMatrix (m41=-3, m45=1.0 → A_out = max(0, 1 - 3·R)). This
+  // means only the darkest ~33% of noise values become visible flecks; the
+  // rest of the SVG is fully transparent. Result: the underlying cream
+  // background stays its warm yellow tone, with discrete dark specks
+  // scattered on top — a "kraft paper pulp" look. A uniform alpha would
+  // tint the entire background gray, which is what we're avoiding.
   // Tuning knobs:
-  //   baseFrequency  — lower = larger dots; 0.55 ≈ 1.8px (paper-fiber scale)
-  //   numOctaves     — 2 = uniform fine grain; 3 = fine grain + pulp flecks
-  //   feColorMatrix  — last alpha value = per-dot opacity (denser = punchier)
-  var grainBodyLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
-  var grainBodyDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  //   m41 (alpha-from-noise gain) — more negative = sparser flecks
+  //     -3 ≈ 33% of pixels visible, -5 ≈ 20%, -10 ≈ 10%
+  //   m45 (alpha offset)          — max fleck opacity, 1.0 = fully dark
+  var grainBodyLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  -3 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainBodyDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  -3 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
     /* Override html and body to ensure the entire viewport is the same
