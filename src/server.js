@@ -149,21 +149,52 @@ try {
 
 // ── CIDR helpers for IP allowlist ──────────────────────
 
-function parseCIDR(cidr) {
-  // Support bare IPs ("127.0.0.1") and CIDR ("10.0.0.0/24")
-  const [addr, bits] = cidr.includes('/') ? cidr.split('/') : [cidr, '32'];
-  const parts = addr.split('.').map(Number);
-  const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
-  const mask = bits === '0' ? 0 : (~0 << (32 - parseInt(bits))) >>> 0;
-  return { ip: ip & mask, mask };
+function normalizeIP(ipStr) {
+  // Collapse IPv6 forms that are really IPv4 so allowlist entries and request IPs
+  // are matched on the same family: ::ffff:10.0.0.1 -> 10.0.0.1, ::1 -> 127.0.0.1.
+  // Applied in BOTH parseCIDR and matchCIDR to keep the two sides symmetric.
+  if (ipStr.startsWith('::ffff:')) return ipStr.slice(7);
+  if (ipStr === '::1') return '127.0.0.1';
+  return ipStr;
 }
 
-function matchCIDR(ipStr, { ip: netIp, mask }) {
-  // Handle IPv6-mapped IPv4 (::ffff:10.0.0.1)
-  if (ipStr.startsWith('::ffff:')) ipStr = ipStr.slice(7);
-  if (ipStr === '::1') ipStr = '127.0.0.1';
-  const parts = ipStr.split('.').map(Number);
+function expandIPv6(addr) {
+  // Expand a plain IPv6 address (handling "::" compression) into a 128-bit BigInt. Drops any zone id.
+  addr = addr.split('%')[0];
+  const [headStr, tailStr] = addr.split('::');
+  const head = headStr ? headStr.split(':') : [];
+  const tail = tailStr ? tailStr.split(':') : [];
+  const groups = [...head, ...Array(Math.max(8 - head.length - tail.length, 0)).fill('0'), ...tail];
+  let value = 0n;
+  for (const g of groups) value = (value << 16n) | BigInt(parseInt(g || '0', 16) & 0xffff);
+  return value;
+}
+
+function parseCIDR(cidr) {
+  // Support bare IPs and CIDR, for both IPv4 ("10.0.0.0/24") and IPv6 ("fd7a:115c:a1e0::/48").
+  const [rawAddr, bits] = cidr.includes('/') ? cidr.split('/') : [cidr, ''];
+  const addr = normalizeIP(rawAddr);
+  if (addr.includes(':')) {
+    const prefix = bits === '' ? 128 : parseInt(bits);
+    const mask = prefix === 0 ? 0n : ((1n << 128n) - 1n) ^ ((1n << BigInt(128 - prefix)) - 1n);
+    return { v6: true, ip: expandIPv6(addr) & mask, mask };
+  }
+  const prefix = bits === '' ? 32 : parseInt(bits);
+  const parts = addr.split('.').map(Number);
+  const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+  const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
+  return { v6: false, ip: ip & mask, mask };
+}
+
+function matchCIDR(ipStr, net) {
+  const addr = normalizeIP(ipStr);
+  const isV6 = addr.includes(':');
+  if (net.v6) {
+    return isV6 && (expandIPv6(addr) & net.mask) === net.ip;
+  }
+  if (isV6) return false;
+  const parts = addr.split('.').map(Number);
   if (parts.length !== 4) return false;
   const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
-  return (ip & mask) === netIp;
+  return (ip & net.mask) === net.ip;
 }
