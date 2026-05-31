@@ -149,21 +149,45 @@ try {
 
 // ── CIDR helpers for IP allowlist ──────────────────────
 
+function expandIPv6(addr) {
+  // Expand a plain IPv6 address (handling "::" compression) into a 128-bit BigInt.
+  // Drops any zone id. ::ffff: IPv4-mapped addresses are normalized to IPv4 before here.
+  addr = addr.split('%')[0];
+  const [headStr, tailStr] = addr.split('::');
+  const head = headStr ? headStr.split(':') : [];
+  const tail = tailStr ? tailStr.split(':') : [];
+  const groups = [...head, ...Array(Math.max(8 - head.length - tail.length, 0)).fill('0'), ...tail];
+  let value = 0n;
+  for (const g of groups) value = (value << 16n) | BigInt(parseInt(g || '0', 16) & 0xffff);
+  return value;
+}
+
 function parseCIDR(cidr) {
-  // Support bare IPs ("127.0.0.1") and CIDR ("10.0.0.0/24")
+  // Support bare IPs and CIDR, for both IPv4 ("10.0.0.0/24") and IPv6 ("fd7a:115c:a1e0::/48").
+  if (cidr.includes(':')) {
+    const [addr, bits] = cidr.includes('/') ? cidr.split('/') : [cidr, '128'];
+    const prefix = parseInt(bits);
+    const mask = prefix === 0 ? 0n : ((1n << 128n) - 1n) ^ ((1n << BigInt(128 - prefix)) - 1n);
+    return { v6: true, ip: expandIPv6(addr) & mask, mask };
+  }
   const [addr, bits] = cidr.includes('/') ? cidr.split('/') : [cidr, '32'];
   const parts = addr.split('.').map(Number);
   const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
   const mask = bits === '0' ? 0 : (~0 << (32 - parseInt(bits))) >>> 0;
-  return { ip: ip & mask, mask };
+  return { v6: false, ip: ip & mask, mask };
 }
 
-function matchCIDR(ipStr, { ip: netIp, mask }) {
-  // Handle IPv6-mapped IPv4 (::ffff:10.0.0.1)
+function matchCIDR(ipStr, net) {
+  // Normalize IPv6-mapped IPv4 (::ffff:10.0.0.1) and IPv6 loopback to plain IPv4.
   if (ipStr.startsWith('::ffff:')) ipStr = ipStr.slice(7);
   if (ipStr === '::1') ipStr = '127.0.0.1';
+  const isV6 = ipStr.includes(':');
+  if (net.v6) {
+    return isV6 && (expandIPv6(ipStr) & net.mask) === net.ip;
+  }
+  if (isV6) return false;
   const parts = ipStr.split('.').map(Number);
   if (parts.length !== 4) return false;
   const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
-  return (ip & mask) === netIp;
+  return (ip & net.mask) === net.ip;
 }
