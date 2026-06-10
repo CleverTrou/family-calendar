@@ -347,30 +347,58 @@ function applyTypefacePairing(pairingKey) {
  * stacked time/title layout. Scoped by [data-display-style="kitchen-paper"].
  */
 function KITCHEN_PAPER_STYLE_CSS() {
-  // SVG paper grain — encoded inline to avoid an extra HTTP request.
-  var grainLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
-  var grainDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  // SVG paper pulp flecks — encoded inline to avoid an extra HTTP request.
+  // KEY INSIGHT: alpha is *inversely linked* to the noise value via the last
+  // row of feColorMatrix (m41=-3, m45=1.0 → A_out = max(0, 1 - 3·R)). This
+  // means only the darkest ~33% of noise values become visible flecks; the
+  // rest of the SVG is fully transparent. Result: the underlying cream
+  // background stays its warm yellow tone, with discrete dark specks
+  // scattered on top — a "kraft paper pulp" look. A uniform alpha would
+  // tint the entire background gray, which is what we're avoiding.
+  // Tuning knobs:
+  //   m41 (alpha-from-noise gain) — more negative = sparser flecks
+  //     -3 ≈ 33% of pixels visible, -5 ≈ 20%, -10 ≈ 10%
+  //   m45 (alpha offset)          — max fleck opacity, 1.0 = fully dark
+  var grainBodyLight = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.15  0 0 0 0 0.08  -3 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+  var grainBodyDark  = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.4  -3 0 0 0 1'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
   return [
+    /* Override html and body to ensure the entire viewport is the same
+       cream color — without this, html's flat var(--bg-body) shows at the
+       viewport perimeter where body's fixed-attachment background doesn't
+       reach pixel-perfectly, producing a "yellow edge / gray middle" seam. */
+    '[data-display-style="kitchen-paper"] html,',
     '[data-display-style="kitchen-paper"] body {',
-    '  background:',
-    '    radial-gradient(120% 80% at 20% 0%, var(--bg-card), var(--bg-body) 55%, var(--bg-card) 100%);',
+    '  background: var(--bg-body);',
+    '}',
+    '[data-display-style="kitchen-paper"] body {',
     '  position: relative;',
     '}',
+    /* Pulp grain via body::before — fixed to the viewport with mix-blend
+       so it paints reliably to all four edges, no matter how the body
+       element sizes. z-index 0 puts it behind body content (which gets
+       z-index 1 below).
+       background-position: -160px -160px shifts the SVG by a half-tile
+       so its denser-noise corners land at INTERIOR positions (160,160),
+       (480, 480), etc. instead of being aligned with the viewport
+       corners. Without this shift, the seed-7 turbulence creates a
+       "darker flecky perimeter, lighter middle" seam because every
+       tile's dense-corner region tiles up at the viewport edges. */
     '[data-display-style="kitchen-paper"] body::before {',
     '  content: "";',
     '  position: fixed; inset: 0; pointer-events: none; z-index: 0;',
-    '  background-image: ' + grainLight + ';',
+    '  background-image: ' + grainBodyLight + ';',
     '  background-size: 320px 320px;',
+    '  background-position: -160px -160px;',
     '  mix-blend-mode: multiply;',
-    '  opacity: 0.55;',
+    '  opacity: 0.85;',
     '}',
     '[data-display-style="kitchen-paper"][data-theme="dark"] body::before {',
-    '  background-image: ' + grainDark + ';',
+    '  background-image: ' + grainBodyDark + ';',
     '  mix-blend-mode: screen;',
-    '  opacity: 0.6;',
+    '  opacity: 0.7;',
     '}',
-    /* Layer everything above the grain */
+    /* Layer body content above the grain */
     '[data-display-style="kitchen-paper"] .header,',
     '[data-display-style="kitchen-paper"] .main,',
     '[data-display-style="kitchen-paper"] .footer { position: relative; z-index: 1; }',
@@ -431,25 +459,22 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  padding: 0.6vh 0.6vw;',
     '}',
 
-    /* Day cells become rounded "paper cards" with subtle inset shadow */
+    /* Day cells: clean paper-card surfaces. No grain — the texture
+       lives in the body background. Use bg-panel-header (a slightly
+       warmer/darker cream than bg-card) so cells don't read as "too
+       bright white" against the multiply-darkened textured body —
+       cuts the body-vs-cell luminance contrast roughly in half. */
     '[data-display-style="kitchen-paper"] .day-cell {',
-    '  background: var(--bg-card);',
+    '  background: var(--bg-panel-header);',
     '  border: 1px solid var(--border);',
     '  border-radius: 10px;',
     '  box-shadow: 0 1px 2px var(--shadow);',
     '  position: relative;',
     '  padding: 0.8vh 0.6vw;',
     '}',
-    '[data-display-style="kitchen-paper"] .day-cell::before {',
-    '  content: "";',
-    '  position: absolute; inset: 0 0 auto 0; height: 16px;',
-    '  background: linear-gradient(to bottom, rgba(0,0,0,0.04), transparent);',
-    '  pointer-events: none;',
-    '  border-radius: 10px 10px 0 0;',
-    '}',
 
-    /* Today: warm halo (ribbon label dropped — color alone is enough
-       and the ribbon collided with the weather badge on the right) */
+    /* Today: warm halo + lighter background (keeps it crisp against
+       the surrounding pulp) */
     '[data-display-style="kitchen-paper"] .day-cell.is-today {',
     '  background: var(--bg-body);',
     '  border-color: var(--color-family);',
@@ -466,7 +491,22 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  line-height: 0.9;',
     '}',
 
-    /* Weather: inline (icon + hi / lo) instead of stacked, with "/" divider */
+    /* Weather: inline (icon + hi / lo) instead of stacked, with "/" divider.
+       align-items: center on .day-cell-header keeps the small emoji icon
+       from being pushed below its baseline (which clipped the top of the
+       glyph against the cell's small padding-top). Bumping the icon size
+       too — emoji glyphs need more visual area than text at the same
+       font-size to read clearly at TV viewing distance. */
+    '[data-display-style="kitchen-paper"] .day-cell-header {',
+    '  align-items: center;',
+    '}',
+    '[data-display-style="kitchen-paper"] .day-weather {',
+    '  align-items: center;',
+    '}',
+    '[data-display-style="kitchen-paper"] .day-weather-icon {',
+    '  font-size: 1.3vw;',
+    '  line-height: 1;',
+    '}',
     '[data-display-style="kitchen-paper"] .day-weather-temps {',
     '  flex-direction: row;',
     '  align-items: baseline;',

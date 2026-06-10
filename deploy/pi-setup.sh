@@ -57,6 +57,7 @@ apt install -y \
   lightdm \
   accountsservice \
   v4l-utils \
+  fonts-noto-color-emoji \
   git \
   curl
 
@@ -82,7 +83,15 @@ fi
 # ── 5. Install npm dependencies ───────────────────────
 echo "→ Installing npm dependencies..."
 cd "$REPO_DIR"
-sudo -u "$PI_USER" npm install --production
+sudo -u "$PI_USER" npm ci --omit=dev
+
+# ── 5a. Security audit ────────────────────────────────
+echo "→ Running npm security audit..."
+sudo -u "$PI_USER" npm audit --audit-level=high || {
+  echo "⚠  npm audit found high/critical vulnerabilities — review before continuing"
+  echo "   Run: npm audit   for details"
+  echo "   Run: npm audit fix   to attempt auto-remediation"
+}
 
 # ── 6. Create .env from template if it doesn't exist ──
 if [ ! -f "$REPO_DIR/.env" ]; then

@@ -7,7 +7,7 @@ const lightweight = process.env.LIGHTWEIGHT_MODE === 'true' || process.env.LIGHT
 
 export const config = {
   port: parseInt(process.env.PORT || '3000'),
-  host: process.env.HOST || '0.0.0.0',
+  host: process.env.HOST || '::',
   timezone: process.env.DISPLAY_TIMEZONE || 'America/New_York',
   syncIntervalMinutes: parseInt(process.env.SYNC_INTERVAL_MINUTES || (lightweight ? '15' : '5')),
   calendarDaysBack: parseInt(process.env.CALENDAR_DAYS_BACK || '7'),

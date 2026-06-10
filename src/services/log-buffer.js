@@ -15,7 +15,7 @@ const originalError = console.error;
 
 function addEntry(level, args) {
   const message = args.map((a) =>
-    typeof a === 'string' ? a : JSON.stringify(a, null, 2)
+    typeof a === 'string' ? a : JSON.stringify(a)
   ).join(' ');
 
   buffer.push({
