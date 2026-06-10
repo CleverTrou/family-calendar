@@ -8,13 +8,17 @@
 # Deploy:
 #   scp deploy/pi-maintenance/check-nvm-npm-updates parallax.local:~/bin/
 #   ssh parallax.local chmod +x ~/bin/check-nvm-npm-updates
-#   ssh parallax.local '(crontab -l 2>/dev/null; echo "0 9 * * 1 $HOME/bin/check-nvm-npm-updates") | crontab -'
+#   ssh parallax.local '(crontab -l 2>/dev/null; echo "0 9 * * 1 NTFY_TOPIC_URL=https://ntfy.sh/YOUR_TOPIC_HERE $HOME/bin/check-nvm-npm-updates") | crontab -'
 
 set -euo pipefail
 
 # Set NTFY_TOPIC_URL in your crontab (add a line: NTFY_TOPIC_URL=https://ntfy.sh/yourTopic)
 # or edit this line directly after deploying.
-NTFY_URL="${NTFY_TOPIC_URL:-https://ntfy.sh/YOUR_TOPIC_HERE}"
+NTFY_URL="${NTFY_TOPIC_URL:-}"
+if [[ -z "$NTFY_URL" || "$NTFY_URL" == *"YOUR_TOPIC_HERE"* ]]; then
+  echo "[check-updates] Error: NTFY_TOPIC_URL is not configured. Please set it in your crontab." >&2
+  exit 1
+fi
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 # ── Load nvm into this shell ──────────────────────────────────────────

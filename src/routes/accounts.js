@@ -119,7 +119,7 @@ export async function registerAccountRoutes(fastify) {
     }
 
     // Block private/link-local IPs to prevent SSRF
-    const PRIVATE_IP = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|f[c-f][0-9a-f]{2}:)/i;
+    const PRIVATE_IP = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|localhost$|::1$|f[c-f][0-9a-f]{2}:)/i;
     if (PRIVATE_IP.test(parsed.hostname)) {
       return reply.code(400).send({ error: 'Private or internal URLs are not allowed.' });
     }
