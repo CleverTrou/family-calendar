@@ -46,7 +46,7 @@ async function verifyExistingToken() {
 async function loadData() {
   try {
     const [settingsResp, accountsResp] = await Promise.all([
-      fetch('/api/settings'),
+      authFetch('/api/settings'),
       authFetch('/api/accounts'),
     ]);
 
@@ -1394,7 +1394,7 @@ async function saveDisplaySettings() {
 
 async function loadSystemStats() {
   try {
-    const resp = await fetch('/api/system/stats');
+    const resp = await authFetch('/api/system/stats');
     if (!resp.ok) throw new Error('Failed to fetch stats');
     const stats = await resp.json();
     renderSystemInfo(stats);
@@ -1588,7 +1588,7 @@ async function loadLogs() {
   try {
     var url = '/api/logs?limit=200';
     if (level) url += '&level=' + level;
-    var resp = await fetch(url);
+    var resp = await authFetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var data = await resp.json();
     renderLogs(data.entries);
