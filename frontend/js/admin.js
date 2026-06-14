@@ -50,6 +50,8 @@ async function loadData() {
       authFetch('/api/accounts'),
     ]);
 
+    if (!settingsResp.ok) throw new Error('Failed to load settings: ' + settingsResp.status);
+
     const settingsData = await settingsResp.json();
     currentSettings = settingsData.settings;
     availableFonts = settingsData.availableFonts;
