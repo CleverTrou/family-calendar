@@ -20,7 +20,7 @@
     "fastify": "^5.7.4",
     "googleapis": "^171.4.0",
     "ical.js": "^2.2.1",
-    "node-cron": "^4.2.1",
+    "node-cron": "^4.4.1",
     "tsdav": "^2.2.2"
   }
 }
