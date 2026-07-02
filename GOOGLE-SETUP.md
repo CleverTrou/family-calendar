@@ -149,11 +149,15 @@ for personal use. The only change is that refresh tokens no longer expire.
    |-----------|-----------|---------|
    | `localhost` / `127.0.0.1` | ✅ Always | `http://localhost:3000/api/auth/google/callback` |
    | Raw private LAN IP (`10.x`, `172.16-31.x`, `192.168.x`) | ✅ Yes — this app auto-adds the `device_id`/`device_name` params Google requires for these | `http://192.168.1.100:3000/api/auth/google/callback` |
-   | mDNS hostname (`*.local`), Tailscale MagicDNS name, Tailscale IP (`100.x`), or any other custom hostname | ❌ **No** — Google will reject it with `redirect_uri_mismatch`, even though your browser resolves it fine | `http://familycal.local:3000/...`, `http://parallax.hippocampus-beta.ts.net:3000/...` |
+   | mDNS hostname (`*.local`), Tailscale IP (`100.x`), or any other private-use hostname — **without HTTPS** | ❌ **No** — Google will reject it with `redirect_uri_mismatch`, even though your browser resolves it fine | `http://familycal.local:3000/...` |
+   | A real public domain (including a Tailscale MagicDNS name) **served over HTTPS** with a genuine cert | ✅ Yes — Google's raw-IP/localhost restriction is specifically an exemption from its HTTPS requirement, so a legitimately-certed HTTPS domain is fine | `https://parallax.hippocampus-beta.ts.net/api/auth/google/callback` (e.g. via `tailscale cert`, like Inlet already does on this Pi) |
 
-   If you normally reach your Pi's admin panel through a `.local` hostname
-   or a Tailscale name (convenient, but **not** one of the two accepted
-   forms above), you have two options:
+   family-calendar itself only serves plain HTTP, so the HTTPS row above only
+   applies if you put a reverse proxy or tunnel (Caddy, Nginx Proxy Manager,
+   Cloudflare Tunnel, `tailscale serve`, etc.) in front of it — not something
+   this guide covers. For everyone else, if you normally reach your Pi's
+   admin panel through a `.local` hostname or a Tailscale name over plain
+   HTTP, you have two simpler options:
 
    - **Use the Pi's raw LAN IP instead** — find it with `hostname -I` on the
      Pi, then browse to `http://<that-ip>:3000/admin` for the whole Connect
