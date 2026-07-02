@@ -361,9 +361,24 @@ function setupAccountButtons() {
   document.getElementById('btn-ics-submit').addEventListener('click', connectICS);
 }
 
+/**
+ * Google only accepts `localhost`/`127.0.0.1` (loopback) or a raw LAN IP
+ * (10.x, 172.16-31.x, 192.168.x — matches the private-IP handling in
+ * routes/auth.js) as an OAuth2 redirect URI host. mDNS hostnames (.local),
+ * Tailscale MagicDNS names, and anything else will fail with
+ * redirect_uri_mismatch even though this admin panel loads fine over them.
+ */
+function isGoogleRedirectHostSafe(hostname) {
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') return true;
+  return /^(10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+)$/.test(hostname);
+}
+
 function updateRedirectUri() {
   const uri = window.location.protocol + '//' + window.location.host + '/api/auth/google/callback';
   document.getElementById('google-redirect-uri').textContent = uri;
+
+  const warningEl = document.getElementById('google-redirect-warning');
+  warningEl.style.display = isGoogleRedirectHostSafe(window.location.hostname) ? 'none' : '';
 }
 
 async function startGoogleAuth() {
