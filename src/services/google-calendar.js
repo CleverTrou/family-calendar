@@ -2,14 +2,19 @@ import { google } from 'googleapis';
 import { getGoogleCredentials, setAccount } from './credential-store.js';
 
 let oauth2Client = null;
+let cachedRefreshToken = null;
 
 function getAuth() {
-  if (!oauth2Client) {
-    const creds = getGoogleCredentials();
-    if (!creds) throw new Error('No Google credentials configured');
+  const creds = getGoogleCredentials();
+  if (!creds) throw new Error('No Google credentials configured');
 
+  // Rebuild whenever the stored refresh token differs from what this client
+  // was built with — catches reconnects/credential fixes without requiring
+  // every call site that changes credentials to remember to reset us.
+  if (!oauth2Client || cachedRefreshToken !== creds.refreshToken) {
     oauth2Client = new google.auth.OAuth2(creds.clientId, creds.clientSecret);
     oauth2Client.setCredentials({ refresh_token: creds.refreshToken });
+    cachedRefreshToken = creds.refreshToken;
   }
   return oauth2Client;
 }
@@ -17,6 +22,7 @@ function getAuth() {
 /** Reset the cached OAuth2 client (call after credential changes). */
 export function resetGoogleClient() {
   oauth2Client = null;
+  cachedRefreshToken = null;
 }
 
 /**

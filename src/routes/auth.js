@@ -13,10 +13,6 @@ import { google } from 'googleapis';
 import crypto from 'node:crypto';
 import { setAccount } from '../services/credential-store.js';
 import { requireAdmin } from '../services/admin-auth.js';
-import { resetGoogleClient } from '../services/google-calendar.js';
-import { resetGoogleTasksClient } from '../services/google-tasks.js';
-import { resetMicrosoftClient } from '../services/microsoft-calendar.js';
-import { resetMicrosoftTasksClient } from '../services/microsoft-tasks.js';
 
 // In-memory CSRF state tokens (short-lived, keyed by state → timestamp)
 const pendingStates = new Map();
@@ -173,11 +169,6 @@ export async function registerAuthRoutes(fastify) {
         status: 'connected',
         connectedAt: new Date().toISOString(),
       });
-
-      // Discard any cached OAuth2 client built from prior (possibly stale/invalid)
-      // credentials so the next sync picks up what was just stored.
-      resetGoogleClient();
-      resetGoogleTasksClient();
 
       console.log(`[Auth] Google connected! Found ${calendars.length} calendars and ${taskLists.length} task lists.`);
       return reply.redirect('/admin#accounts?success=google');
@@ -366,11 +357,6 @@ export async function registerAuthRoutes(fastify) {
         status: 'connected',
         connectedAt: new Date().toISOString(),
       });
-
-      // Discard any cached OAuth2 client built from prior (possibly stale/invalid)
-      // credentials so the next sync picks up what was just stored.
-      resetMicrosoftClient();
-      resetMicrosoftTasksClient();
 
       console.log(`[Auth] Microsoft connected! Found ${calendars.length} calendars and ${taskLists.length} task lists.`);
       return reply.redirect('/admin#accounts?success=microsoft');
