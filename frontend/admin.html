@@ -97,6 +97,9 @@
                   <code id="google-redirect-uri">Loading...</code>
                   <button class="btn-copy" title="Copy" onclick="navigator.clipboard.writeText(document.getElementById('google-redirect-uri').textContent)">Copy</button>
                 </div>
+                <div class="redirect-warning" id="google-redirect-warning" style="display:none">
+                  ⚠️ <span>Google will likely reject this URI with <code>redirect_uri_mismatch</code> — it's neither <code>localhost</code> nor a raw LAN IP (the only two forms Google accepts without HTTPS). Reopen this admin panel via <code>http://&lt;pi-lan-ip&gt;:3000/admin</code>, tunnel to localhost with <code>ssh -L 3000:localhost:3000 &lt;pi-hostname&gt;</code>, or serve this over HTTPS with a real public domain. <a href="https://github.com/CleverTrou/family-calendar/blob/main/GOOGLE-SETUP.md#choosing-your-redirect-address" target="_blank">Details &rarr;</a></span>
+                </div>
               </div>
             </div>
             <div class="step">

@@ -132,17 +132,41 @@ for personal use. The only change is that refresh tokens no longer expire.
    http://YOUR_SERVER_ADDRESS:3000/api/auth/google/callback
    ```
 
-   Replace `YOUR_SERVER_ADDRESS` with your actual server address:
+   Replace `YOUR_SERVER_ADDRESS` following the rules below — **this is the
+   step almost everyone gets wrong**, so read it before picking an address.
 
-   | Setup | Example redirect URI |
-   |-------|---------------------|
-   | Local development (Mac) | `http://localhost:3000/api/auth/google/callback` |
-   | Raspberry Pi on LAN | `http://192.168.1.100:3000/api/auth/google/callback` |
-   | Pi with hostname | `http://familycal.local:3000/api/auth/google/callback` |
+   > **Tip:** The admin panel shows the exact redirect URI to use, and warns
+   > you if the address you're currently browsing from won't work. Start the
+   > server first (`npm start`), go to `/admin` > Accounts > Connect Google
+   > Calendar — the URI (and warning, if any) is displayed in Step 2.
 
-   > **Tip:** The admin panel shows the exact redirect URI to use.
-   > Start the server first (`npm start`), go to `/admin` > Accounts >
-   > Connect Google Calendar — the URI is displayed in Step 2.
+   ### Choosing Your Redirect Address
+
+   Google only accepts two forms of host in an OAuth2 redirect URI without
+   HTTPS:
+
+   | Host form | Accepted? | Example |
+   |-----------|-----------|---------|
+   | `localhost` / `127.0.0.1` | ✅ Always | `http://localhost:3000/api/auth/google/callback` |
+   | Raw private LAN IP (`10.x`, `172.16-31.x`, `192.168.x`) | ✅ Yes — this app auto-adds the `device_id`/`device_name` params Google requires for these | `http://192.168.1.100:3000/api/auth/google/callback` |
+   | mDNS hostname (`*.local`), Tailscale IP (`100.x`), or any other private-use hostname — **without HTTPS** | ❌ **No** — Google will reject it with `redirect_uri_mismatch`, even though your browser resolves it fine | `http://familycal.local:3000/...` |
+   | A real public domain (including a Tailscale MagicDNS name) **served over HTTPS** with a genuine cert | ✅ Yes — Google's raw-IP/localhost restriction is specifically an exemption from its HTTPS requirement, so a legitimately-certed HTTPS domain is fine | `https://parallax.hippocampus-beta.ts.net/api/auth/google/callback` (e.g. via `tailscale cert`, like Inlet already does on this Pi) |
+
+   family-calendar itself only serves plain HTTP, so the HTTPS row above only
+   applies if you put a reverse proxy or tunnel (Caddy, Nginx Proxy Manager,
+   Cloudflare Tunnel, `tailscale serve`, etc.) in front of it — not something
+   this guide covers. For everyone else, if you normally reach your Pi's
+   admin panel through a `.local` hostname or a Tailscale name over plain
+   HTTP, you have two simpler options:
+
+   - **Use the Pi's raw LAN IP instead** — find it with `hostname -I` on the
+     Pi, then browse to `http://<that-ip>:3000/admin` for the whole Connect
+     Google flow (Steps 2-4 below). This is usually the simplest fix.
+   - **Tunnel to `localhost`** — from your Mac: `ssh -L 3000:localhost:3000 <pi-hostname>`,
+     then browse to `http://localhost:3000/admin`. The tunnel makes your
+     browser's address bar say `localhost:3000` while it's actually talking
+     to the Pi, which satisfies Google's loopback exemption. Keep that SSH
+     session open for the whole Connect Google flow.
 
 5. Click **Create**
 
@@ -158,21 +182,26 @@ for personal use. The only change is that refresh tokens no longer expire.
 
 ## Part 5: Connect in the Admin Panel
 
-1. Open your calendar server's admin panel in **any browser on your network**:
+1. Open your calendar server's admin panel using **the same address you
+   registered in [Choosing Your Redirect Address](#choosing-your-redirect-address)
+   above** — the Pi's raw LAN IP, or `localhost` if you're tunneling:
    ```
    http://YOUR_PI_IP:3000/admin
    ```
-   > **Tip: Use your Mac's browser.** You don't need a browser on the Pi
-   > itself. Open your Mac's browser, go to `http://PI_IP:3000/admin`, and
-   > do the entire setup from there. The OAuth flow works because:
+   > **Tip: Use your Mac's browser, not one on the Pi itself.** Open your
+   > Mac's browser, go to `http://PI_IP:3000/admin` (or `http://localhost:3000/admin`
+   > if tunneling), and do the entire setup from there. The OAuth flow works
+   > because:
    > 1. Your Mac browser talks to the Pi's server
    > 2. Google's consent screen opens in your Mac browser
-   > 3. After you approve, Google redirects back to `http://PI_IP:3000/...`
-   > 4. Your Mac browser follows that redirect (the Pi is on your LAN)
+   > 3. After you approve, Google redirects back to the same address
+   > 4. Your Mac browser follows that redirect (the Pi is on your LAN, or the
+   >    tunnel carries it)
    > 5. The Pi receives the auth code and stores the token
    >
-   > The redirect URI in Google Cloud Console must match the **Pi's address**
-   > (e.g., `http://192.168.1.100:3000/api/auth/google/callback`), not `localhost`.
+   > **Whichever address you open this page with is what gets sent to Google
+   > as the redirect URI** — if it's a `.local` hostname or Tailscale name,
+   > the admin panel will show a warning in Step 2 and Google will reject it.
 
 2. Go to **Accounts** tab
 3. Click **Connect Google Calendar**
@@ -215,7 +244,7 @@ Use the level filter to show only errors if something isn't working.
 |-------|-----|
 | `invalid_grant` on all calendars | **Most common issue.** Your refresh token expired — this happens after 7 days if the consent screen is still in "Testing" status. Fix: Publish the app (Part 3 > "Publish the App"), then disconnect and re-connect Google in the admin panel |
 | "Google hasn't verified this app" | Click **Advanced** > **Go to Family Calendar (unsafe)** — this is normal for personal apps |
-| "redirect_uri_mismatch" | The redirect URI in Cloud Console doesn't match your server. Check the URI in Admin > Connect Google > Step 2 and make sure it's added in Cloud Console > Credentials > Edit |
+| "redirect_uri_mismatch" | Most often you're browsing the admin panel via a `.local` hostname, Tailscale name, or other address Google doesn't accept — see [Choosing Your Redirect Address](#choosing-your-redirect-address). Otherwise, check the URI in Admin > Connect Google > Step 2 (heed the warning banner if shown) and make sure that exact string is added in Cloud Console > Credentials > Edit |
 | "Access blocked: This app's request is invalid" | The OAuth consent screen isn't configured. Complete Part 3 |
 | No refresh token returned | Google only sends a refresh token on first authorization. Go to [myaccount.google.com/permissions](https://myaccount.google.com/permissions), remove "Family Calendar", then re-authorize |
 
