@@ -14,7 +14,7 @@ function renderReminders(remindersData) {
   if (!remindersData || !remindersData.items || remindersData.items.length === 0) {
     if (remindersData && remindersData.lastSyncedAt) {
       listEl.textContent = '';
-      const msg = document.createElement('div');
+      const msg = document.createElement('li');
       msg.className = 'no-events';
       msg.textContent = 'No reminders';
       listEl.appendChild(msg);
@@ -39,7 +39,7 @@ function renderReminders(remindersData) {
     const priorityClass = getPriorityClass(item.priority);
     const isGoogleTask = item.source === 'google-tasks';
 
-    const el = document.createElement('div');
+    const el = document.createElement('li');
     el.className = 'reminder-item' + (item.isCompleted ? ' is-completed' : '');
 
     const checkbox = document.createElement('div');

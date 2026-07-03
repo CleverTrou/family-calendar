@@ -22,6 +22,7 @@ import { resetGoogleTasksClient } from '../services/google-tasks.js';
 import { resetICloudClient } from '../services/icloud-calendar.js';
 import { resetMicrosoftClient } from '../services/microsoft-calendar.js';
 import { resetMicrosoftTasksClient } from '../services/microsoft-tasks.js';
+import { safeFetch } from '../services/safe-fetch.js';
 
 export async function registerAccountRoutes(fastify) {
 
@@ -118,15 +119,10 @@ export async function registerAccountRoutes(fastify) {
       return reply.code(400).send({ error: 'URL must start with http:// or https://' });
     }
 
-    // Block private/link-local IPs to prevent SSRF
-    const PRIVATE_IP = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|localhost$|::1$|f[c-f][0-9a-f]{2}:)/i;
-    if (PRIVATE_IP.test(parsed.hostname)) {
-      return reply.code(400).send({ error: 'Private or internal URLs are not allowed.' });
-    }
-
-    // Test the feed by fetching it (no redirect following to prevent SSRF via open redirects)
+    // Test the feed by fetching it (no redirect following to prevent SSRF via open redirects;
+    // safeFetch also blocks private/internal addresses, including via DNS rebinding)
     try {
-      const response = await fetch(feedUrl, {
+      const response = await safeFetch(feedUrl, {
         headers: { 'User-Agent': 'FamilyCalendar/1.0' },
         signal: AbortSignal.timeout(15_000),
         redirect: 'error',
@@ -248,7 +244,7 @@ export async function registerAccountRoutes(fastify) {
 
       } else if (account.provider === 'ics') {
         if (!account.feedUrl) throw new Error('No feed URL stored');
-        const response = await fetch(account.feedUrl, {
+        const response = await safeFetch(account.feedUrl, {
           headers: { 'User-Agent': 'FamilyCalendar/1.0' },
           signal: AbortSignal.timeout(15_000),
         });

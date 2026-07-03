@@ -146,6 +146,7 @@ function buildDayCell(date, allEvents, weatherMap) {
     const icon = document.createElement('span');
     icon.className = 'day-weather-icon';
     icon.textContent = dayWeather.icon;
+    icon.setAttribute('aria-hidden', 'true');
 
     const temps = document.createElement('span');
     temps.className = 'day-weather-temps';
@@ -160,8 +161,14 @@ function buildDayCell(date, allEvents, weatherMap) {
 
     temps.appendChild(hi);
     temps.appendChild(lo);
+
+    const srLabel = document.createElement('span');
+    srLabel.className = 'sr-only';
+    srLabel.textContent = dayWeather.label + ', high ' + dayWeather.high + ' low ' + dayWeather.low;
+
     badge.appendChild(icon);
     badge.appendChild(temps);
+    badge.appendChild(srLabel);
     dateRow.appendChild(badge);
   }
 
@@ -180,7 +187,7 @@ function buildDayCell(date, allEvents, weatherMap) {
     .sort((a, b) => parseEventDate(a.start) - parseEventDate(b.start));
 
   if (allDayEvents.length > 0) {
-    const allDayContainer = document.createElement('div');
+    const allDayContainer = document.createElement('ul');
     allDayContainer.className = 'day-allday-events';
     for (const ev of allDayEvents) {
       allDayContainer.appendChild(buildAllDayEventCompact(ev));
@@ -194,7 +201,7 @@ function buildDayCell(date, allEvents, weatherMap) {
     .filter((ev) => !ev.allDay && stripTime(parseEventDate(ev.start)).getTime() === dayKey)
     .sort((a, b) => parseEventDate(a.start) - parseEventDate(b.start));
 
-  const eventsContainer = document.createElement('div');
+  const eventsContainer = document.createElement('ul');
   eventsContainer.className = 'day-events';
 
   const visibleCount = Math.min(timedEvents.length, MAX_VISIBLE_EVENTS);
@@ -203,7 +210,7 @@ function buildDayCell(date, allEvents, weatherMap) {
   }
 
   if (timedEvents.length > MAX_VISIBLE_EVENTS) {
-    const more = document.createElement('div');
+    const more = document.createElement('li');
     more.className = 'day-events-more';
     more.textContent = '+' + (timedEvents.length - MAX_VISIBLE_EVENTS) + ' more';
     eventsContainer.appendChild(more);
@@ -217,7 +224,7 @@ function buildDayCell(date, allEvents, weatherMap) {
 
 function buildAllDayEventCompact(event) {
   const colorInfo = getColorForEvent(event);
-  const el = document.createElement('div');
+  const el = document.createElement('li');
   el.className = 'allday-event';
   el.style.backgroundColor = colorInfo.color;
   el.style.setProperty('--event-color', colorInfo.color);
@@ -230,7 +237,7 @@ function buildAllDayEventCompact(event) {
 
 function buildTimedEventCompact(event) {
   const colorInfo = getColorForEvent(event);
-  const el = document.createElement('div');
+  const el = document.createElement('li');
   el.className = 'timed-event';
   el.style.setProperty('--event-color', colorInfo.color);
 

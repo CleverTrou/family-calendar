@@ -317,6 +317,8 @@ All configuration is via environment variables in `.env`:
 
 When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. The PIN endpoint is rate-limited to 5 attempts per minute.
 
+The server logs a startup warning if `ADMIN_PIN` or `ALLOWED_NETWORKS` is left unset, since both default to fully open. ICS feed URLs (connect-time test and every periodic re-sync) are fetched through a DNS-pinned guard that refuses to connect to private/internal addresses, even ones reached via DNS rebinding.
+
 **Recommended `.env` for a home network:**
 
 ```bash

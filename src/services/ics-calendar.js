@@ -11,6 +11,7 @@
 
 import ICAL from 'ical.js';
 import { listAccounts } from './credential-store.js';
+import { safeFetch } from './safe-fetch.js';
 
 /**
  * Parse raw iCalendar text into normalized event objects.
@@ -110,7 +111,7 @@ export async function fetchICSEvents(daysBack, daysForward) {
     if (!acct || !acct.feedUrl) continue;
 
     try {
-      const response = await fetch(acct.feedUrl, {
+      const response = await safeFetch(acct.feedUrl, {
         headers: { 'User-Agent': 'FamilyCalendar/1.0' },
         signal: AbortSignal.timeout(15_000),
         redirect: 'error',

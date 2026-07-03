@@ -112,13 +112,24 @@ function applySettings(settings) {
 
 function updateHeaderWeather(weather) {
   const el = document.getElementById('header-weather');
+  el.textContent = '';
   if (!weather || !weather.current) {
-    el.textContent = '';
     return;
   }
   const { temp, icon, label } = weather.current;
-  el.textContent = `${icon} ${temp}°`;
   el.title = label;
+
+  const iconSpan = document.createElement('span');
+  iconSpan.setAttribute('aria-hidden', 'true');
+  iconSpan.textContent = icon;
+
+  el.appendChild(iconSpan);
+  el.appendChild(document.createTextNode(` ${temp}°`));
+
+  const srLabel = document.createElement('span');
+  srLabel.className = 'sr-only';
+  srLabel.textContent = label;
+  el.appendChild(srLabel);
 }
 
 /* ── Clock ──────────────────────────────────────────── */

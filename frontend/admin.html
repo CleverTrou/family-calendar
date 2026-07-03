@@ -17,10 +17,10 @@
     </header>
 
     <!-- ── Tab Bar ────────────────────────────────── -->
-    <nav class="tab-bar">
-      <button class="tab-btn active" data-tab="accounts">Accounts</button>
-      <button class="tab-btn" data-tab="display">Display</button>
-      <button class="tab-btn" data-tab="system">System</button>
+    <nav class="tab-bar" role="tablist" aria-label="Settings sections">
+      <button class="tab-btn active" id="tab-accounts" data-tab="accounts" role="tab" aria-selected="true" aria-controls="panel-accounts">Accounts</button>
+      <button class="tab-btn" id="tab-display" data-tab="display" role="tab" aria-selected="false" aria-controls="panel-display">Display</button>
+      <button class="tab-btn" id="tab-system" data-tab="system" role="tab" aria-selected="false" aria-controls="panel-system">System</button>
     </nav>
 
     <!-- ── PIN Overlay ────────────────────────────── -->
@@ -28,9 +28,9 @@
       <div class="pin-card">
         <h2>Admin Access</h2>
         <p>Enter your PIN to manage settings.</p>
-        <input type="password" id="pin-input" placeholder="PIN" maxlength="8" autocomplete="off" inputmode="numeric">
+        <input type="password" id="pin-input" placeholder="PIN" aria-label="PIN" maxlength="8" autocomplete="off" inputmode="numeric">
         <button class="btn-primary" id="btn-pin-submit">Unlock</button>
-        <p class="pin-error" id="pin-error"></p>
+        <p class="pin-error" id="pin-error" role="alert" aria-live="assertive"></p>
       </div>
     </div>
 
@@ -39,7 +39,7 @@
       <!-- ════════════════════════════════════════════ -->
       <!-- ── Accounts Tab ─────────────────────────── -->
       <!-- ════════════════════════════════════════════ -->
-      <div class="tab-panel active" id="panel-accounts">
+      <div class="tab-panel active" id="panel-accounts" role="tabpanel" aria-labelledby="tab-accounts">
 
         <!-- Connected Accounts -->
         <section class="card">
@@ -56,19 +56,19 @@
           <p class="card-desc">Connect a new calendar source.</p>
           <div class="provider-buttons">
             <button class="btn-provider btn-google" id="btn-connect-google">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
               Connect Google Calendar
             </button>
             <button class="btn-provider btn-icloud" id="btn-connect-icloud">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#333" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#333" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
               Connect iCloud Calendar
             </button>
             <button class="btn-provider btn-microsoft" id="btn-connect-microsoft">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
               Connect Microsoft Calendar
             </button>
             <button class="btn-provider btn-ics" id="btn-connect-ics">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#FF6B35" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/><path fill="#FF6B35" d="M7 12h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm4 0h2v2h-2z"/></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#FF6B35" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/><path fill="#FF6B35" d="M7 12h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm4 0h2v2h-2z"/></svg>
               Add Calendar Feed (ICS URL)
             </button>
           </div>
@@ -148,7 +148,7 @@
             <button class="btn-primary" id="btn-icloud-submit">Test &amp; Connect</button>
             <button class="btn-text" id="btn-icloud-cancel">Cancel</button>
           </div>
-          <p class="status-msg" id="icloud-status"></p>
+          <p class="status-msg" id="icloud-status" role="status" aria-live="polite"></p>
         </section>
 
         <!-- Microsoft Setup (shown when connecting Microsoft) -->
@@ -232,7 +232,7 @@
             <button class="btn-primary" id="btn-ics-submit">Test &amp; Add Feed</button>
             <button class="btn-text" id="btn-ics-cancel">Cancel</button>
           </div>
-          <p class="status-msg" id="ics-status"></p>
+          <p class="status-msg" id="ics-status" role="status" aria-live="polite"></p>
         </section>
 
         <!-- Calendar Picker (shown after connecting) -->
@@ -248,7 +248,7 @@
       <!-- ════════════════════════════════════════════ -->
       <!-- ── Display Tab ──────────────────────────── -->
       <!-- ════════════════════════════════════════════ -->
-      <div class="tab-panel" id="panel-display">
+      <div class="tab-panel" id="panel-display" role="tabpanel" aria-labelledby="tab-display">
 
         <!-- Calendars Section -->
         <section class="card">
@@ -286,7 +286,7 @@
 
           <div class="btn-row">
             <button class="btn-small" id="btn-weather-locate" type="button">📍 Use my location</button>
-            <span class="status-msg" id="weather-status"></span>
+            <span class="status-msg" id="weather-status" role="status" aria-live="polite"></span>
           </div>
         </section>
 
@@ -361,7 +361,7 @@
           <div class="toggle-item">
             <div class="toggle-label">Enable screen schedule</div>
             <label class="toggle-switch">
-              <input type="checkbox" id="screen-schedule-toggle">
+              <input type="checkbox" id="screen-schedule-toggle" aria-label="Enable screen schedule">
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -397,7 +397,7 @@
                 <span class="toggle-hint">When the schedule turns the screen on, wake the TV and switch to the Pi's input. When the schedule turns it off, put the TV in standby. Only enable on a dedicated calendar display — skip this if the TV is in a bedroom or used for other things.</span>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" id="cec-control-toggle">
+                <input type="checkbox" id="cec-control-toggle" aria-label="Control TV via HDMI-CEC">
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -428,7 +428,7 @@
       <!-- ════════════════════════════════════════════ -->
       <!-- ── System Tab ───────────────────────────── -->
       <!-- ════════════════════════════════════════════ -->
-      <div class="tab-panel" id="panel-system">
+      <div class="tab-panel" id="panel-system" role="tabpanel" aria-labelledby="tab-system">
 
         <section class="card">
           <h2>System Info</h2>
@@ -456,7 +456,7 @@
           <h2>Server Logs</h2>
           <p class="card-desc">Recent server activity — sync results, errors, and connection events. Auto-refreshes every 10 seconds.</p>
           <div class="log-controls">
-            <select id="log-level-filter">
+            <select id="log-level-filter" aria-label="Filter logs by level">
               <option value="">All levels</option>
               <option value="info">Info</option>
               <option value="warn">Warnings</option>
