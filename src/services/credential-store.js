@@ -9,103 +9,24 @@
  * stored credentials exist for a provider.
  */
 
-import crypto from 'node:crypto';
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readEncryptedFile, writeEncryptedFile } from './encrypted-store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const CRED_FILE = path.join(DATA_DIR, 'credentials.enc');
-const ENV_FILE = path.join(__dirname, '..', '..', '.env');
-
-const ALGORITHM = 'aes-256-gcm';
-const PBKDF2_ITERATIONS = 100_000;
-const SALT = 'family-calendar-cred-salt-v1'; // static salt is OK since key is already random
 
 let _cache = null; // in-memory cache to avoid repeated disk reads + decryption
-
-/* ── Key management ──────────────────────────────── */
-
-/**
- * Get or generate the master encryption secret.
- * Reads CREDENTIAL_SECRET from process.env; if absent,
- * generates a random 32-byte hex string and appends it to .env.
- */
-function getMasterSecret() {
-  if (process.env.CREDENTIAL_SECRET) {
-    return process.env.CREDENTIAL_SECRET;
-  }
-
-  const secret = crypto.randomBytes(32).toString('hex');
-
-  // Append to .env file
-  try {
-    const envContent = fs.existsSync(ENV_FILE) ? fs.readFileSync(ENV_FILE, 'utf-8') : '';
-    const separator = envContent.endsWith('\n') ? '' : '\n';
-    fs.appendFileSync(ENV_FILE, `${separator}\n# Auto-generated encryption key for credential store\nCREDENTIAL_SECRET=${secret}\n`);
-    try { fs.chmodSync(ENV_FILE, 0o600); } catch { /* ignore on systems that don't support it */ }
-    console.log('[CredentialStore] Generated new CREDENTIAL_SECRET and appended to .env');
-  } catch (err) {
-    // If .env is read-only (Docker), write to a separate file
-    const keyFile = path.join(DATA_DIR, '.credential-key');
-    fs.writeFileSync(keyFile, secret, { encoding: 'utf-8', mode: 0o600 });
-    console.log('[CredentialStore] Generated new encryption key in data/.credential-key');
-  }
-
-  process.env.CREDENTIAL_SECRET = secret;
-  return secret;
-}
-
-function deriveKey(secret) {
-  return crypto.pbkdf2Sync(secret, SALT, PBKDF2_ITERATIONS, 32, 'sha256');
-}
-
-/* ── Encryption / Decryption ─────────────────────── */
-
-function encrypt(data) {
-  const key = deriveKey(getMasterSecret());
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-
-  const json = JSON.stringify(data);
-  const encrypted = Buffer.concat([cipher.update(json, 'utf-8'), cipher.final()]);
-  const authTag = cipher.getAuthTag();
-
-  // Format: iv (16) + authTag (16) + ciphertext
-  return Buffer.concat([iv, authTag, encrypted]);
-}
-
-function decrypt(buffer) {
-  const key = deriveKey(getMasterSecret());
-  const iv = buffer.subarray(0, 16);
-  const authTag = buffer.subarray(16, 32);
-  const ciphertext = buffer.subarray(32);
-
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-
-  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return JSON.parse(decrypted.toString('utf-8'));
-}
 
 /* ── File I/O ────────────────────────────────────── */
 
 function loadFromDisk() {
-  if (!fs.existsSync(CRED_FILE)) return {};
-  try {
-    const buffer = fs.readFileSync(CRED_FILE);
-    return decrypt(buffer);
-  } catch (err) {
-    console.error('[CredentialStore] Failed to decrypt credentials file:', err.message);
-    return {};
-  }
+  return readEncryptedFile(CRED_FILE) ?? {};
 }
 
 function saveToDisk(data) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  const encrypted = encrypt(data);
-  fs.writeFileSync(CRED_FILE, encrypted, { mode: 0o600 });
+  writeEncryptedFile(CRED_FILE, data);
 }
 
 function getAll() {

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, renameSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchGoogleEvents } from './google-calendar.js';
@@ -12,32 +12,43 @@ import { fetchWeather, getCachedWeather } from './weather.js';
 import { config, getEnabledSources } from '../config.js';
 import { registerCalendar, isCalendarVisible, loadSettings } from './settings.js';
 import { getGoogleCredentials, getAccount, listAccounts } from './credential-store.js';
+import { readEncryptedFile, writeEncryptedFile } from './encrypted-store.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CACHE_PATH = join(__dirname, '..', '..', 'data', 'events-cache.json');
+const CACHE_PATH = join(__dirname, '..', '..', 'data', 'events-cache.enc');
+const LEGACY_CACHE_PATH = join(__dirname, '..', '..', 'data', 'events-cache.json');
 
 // ── Persistence ────────────────────────────────────────
 
 function loadEventsCache() {
-  try {
-    const raw = readFileSync(CACHE_PATH, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return null;
+  const current = readEncryptedFile(CACHE_PATH);
+  if (current) return current;
+
+  // One-time migration from the old plaintext cache (pre-encryption). Read it,
+  // let the caller re-save it in the new encrypted format, then remove the
+  // plaintext copy — the whole point is this data shouldn't sit on disk in the clear.
+  if (existsSync(LEGACY_CACHE_PATH)) {
+    try {
+      const legacy = JSON.parse(readFileSync(LEGACY_CACHE_PATH, 'utf-8'));
+      console.log('[Cache] Migrating events-cache.json to encrypted events-cache.enc');
+      writeEncryptedFile(CACHE_PATH, legacy);
+      unlinkSync(LEGACY_CACHE_PATH);
+      return legacy;
+    } catch (err) {
+      console.error('[Cache] Failed to migrate legacy events cache:', err.message);
+    }
   }
+
+  return null;
 }
 
 function saveEventsCache() {
   try {
-    const data = JSON.stringify({
+    writeEncryptedFile(CACHE_PATH, {
       events: cachedEvents,
       knownCalendars,
       lastSyncTime,
-    }, null, 2);
-    const tmp = CACHE_PATH + '.tmp';
-    mkdirSync(dirname(CACHE_PATH), { recursive: true });
-    writeFileSync(tmp, data, 'utf-8');
-    renameSync(tmp, CACHE_PATH);
+    });
   } catch (err) {
     console.error('[Cache] Failed to save events cache:', err.message);
   }

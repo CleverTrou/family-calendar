@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { readFileSync, writeFileSync, renameSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readEncryptedFile, writeEncryptedFile } from './encrypted-store.js';
 
 /**
  * Unified reminders/tasks store.
@@ -16,26 +17,33 @@ import { fileURLToPath } from 'node:url';
  */
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CACHE_PATH = join(__dirname, '..', '..', 'data', 'reminders-cache.json');
+const CACHE_PATH = join(__dirname, '..', '..', 'data', 'reminders-cache.enc');
+const LEGACY_CACHE_PATH = join(__dirname, '..', '..', 'data', 'reminders-cache.json');
 
 // ── Persistence ────────────────────────────────────────
 
 function loadCache() {
-  try {
-    const raw = readFileSync(CACHE_PATH, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return null;
+  const current = readEncryptedFile(CACHE_PATH);
+  if (current) return current;
+
+  // One-time migration from the old plaintext cache (pre-encryption).
+  if (existsSync(LEGACY_CACHE_PATH)) {
+    try {
+      const legacy = JSON.parse(readFileSync(LEGACY_CACHE_PATH, 'utf-8'));
+      console.log('[Reminders] Migrating reminders-cache.json to encrypted reminders-cache.enc');
+      writeEncryptedFile(CACHE_PATH, legacy);
+      unlinkSync(LEGACY_CACHE_PATH);
+      return legacy;
+    } catch (err) {
+      console.error('[Reminders] Failed to migrate legacy reminders cache:', err.message);
+    }
   }
+
+  return null;
 }
 
 function saveCache(apple, googleTasks, microsoftTasks) {
-  const data = JSON.stringify({ apple, googleTasks, microsoftTasks }, null, 2);
-  // Atomic write: write to temp file, then rename
-  const tmp = CACHE_PATH + '.tmp';
-  mkdirSync(dirname(CACHE_PATH), { recursive: true });
-  writeFileSync(tmp, data, 'utf-8');
-  renameSync(tmp, CACHE_PATH);
+  writeEncryptedFile(CACHE_PATH, { apple, googleTasks, microsoftTasks });
 }
 
 // ── Initialize from cache ──────────────────────────────
