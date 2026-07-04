@@ -136,9 +136,11 @@ function setupTabs() {
 }
 
 function switchTab(tabName) {
-  document.querySelectorAll('.tab-btn').forEach((b) =>
-    b.classList.toggle('active', b.dataset.tab === tabName)
-  );
+  document.querySelectorAll('.tab-btn').forEach((b) => {
+    const isActive = b.dataset.tab === tabName;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
   document.querySelectorAll('.tab-panel').forEach((p) =>
     p.classList.toggle('active', p.id === 'panel-' + tabName)
   );
@@ -617,6 +619,7 @@ function renderCalendarToggles() {
     input.type = 'checkbox';
     input.checked = isVisible;
     input.dataset.key = key;
+    input.setAttribute('aria-label', 'Show ' + name + ' (' + source + ') calendar');
     input.addEventListener('change', (e) => {
       currentSettings.calendars.visible[e.target.dataset.key] = e.target.checked;
       markDirty();
@@ -648,11 +651,15 @@ function renderColorPickers() {
     const row = document.createElement('div');
     row.className = 'color-row';
 
+    const inputId = 'color-picker-' + key.replace(/[^a-zA-Z0-9_-]/g, '-');
+
     const label = document.createElement('label');
     label.textContent = key;
+    label.htmlFor = inputId;
 
     const input = document.createElement('input');
     input.type = 'color';
+    input.id = inputId;
     input.value = value;
     input.dataset.key = key;
     input.addEventListener('input', (e) => {
@@ -806,9 +813,11 @@ function renderThemePalettePicker() {
     var theme = COLOR_THEMES[key];
     if (!theme) return;
 
-    var swatch = document.createElement('div');
+    var swatch = document.createElement('button');
+    swatch.type = 'button';
     swatch.className = 'theme-swatch' + (key === current ? ' selected' : '');
     swatch.dataset.theme = key;
+    swatch.setAttribute('aria-pressed', key === current ? 'true' : 'false');
 
     // Preview: left half = light, right half = dark
     var preview = document.createElement('div');
@@ -877,8 +886,10 @@ function renderThemePalettePicker() {
     swatch.addEventListener('click', function () {
       container.querySelectorAll('.theme-swatch').forEach(function (s) {
         s.classList.remove('selected');
+        s.setAttribute('aria-pressed', 'false');
       });
       swatch.classList.add('selected');
+      swatch.setAttribute('aria-pressed', 'true');
       currentSettings.display.colorTheme = key;
       markDirty();
     });
@@ -886,6 +897,10 @@ function renderThemePalettePicker() {
       showOptionPreview(swatch, function () { return buildPalettePreview(key); });
     });
     swatch.addEventListener('mouseleave', hideOptionPreview);
+    swatch.addEventListener('focus', function () {
+      showOptionPreview(swatch, function () { return buildPalettePreview(key); });
+    });
+    swatch.addEventListener('blur', hideOptionPreview);
 
     fragment.appendChild(swatch);
   });
@@ -967,10 +982,13 @@ function renderScreenSchedule() {
   const dayBtns = document.querySelectorAll('#screen-on-days .day-btn');
   dayBtns.forEach((btn) => {
     const day = parseInt(btn.dataset.day);
-    if (activeDays.includes(day)) btn.classList.add('active');
+    const isActive = activeDays.includes(day);
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 
     btn.addEventListener('click', () => {
-      btn.classList.toggle('active');
+      const nowActive = btn.classList.toggle('active');
+      btn.setAttribute('aria-pressed', nowActive ? 'true' : 'false');
       const days = [];
       document.querySelectorAll('#screen-on-days .day-btn.active').forEach((b) => {
         days.push(parseInt(b.dataset.day));
@@ -1272,9 +1290,14 @@ function renderStylePicker() {
     btn.appendChild(label);
     btn.appendChild(desc);
 
+    btn.setAttribute('aria-pressed', key === current ? 'true' : 'false');
     btn.addEventListener('click', function () {
-      container.querySelectorAll('.style-btn').forEach(function (b) { b.classList.remove('selected'); });
+      container.querySelectorAll('.style-btn').forEach(function (b) {
+        b.classList.remove('selected');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('selected');
+      btn.setAttribute('aria-pressed', 'true');
       currentSettings.display.displayStyle = key;
       markDirty();
     });
@@ -1282,6 +1305,10 @@ function renderStylePicker() {
       showOptionPreview(btn, function () { return buildStylePreview(key); });
     });
     btn.addEventListener('mouseleave', hideOptionPreview);
+    btn.addEventListener('focus', function () {
+      showOptionPreview(btn, function () { return buildStylePreview(key); });
+    });
+    btn.addEventListener('blur', hideOptionPreview);
 
     fragment.appendChild(btn);
   });
@@ -1356,6 +1383,10 @@ function renderFontOptions() {
       showOptionPreview(option, function () { return buildTypefacePreview(key); });
     });
     option.addEventListener('mouseleave', hideOptionPreview);
+    radio.addEventListener('focus', function () {
+      showOptionPreview(option, function () { return buildTypefacePreview(key); });
+    });
+    radio.addEventListener('blur', hideOptionPreview);
 
     fragment.appendChild(option);
   });
@@ -1690,6 +1721,8 @@ function showToast(message, type) {
 
   const toast = document.createElement('div');
   toast.className = 'toast toast-' + (type || 'info');
+  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
   toast.textContent = message;
   document.body.appendChild(toast);
 

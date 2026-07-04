@@ -18,8 +18,8 @@
       <div class="legend" id="legend">
         <!-- populated dynamically from color settings -->
       </div>
-      <div class="sync-status" id="sync-status">
-        <span class="sync-status-icon" id="sync-status-icon">⏳</span>
+      <div class="sync-status" id="sync-status" role="status" aria-live="polite">
+        <span class="sync-status-icon" id="sync-status-icon" aria-hidden="true">⏳</span>
         <span class="sync-status-text" id="sync-status-text"></span>
       </div>
     </div>
@@ -27,16 +27,17 @@
 
   <main class="main">
     <section class="calendar-panel" id="calendar-panel">
+      <h2 class="sr-only">Calendar</h2>
       <div class="calendar-grid" id="calendar-grid">
         <div class="loading-message">Waiting for first sync...</div>
       </div>
     </section>
 
     <aside class="reminders-panel" id="reminders-panel">
-      <div class="panel-header">Reminders & Tasks</div>
-      <div class="reminders-list" id="reminders-list">
-        <div class="loading-message">Waiting for sync...</div>
-      </div>
+      <h2 class="panel-header">Reminders & Tasks</h2>
+      <ul class="reminders-list" id="reminders-list">
+        <li class="loading-message">Waiting for sync...</li>
+      </ul>
       <div class="reminders-meta" id="reminders-meta"></div>
     </aside>
   </main>

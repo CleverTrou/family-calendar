@@ -152,9 +152,12 @@ export function isCalendarVisible(source, calendarName) {
   return settings.calendars.visible[key] !== false;
 }
 
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 /** Deep merge: target values are overwritten by source values. */
 function deepMerge(target, source) {
   for (const key of Object.keys(source)) {
+    if (UNSAFE_KEYS.has(key)) continue;
     if (
       source[key] &&
       typeof source[key] === 'object' &&

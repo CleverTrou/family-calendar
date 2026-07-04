@@ -45,6 +45,20 @@
   padding: 0;
 }
 
+/* Visually hidden but announced by screen readers — for headings that give
+   assistive tech a landmark to navigate by without altering the visual layout. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 html, body {
   height: 100vh;
   width: 100vw;
@@ -202,6 +216,7 @@ body {
 }
 
 .panel-header {
+  margin: 0;
   font-size: 1.042vw;
   font-weight: 600;
   text-transform: uppercase;
@@ -297,7 +312,9 @@ body {
 }
 
 .day-cell.is-past {
-  opacity: 0.55;
+  /* Kept high enough that already-AA text (event titles/times) doesn't drop below
+     readable contrast once dimmed — opacity multiplies against the page background. */
+  opacity: 0.75;
 }
 
 /* Date number in each cell */
@@ -376,6 +393,7 @@ body {
   gap: 0.278vh;
   margin-bottom: 0.370vh;
   flex-shrink: 0;
+  list-style: none;
 }
 
 .allday-event {
@@ -397,6 +415,7 @@ body {
   gap: 0.278vh;
   overflow: hidden;
   flex: 1;
+  list-style: none;
 }
 
 .timed-event {
@@ -452,6 +471,8 @@ body {
   overflow-y: auto;
   padding: 0.741vh 0;
   scrollbar-width: none;
+  list-style: none;
+  margin: 0;
 }
 
 .reminders-list::-webkit-scrollbar {
@@ -510,8 +531,12 @@ body {
 }
 
 .reminder-due.is-overdue {
-  color: #ef4444;
+  color: #b91c1c;
   font-weight: 500;
+}
+
+:root[data-theme="dark"] .reminder-due.is-overdue {
+  color: #ef4444;
 }
 
 .reminder-list-label {
@@ -558,9 +583,26 @@ body {
 
 /* ── Priority Indicators ────────────────────────────── */
 .priority-high {
-  color: #ef4444;
+  color: #b91c1c;
 }
 
 .priority-medium {
+  color: #92400e;
+}
+
+:root[data-theme="dark"] .priority-high {
+  color: #ef4444;
+}
+
+:root[data-theme="dark"] .priority-medium {
   color: #f59e0b;
+}
+
+/* ── Reduced Motion ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

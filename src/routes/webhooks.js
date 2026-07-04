@@ -1,7 +1,15 @@
+import crypto from 'node:crypto';
 import { updateReminders } from '../services/reminders.js';
 import { config } from '../config.js';
 
 const FIELD_SEP = '|||';
+
+/** Timing-safe comparison of the webhook secret (mirrors admin-auth.js's verifyPin). */
+function secretsMatch(a, b) {
+  const aHash = crypto.createHash('sha256').update(String(a)).digest();
+  const bHash = crypto.createHash('sha256').update(String(b)).digest();
+  return crypto.timingSafeEqual(aHash, bHash);
+}
 
 /**
  * Parse the pipe-delimited text format from Apple Shortcuts.
@@ -120,7 +128,7 @@ export async function registerWebhookRoutes(fastify) {
   fastify.post('/reminders/sync', async (request, reply) => {
     // Authenticate via shared secret header
     const secret = request.headers['x-webhook-secret'];
-    if (config.reminders.webhookSecret && secret !== config.reminders.webhookSecret) {
+    if (config.reminders.webhookSecret && !secretsMatch(secret || '', config.reminders.webhookSecret)) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
 
@@ -133,8 +141,9 @@ export async function registerWebhookRoutes(fastify) {
     let parsed = parsePipeDelimited(raw) || tryParseJson(raw);
 
     if (!parsed) {
-      console.error('[Reminders] Failed to parse body. Raw content:');
-      console.error(raw);
+      // Don't log the raw body: it's the family's actual reminder/task text, and
+      // this log is readable by anyone reaching the admin log viewer (GET /api/logs).
+      console.error(`[Reminders] Failed to parse body (${raw.length} chars)`);
       return reply.code(400).send({
         error: 'Could not parse request body',
         hint: 'Expected pipe-delimited text (syncedBy:Name header + title|||date|||notes|||priority lines) or JSON',

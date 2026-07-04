@@ -5,7 +5,7 @@
   --admin-card: #ffffff;
   --admin-text: #1a1a2e;
   --admin-text-secondary: #6b7280;
-  --admin-text-muted: #9ca3af;
+  --admin-text-muted: #616977;
   --admin-border: #e5e7eb;
   --admin-accent: #4285f4;
   --admin-accent-hover: #3367d6;
@@ -186,8 +186,9 @@ body {
   transition: border-color 0.15s;
 }
 
-.pin-card input:focus {
+.pin-card input:focus-visible {
   border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 35%, transparent);
 }
 
 .pin-error {
@@ -732,8 +733,10 @@ body {
   appearance: auto;
 }
 
-.field-group input:focus {
+.field-group input:focus-visible,
+.field-group select:focus-visible {
   border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 35%, transparent);
 }
 
 .field-row {
@@ -816,6 +819,14 @@ body {
   border: 3px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   cursor: grab;
+}
+
+.scale-control input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--admin-accent) 35%, transparent);
+}
+
+.scale-control input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--admin-accent) 35%, transparent);
 }
 
 .scale-labels {
@@ -950,6 +961,11 @@ body {
 
 .theme-swatch {
   position: relative;
+  display: block;
+  width: 100%;
+  background: none;
+  font: inherit;
+  text-align: inherit;
   border: 2px solid var(--admin-border);
   border-radius: 10px;
   cursor: pointer;
@@ -959,6 +975,12 @@ body {
 
 .theme-swatch:hover {
   border-color: #c0c7d0;
+}
+
+.theme-swatch:focus-visible {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 35%, transparent);
 }
 
 .theme-swatch.selected {
@@ -1372,4 +1394,13 @@ body {
   color: var(--admin-text-muted);
   font-size: 13px;
   font-style: italic;
+}
+
+/* ── Reduced Motion ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

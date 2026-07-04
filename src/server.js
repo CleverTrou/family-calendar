@@ -14,6 +14,7 @@ import { registerAuthRoutes } from './routes/auth.js';
 import { registerAccountRoutes } from './routes/accounts.js';
 import { requireAdmin, isPinRequired, verifyPin, generateToken } from './services/admin-auth.js';
 import { startSyncScheduler } from './services/sync-scheduler.js';
+import { parseCIDR, matchCIDR } from './services/net-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,24 @@ if (!_webhookSecret || _webhookSecret === 'change-me-to-a-random-string') {
     '[Security] REMINDERS_WEBHOOK_SECRET is not set or still the default value. ' +
     'POST /api/reminders/sync is open to anyone on the network. ' +
     'Set a strong random value in .env to protect this endpoint.'
+  );
+}
+
+// Warn loudly at startup if the admin panel has no PIN protection
+if (!process.env.ADMIN_PIN) {
+  console.warn(
+    '[Security] ADMIN_PIN is not set. The /admin panel (settings, connected accounts, ' +
+    'live logs, forced re-sync) is open to anyone who can reach this server. ' +
+    'Set ADMIN_PIN in .env to require a PIN before making changes.'
+  );
+}
+
+// Warn loudly at startup if there's no IP allowlist restricting who can reach the server
+if (!process.env.ALLOWED_NETWORKS) {
+  console.warn(
+    '[Security] ALLOWED_NETWORKS is not set. This server accepts requests from any ' +
+    'network it can be reached on. Set ALLOWED_NETWORKS in .env (e.g. your home LAN\'s ' +
+    'CIDR range) to restrict access.'
   );
 }
 
@@ -145,56 +164,4 @@ try {
 } catch (err) {
   fastify.log.error(err);
   process.exit(1);
-}
-
-// ── CIDR helpers for IP allowlist ──────────────────────
-
-function normalizeIP(ipStr) {
-  // Collapse IPv6 forms that are really IPv4 so allowlist entries and request IPs
-  // are matched on the same family: ::ffff:10.0.0.1 -> 10.0.0.1, ::1 -> 127.0.0.1.
-  // Applied in BOTH parseCIDR and matchCIDR to keep the two sides symmetric.
-  if (ipStr.startsWith('::ffff:')) return ipStr.slice(7);
-  if (ipStr === '::1') return '127.0.0.1';
-  return ipStr;
-}
-
-function expandIPv6(addr) {
-  // Expand a plain IPv6 address (handling "::" compression) into a 128-bit BigInt. Drops any zone id.
-  addr = addr.split('%')[0];
-  const [headStr, tailStr] = addr.split('::');
-  const head = headStr ? headStr.split(':') : [];
-  const tail = tailStr ? tailStr.split(':') : [];
-  const groups = [...head, ...Array(Math.max(8 - head.length - tail.length, 0)).fill('0'), ...tail];
-  let value = 0n;
-  for (const g of groups) value = (value << 16n) | BigInt(parseInt(g || '0', 16) & 0xffff);
-  return value;
-}
-
-function parseCIDR(cidr) {
-  // Support bare IPs and CIDR, for both IPv4 ("10.0.0.0/24") and IPv6 ("fd7a:115c:a1e0::/48").
-  const [rawAddr, bits] = cidr.includes('/') ? cidr.split('/') : [cidr, ''];
-  const addr = normalizeIP(rawAddr);
-  if (addr.includes(':')) {
-    const prefix = bits === '' ? 128 : parseInt(bits);
-    const mask = prefix === 0 ? 0n : ((1n << 128n) - 1n) ^ ((1n << BigInt(128 - prefix)) - 1n);
-    return { v6: true, ip: expandIPv6(addr) & mask, mask };
-  }
-  const prefix = bits === '' ? 32 : parseInt(bits);
-  const parts = addr.split('.').map(Number);
-  const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
-  const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
-  return { v6: false, ip: ip & mask, mask };
-}
-
-function matchCIDR(ipStr, net) {
-  const addr = normalizeIP(ipStr);
-  const isV6 = addr.includes(':');
-  if (net.v6) {
-    return isV6 && (expandIPv6(addr) & net.mask) === net.ip;
-  }
-  if (isV6) return false;
-  const parts = addr.split('.').map(Number);
-  if (parts.length !== 4) return false;
-  const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
-  return (ip & net.mask) === net.ip;
 }

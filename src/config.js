@@ -20,6 +20,11 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean),
 
+  // Off by default: ICS feed URLs are blocked from resolving to private/internal
+  // addresses (SSRF protection). Set to true to subscribe to a feed hosted on your
+  // own LAN (a Synology/Nextcloud/Home Assistant instance, a Tailscale peer, etc).
+  allowLocalIcsFeeds: process.env.ALLOW_LOCAL_ICS_FEEDS === 'true' || process.env.ALLOW_LOCAL_ICS_FEEDS === '1',
+
   // Legacy .env fields — kept for backward compat but credential store is preferred
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
