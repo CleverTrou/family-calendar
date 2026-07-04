@@ -15,12 +15,15 @@ reviews:
     drafts: false
     ignore_usernames:
       - "dependabot[bot]"
+      - "renovate[bot]"
+      - "github-actions[bot]"
 
   path_filters:
     - "!**/node_modules/**"
     - "!**/package-lock.json"
     - "!**/*.png"
     - "!**/*.ipk"
+    - "!**/*.wgt"
     - "!deploy/webos-app/**"
     - "!deploy/tizen-app/**"
 
