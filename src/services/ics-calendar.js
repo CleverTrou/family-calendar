@@ -12,6 +12,7 @@
 import ICAL from 'ical.js';
 import { listAccounts } from './credential-store.js';
 import { safeFetch } from './safe-fetch.js';
+import { config } from '../config.js';
 
 /**
  * Parse raw iCalendar text into normalized event objects.
@@ -115,7 +116,7 @@ export async function fetchICSEvents(daysBack, daysForward) {
         headers: { 'User-Agent': 'FamilyCalendar/1.0' },
         signal: AbortSignal.timeout(15_000),
         redirect: 'error',
-      });
+      }, { allowPrivateIPs: config.allowLocalIcsFeeds });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);

@@ -314,10 +314,11 @@ All configuration is via environment variables in `.env`:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ALLOWED_NETWORKS` | *(none)* | Comma-separated CIDR ranges to allow (e.g., `10.0.0.0/24,127.0.0.1`) |
+| `ALLOW_LOCAL_ICS_FEEDS` | `false` | Allow ICS feed URLs to resolve to private/internal addresses (see below) |
 
 When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. The PIN endpoint is rate-limited to 5 attempts per minute.
 
-The server logs a startup warning if `ADMIN_PIN` or `ALLOWED_NETWORKS` is left unset, since both default to fully open. ICS feed URLs (connect-time test and every periodic re-sync) are fetched through a DNS-pinned guard that refuses to connect to private/internal addresses, even ones reached via DNS rebinding.
+The server logs a startup warning if `ADMIN_PIN` or `ALLOWED_NETWORKS` is left unset, since both default to fully open. ICS feed URLs (connect-time test and every periodic re-sync) are fetched through a DNS-pinned guard that refuses to connect to private/internal addresses, even ones reached via DNS rebinding — set `ALLOW_LOCAL_ICS_FEEDS=true` if you want to subscribe to a feed hosted on your own network (a Synology/Nextcloud/Home Assistant instance, a Tailscale peer, etc).
 
 **Recommended `.env` for a home network:**
 

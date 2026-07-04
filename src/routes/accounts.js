@@ -23,6 +23,7 @@ import { resetICloudClient } from '../services/icloud-calendar.js';
 import { resetMicrosoftClient } from '../services/microsoft-calendar.js';
 import { resetMicrosoftTasksClient } from '../services/microsoft-tasks.js';
 import { safeFetch } from '../services/safe-fetch.js';
+import { config } from '../config.js';
 
 export async function registerAccountRoutes(fastify) {
 
@@ -126,7 +127,7 @@ export async function registerAccountRoutes(fastify) {
         headers: { 'User-Agent': 'FamilyCalendar/1.0' },
         signal: AbortSignal.timeout(15_000),
         redirect: 'error',
-      });
+      }, { allowPrivateIPs: config.allowLocalIcsFeeds });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status} ${response.statusText}`);
@@ -247,7 +248,7 @@ export async function registerAccountRoutes(fastify) {
         const response = await safeFetch(account.feedUrl, {
           headers: { 'User-Agent': 'FamilyCalendar/1.0' },
           signal: AbortSignal.timeout(15_000),
-        });
+        }, { allowPrivateIPs: config.allowLocalIcsFeeds });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const text = await response.text();
         if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Not a valid iCalendar feed');

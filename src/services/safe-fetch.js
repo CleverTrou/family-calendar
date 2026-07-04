@@ -32,12 +32,29 @@ function safeLookup(origin, options, callback) {
 
 const dispatcher = new Agent().compose(interceptors.dns({ lookup: safeLookup, maxTTL: 0 }));
 
-/** Drop-in fetch() replacement that refuses to connect to private/internal IPs. */
-export function safeFetch(url, options = {}) {
+/**
+ * Drop-in fetch() replacement that refuses to connect to private/internal IPs.
+ *
+ * Pass `{ allowPrivateIPs: true }` to skip the guard entirely — for home-LAN
+ * setups where the user deliberately wants to subscribe to a calendar feed
+ * hosted on their own network (a Synology/Nextcloud/Home Assistant instance,
+ * or a Tailscale peer). Off by default.
+ */
+export function safeFetch(url, options = {}, { allowPrivateIPs = false } = {}) {
+  if (allowPrivateIPs) {
+    return undiciFetch(url, options);
+  }
+
   // A literal IP in the URL (e.g. "http://127.0.0.1/") never goes through the
   // dns interceptor's lookup — there's nothing to resolve — so it must be
   // checked here directly, or it'd bypass the guard below entirely.
-  const hostname = (new URL(url)).hostname.replace(/^\[|\]$/g, '');
+  let hostname;
+  try {
+    hostname = (new URL(url)).hostname.replace(/^\[|\]$/g, '');
+  } catch (err) {
+    return Promise.reject(err);
+  }
+
   if (net.isIP(hostname) && isPrivateOrReservedIP(hostname)) {
     return Promise.reject(new Error(
       `Refusing to connect to "${hostname}": it is a private or internal address.`
