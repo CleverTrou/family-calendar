@@ -21,14 +21,27 @@ const SALT = 'family-calendar-cred-salt-v1'; // static salt is OK since key is a
 
 /* ── Key management ──────────────────────────────── */
 
+const KEY_FILE = path.join(DATA_DIR, '.credential-key');
+
 /**
  * Get or generate the master encryption secret.
- * Reads CREDENTIAL_SECRET from process.env; if absent,
- * generates a random 32-byte hex string and appends it to .env.
+ * Reads CREDENTIAL_SECRET from process.env; if absent, reads back a
+ * previously generated key from data/.credential-key (so a read-only
+ * .env — e.g. Docker — doesn't get a fresh, unrecoverable key every
+ * restart); if neither exists, generates a random 32-byte hex string
+ * and appends it to .env (or data/.credential-key if .env isn't writable).
  */
 function getMasterSecret() {
   if (process.env.CREDENTIAL_SECRET) {
     return process.env.CREDENTIAL_SECRET;
+  }
+
+  if (fs.existsSync(KEY_FILE)) {
+    const existing = fs.readFileSync(KEY_FILE, 'utf-8').trim();
+    if (existing) {
+      process.env.CREDENTIAL_SECRET = existing;
+      return existing;
+    }
   }
 
   const secret = crypto.randomBytes(32).toString('hex');
@@ -42,8 +55,7 @@ function getMasterSecret() {
     console.log('[EncryptedStore] Generated new CREDENTIAL_SECRET and appended to .env');
   } catch (err) {
     // If .env is read-only (Docker), write to a separate file
-    const keyFile = path.join(DATA_DIR, '.credential-key');
-    fs.writeFileSync(keyFile, secret, { encoding: 'utf-8', mode: 0o600 });
+    fs.writeFileSync(KEY_FILE, secret, { encoding: 'utf-8', mode: 0o600 });
     console.log('[EncryptedStore] Generated new encryption key in data/.credential-key');
   }
 
@@ -51,8 +63,14 @@ function getMasterSecret() {
   return secret;
 }
 
+let _cachedKey = null; // PBKDF2 (100k iterations) is expensive — the secret is static per process, so derive once
+let _cachedSecret = null;
+
 function deriveKey(secret) {
-  return crypto.pbkdf2Sync(secret, SALT, PBKDF2_ITERATIONS, 32, 'sha256');
+  if (_cachedKey && _cachedSecret === secret) return _cachedKey;
+  _cachedKey = crypto.pbkdf2Sync(secret, SALT, PBKDF2_ITERATIONS, 32, 'sha256');
+  _cachedSecret = secret;
+  return _cachedKey;
 }
 
 /* ── Encryption / Decryption ─────────────────────── */
