@@ -244,6 +244,7 @@ family-calendar/
 │       ├── admin-auth.js      # PIN-based admin authentication
 │       ├── calendar-store.js  # Event cache + sync orchestration
 │       ├── credential-store.js # Encrypted credential storage (AES-256-GCM)
+│       ├── encrypted-store.js # Shared AES-256-GCM helpers for credentials + cached events/reminders
 │       ├── google-calendar.js # Google Calendar API client
 │       ├── google-tasks.js    # Google Tasks API client
 │       ├── ics-calendar.js     # ICS feed URL client (read-only calendar subscriptions)
@@ -252,14 +253,16 @@ family-calendar/
 │       ├── microsoft-graph.js # Microsoft Graph API helper (auth, token refresh, pagination)
 │       ├── microsoft-calendar.js # Microsoft Outlook Calendar client
 │       ├── microsoft-tasks.js # Microsoft To Do client
+│       ├── net-utils.js       # Shared CIDR/IP helpers (IP allowlist + SSRF guard)
 │       ├── reminders.js       # Unified reminders store (Apple + Google + Microsoft)
+│       ├── safe-fetch.js      # DNS-pinned fetch() guard against SSRF for ICS feed URLs
 │       ├── settings.js        # User preferences (JSON file)
 │       ├── sync-scheduler.js  # Cron-based sync loop
 │       └── weather.js         # Weather forecasts (Open-Meteo API)
 ├── data/                      # Runtime data (gitignored)
 │   ├── credentials.enc        # Encrypted provider credentials
-│   ├── events-cache.json      # Persisted calendar events across restarts
-│   └── reminders-cache.json   # Persisted reminders across restarts
+│   ├── events-cache.enc       # Encrypted calendar events, persisted across restarts
+│   └── reminders-cache.enc    # Encrypted reminders, persisted across restarts
 ├── frontend/
 │   ├── index.html             # Main calendar display
 │   ├── admin.html             # Settings panel
@@ -304,7 +307,7 @@ All configuration is via environment variables in `.env`:
 | `CALENDAR_DAYS_BACK` | `7` | Days in the past to fetch events |
 | `CALENDAR_DAYS_FORWARD` | `14` | Days in the future to fetch events |
 | `ADMIN_PIN` | *(none)* | PIN to protect `/admin`, settings, system stats, and logs — **strongly recommended** |
-| `CREDENTIAL_SECRET` | *(auto)* | Encryption key for credential store (auto-generated on first run) |
+| `CREDENTIAL_SECRET` | *(auto)* | Encryption key for the credential store and cached events/reminders (auto-generated on first run) |
 | `REMINDERS_WEBHOOK_SECRET` | *(none)* | Shared secret for `POST /api/reminders/sync` — set a strong random value |
 | `WEATHER_LAT` | *(none)* | Latitude for weather + sunrise/sunset (or set via admin GUI) |
 | `WEATHER_LON` | *(none)* | Longitude for weather + sunrise/sunset (or set via admin GUI) |
