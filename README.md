@@ -215,7 +215,7 @@ The Debian package lags behind upstream, so build from source for the latest ver
   set -eo pipefail
   sudo apt install -y curl git build-essential cmake pkg-config libplist-dev libssl-dev \
     libavahi-client-dev libavahi-compat-libdnssd-dev \
-    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libdbus-1-dev \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libdbus-1-dev libx11-dev \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
     gstreamer1.0-libav gstreamer1.0-gl gstreamer1.0-x   # runtime: decode, sound, X11 output
   TAG=$(curl -fsS https://api.github.com/repos/FDH2/UxPlay/releases/latest | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')
