@@ -115,7 +115,7 @@ Differences from the standard setup:
 - **256MB swap file** configured automatically
 - **Lightweight mode** enabled — syncs every 15 min, frontend polls every 2 min
 - **Node.js heap limited** to ~152 MB to prevent OOM (`--max-old-space-size=128 --max-semi-space-size=8`; the old-space flag alone allows 320 MB on Node 22+)
-- **Node.js 24 LTS** on a 64-bit OS; on 32-bit, Debian's own Node.js 20, because NodeSource no longer publishes maintained 32-bit ARM builds. Debian backports its security fixes, and `unattended-upgrades` applies them
+- **Node.js 24 LTS** on a 64-bit OS. On 32-bit, NodeSource no longer publishes maintained ARM builds, so the script uses Debian's own Node.js 20, which gets Debian's security fixes through `unattended-upgrades`. That only works on a **trixie**-based 32-bit image: bookworm's Node.js is 18.19, below the app's 20.18.1 minimum, and the script stops with instructions rather than installing it
 
 > **Note:** The original Pi Zero W (ARMv6, 32-bit) is not supported — current Node.js requires a 64-bit or ARMv7+ processor. The Zero 2 W and Pi 3 are 64-bit capable; **Raspberry Pi OS Lite (64-bit)** is recommended, since it gets current Node.js.
 

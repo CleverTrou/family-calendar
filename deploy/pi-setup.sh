@@ -62,26 +62,36 @@ apt install -y \
   curl
 
 # ── 3. Node.js ────────────────────────────────────────
+MIN_NODE=20.18.1   # node-cron >=20, undici >=20.18.1
 if ! command -v node &>/dev/null; then
   # 64-bit: NodeSource's Node 24 LTS (supported to April 2028). 32-bit (armhf):
   # NodeSource never built 24 and stopped updating 22 at 22.15, so use Debian's
-  # own nodejs instead -- the 20.x line, but Debian backports security fixes and
-  # unattended-upgrades applies them automatically. Either clears the app's
-  # floor of 20.18.1 (node-cron >=20, undici >=20.18.1).
+  # own nodejs instead. Debian backports security fixes, and unattended-upgrades
+  # applies them automatically, but only trixie (13) ships a new enough one:
+  # bookworm's is 18.19. Check the candidate *before* installing it.
   ARCH=$(dpkg --print-architecture)
   if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
     echo "→ Installing Node.js 24 LTS from NodeSource ($ARCH)..."
     curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
   else
-    echo "→ Installing Debian's Node.js ($ARCH has no maintained NodeSource build)..."
+    CANDIDATE=$(apt-cache policy nodejs | awk '/Candidate:/ {print $2}')
+    if [ -z "$CANDIDATE" ] || [ "$CANDIDATE" = "(none)" ] \
+       || ! dpkg --compare-versions "$CANDIDATE" ge "$MIN_NODE"; then
+      echo "ERROR: $ARCH has no maintained NodeSource build, and Debian's nodejs here" >&2
+      echo "  (${CANDIDATE:-none}) is older than this app's minimum, $MIN_NODE." >&2
+      echo "  Use Raspberry Pi OS Lite (64-bit), or a 32-bit image based on Debian 13 (trixie)." >&2
+      exit 1
+    fi
+    echo "→ Installing Debian's Node.js $CANDIDATE ($ARCH has no maintained NodeSource build)..."
   fi
   apt install -y nodejs
 fi
-NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]')
-if [ "$NODE_MAJOR" -lt 20 ]; then
-  # An existing install is left alone above; say so rather than let npm fail later.
-  echo "  WARNING: Node.js $(node --version) is end-of-life and below this app's minimum (20.18.1)."
-  echo "  Remove it (sudo apt remove nodejs) and re-run this script to install a supported version."
+NODE_VERSION=$(node -p process.versions.node)
+if ! dpkg --compare-versions "$NODE_VERSION" ge "$MIN_NODE"; then
+  # An existing install is left alone above, so it can be too old.
+  echo "ERROR: Node.js $NODE_VERSION is below this app's minimum, $MIN_NODE." >&2
+  echo "  Remove it (sudo apt remove nodejs) and re-run this script." >&2
+  exit 1
 fi
 echo "  Node.js $(node --version) installed"
 
