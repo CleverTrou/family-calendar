@@ -10,7 +10,7 @@
     "auth:google": "node scripts/google-auth.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.18.1"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

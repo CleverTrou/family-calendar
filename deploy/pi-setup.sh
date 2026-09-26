@@ -61,11 +61,27 @@ apt install -y \
   git \
   curl
 
-# ── 3. Node.js 20 LTS ─────────────────────────────────
+# ── 3. Node.js ────────────────────────────────────────
 if ! command -v node &>/dev/null; then
-  echo "→ Installing Node.js 20..."
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  # 64-bit: NodeSource's Node 24 LTS (supported to April 2028). 32-bit (armhf):
+  # NodeSource never built 24 and stopped updating 22 at 22.15, so use Debian's
+  # own nodejs instead -- the 20.x line, but Debian backports security fixes and
+  # unattended-upgrades applies them automatically. Either clears the app's
+  # floor of 20.18.1 (node-cron >=20, undici >=20.18.1).
+  ARCH=$(dpkg --print-architecture)
+  if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
+    echo "→ Installing Node.js 24 LTS from NodeSource ($ARCH)..."
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
+  else
+    echo "→ Installing Debian's Node.js ($ARCH has no maintained NodeSource build)..."
+  fi
   apt install -y nodejs
+fi
+NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]')
+if [ "$NODE_MAJOR" -lt 20 ]; then
+  # An existing install is left alone above; say so rather than let npm fail later.
+  echo "  WARNING: Node.js $(node --version) is end-of-life and below this app's minimum (20.18.1)."
+  echo "  Remove it (sudo apt remove nodejs) and re-run this script to install a supported version."
 fi
 echo "  Node.js $(node --version) installed"
 
