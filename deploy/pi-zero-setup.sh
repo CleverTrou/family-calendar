@@ -106,6 +106,7 @@ if ! command -v node &>/dev/null; then
   # applies them automatically, but only trixie (13) ships a new enough one:
   # bookworm's is 18.19. Check the candidate *before* installing it.
   ARCH=$(dpkg --print-architecture)
+  NODE_PKGS=nodejs   # NodeSource's nodejs bundles npm
   if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
     echo "→ Installing Node.js 24 LTS from NodeSource ($ARCH)..."
     curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
@@ -119,8 +120,9 @@ if ! command -v node &>/dev/null; then
       exit 1
     fi
     echo "→ Installing Debian's Node.js $CANDIDATE ($ARCH has no maintained NodeSource build)..."
+    NODE_PKGS="nodejs npm"   # Debian packages npm separately
   fi
-  apt install -y nodejs
+  apt install -y $NODE_PKGS
 fi
 NODE_VERSION=$(node -p process.versions.node)
 if ! dpkg --compare-versions "$NODE_VERSION" ge "$MIN_NODE"; then
@@ -146,7 +148,7 @@ fi
 # ── 6. Install npm dependencies ───────────────────────
 echo "→ Installing npm dependencies..."
 cd "$REPO_DIR"
-sudo -u "$PI_USER" npm install --production
+sudo -u "$PI_USER" npm ci --omit=dev   # lockfile-exact; --production is deprecated
 
 # ── 7. Create .env from template if it doesn't exist ──
 if [ ! -f "$REPO_DIR/.env" ]; then
