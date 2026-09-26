@@ -95,6 +95,11 @@ if ! dpkg --compare-versions "$NODE_VERSION" ge "$MIN_NODE"; then
   echo "  Remove it (sudo apt remove nodejs) and re-run this script." >&2
   exit 1
 fi
+# A pre-existing Debian nodejs may lack npm (Debian packages it separately).
+if ! command -v npm &>/dev/null; then
+  echo "→ Installing npm..."
+  apt install -y npm
+fi
 echo "  Node.js $(node --version) installed"
 
 # ── 4. Clone or update the repo ───────────────────────
