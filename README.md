@@ -31,7 +31,7 @@ Always-on wall-mounted calendar and reminders display for Raspberry Pi (Zero 2 W
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Node.js 18+, [Fastify 5](https://fastify.dev) |
+| Backend | Node.js 20.18.1+ (24 LTS recommended), [Fastify 5](https://fastify.dev) |
 | Frontend | Vanilla HTML/CSS/JS (no build step) |
 | Google Calendar | [googleapis](https://www.npmjs.com/package/googleapis) OAuth2 |
 | Google Tasks | [googleapis](https://www.npmjs.com/package/googleapis) Tasks API |
@@ -114,10 +114,10 @@ Differences from the standard setup:
 - **Epiphany browser** instead of Chromium (~150MB less RAM)
 - **256MB swap file** configured automatically
 - **Lightweight mode** enabled — syncs every 15 min, frontend polls every 2 min
-- **Node.js heap limited** to 128MB to prevent OOM
-- **Node.js 18 LTS** (lighter than 20+)
+- **Node.js heap limited** to ~152 MB to prevent OOM (`--max-old-space-size=128 --max-semi-space-size=8`; the old-space flag alone allows 320 MB on Node 22+)
+- **Node.js 24 LTS** on a 64-bit OS. On 32-bit, NodeSource no longer publishes maintained ARM builds, so the script uses Debian's own Node.js 20 (plus Debian's separate `npm` package). Debian backports its security fixes, which install automatically only if `unattended-upgrades` is set up; see [Automatic Upgrades](#automatic-upgrades). That only works on a **trixie**-based 32-bit image: bookworm's Node.js is 18.19, below the app's 20.18.1 minimum, and the script stops with instructions rather than installing it
 
-> **Note:** The original Pi Zero W (ARMv6, 32-bit) is not supported — Node.js 18+ requires a 64-bit or ARMv7+ processor.
+> **Note:** The original Pi Zero W (ARMv6, 32-bit) is not supported — current Node.js requires a 64-bit or ARMv7+ processor. The Zero 2 W and Pi 3 are 64-bit capable; **Raspberry Pi OS Lite (64-bit)** is recommended, since it gets current Node.js.
 
 ### macOS (development or temporary display)
 
