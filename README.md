@@ -219,11 +219,11 @@ The Debian package lags behind upstream, so build from source for the latest ver
   TAG=$(curl -fsS https://api.github.com/repos/FDH2/UxPlay/releases/latest | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')
   [ -n "$TAG" ] || { echo "could not read the latest UxPlay tag" >&2; exit 1; }
   SRC=$(mktemp -d)
+  trap 'rm -rf -- "$SRC"' EXIT   # cleans up on failure too, not only on success
   git clone --depth 1 --branch "$TAG" https://github.com/FDH2/UxPlay.git "$SRC"
   cmake -S "$SRC" -B "$SRC/build" -DCMAKE_BUILD_TYPE=Release
   make -C "$SRC/build" -j4
   sudo make -C "$SRC/build" install   # /usr/local/bin/uxplay
-  rm -rf "$SRC"
   if [ -f /etc/systemd/system/uxplay.service ]; then sudo systemctl restart uxplay; fi
   uxplay -v
 )
