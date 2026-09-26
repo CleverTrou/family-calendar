@@ -5,6 +5,16 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      # Both require Node >= 22, but 32-bit (armhf) installs from
+      # deploy/pi-zero-setup.sh get Debian's Node 20 — NodeSource has no
+      # maintained 22+ for armhf. Drop these once engines.node is raised to >= 22.
+      #   undici 8.x:           engines >=22.19.0
+      #   googleapis >=178.1.1: engines >=22.0.0
+      - dependency-name: "undici"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "googleapis"
+        versions: [">=178.1.1"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
