@@ -1,0 +1,72 @@
+name: Changelog
+
+# Every PR must add an entry under "## [Unreleased]" in CHANGELOG.md
+# (https://keepachangelog.com/en/1.1.0/). Editing an older release's section
+# doesn't count. For changes nobody reading the changelog would care about
+# (CI, review-bot config, typo fixes), and for release PRs that move
+# [Unreleased] into a version, apply the `skip-changelog` label instead.
+# Dependabot PRs are exempt.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changelog:
+    name: CHANGELOG.md updated
+    runs-on: ubuntu-latest
+    if: >-
+      !contains(github.event.pull_request.labels.*.name, 'skip-changelog') &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
+    steps:
+      - name: Require a new entry under [Unreleased]
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error file=CHANGELOG.md::$1"; exit 1; }
+
+          # Prints CHANGELOG.md at a commit. Returns 2 if the file doesn't exist
+          # there, and 1 for any other API failure, so an outage can't pass.
+          fetch() {
+            gh api -H 'Accept: application/vnd.github.raw' \
+              "repos/$REPO/contents/CHANGELOG.md?ref=$1" 2>"$RUNNER_TEMP/err" && return 0
+            grep -q 'HTTP 404' "$RUNNER_TEMP/err" && return 2
+            cat "$RUNNER_TEMP/err" >&2
+            return 1
+          }
+
+          # The lines between "## [Unreleased]" and the next "## [" heading.
+          unreleased() { awk '/^## \[Unreleased\]/ { f = 1; next } /^## \[/ { f = 0 } f'; }
+
+          rc=0; head_file=$(fetch "$HEAD_SHA") || rc=$?
+          [ "$rc" -eq 2 ] && fail "This PR has no CHANGELOG.md. Keep one at the repository root."
+          [ "$rc" -eq 0 ] || fail "Couldn't read CHANGELOG.md at $HEAD_SHA from the GitHub API."
+
+          rc=0; base_file=$(fetch "$BASE_SHA") || rc=$?
+          [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || fail "Couldn't read CHANGELOG.md at $BASE_SHA from the GitHub API."
+          if [ "$rc" -eq 2 ]; then
+            echo "CHANGELOG.md is new in this PR."
+            exit 0
+          fi
+
+          grep -q '^## \[Unreleased\]' <<<"$head_file" \
+            || fail "CHANGELOG.md has no '## [Unreleased]' heading."
+
+          # Lines in the PR's [Unreleased] section that aren't in the base's,
+          # ignoring blank lines and "### Added"-style group headings.
+          added=$(grep -Fvx -f <(unreleased <<<"$base_file") <(unreleased <<<"$head_file") \
+                  | grep -Ev '^[[:space:]]*$|^### ' || true)
+
+          if [ -z "$added" ]; then
+            fail "This PR adds nothing under [Unreleased] in CHANGELOG.md. Add an entry there, or apply the skip-changelog label if the change isn't user-facing."
+          fi
+          echo "New under [Unreleased]:"
+          echo "$added"
