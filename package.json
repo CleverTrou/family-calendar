@@ -1,6 +1,6 @@
 {
   "name": "family-calendar",
-  "version": "1.0.0",
+  "version": "0.7.0",
   "description": "Always-on family calendar & reminders display for Raspberry Pi",
   "type": "module",
   "main": "src/server.js",
