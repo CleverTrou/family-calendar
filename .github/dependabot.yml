@@ -5,6 +5,19 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      # Both need a newer Node than engines.node allows: 32-bit (armhf)
+      # installs from deploy/pi-zero-setup.sh get Debian's Node 20, since
+      # NodeSource has no maintained 22+ for armhf. Drop each rule only once
+      # engines.node reaches that package's own floor:
+      #   googleapis >=178.1.1: engines >=22.0.0
+      #   undici 8.x:           engines >=22.19.0
+      # The exact @fastify/static 10.1.3 pin in package.json has the same
+      # cause (10.1.4+ pulls ESM-only content-disposition 3, engines >=22).
+      - dependency-name: "undici"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "googleapis"
+        versions: [">=178.1.1"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
