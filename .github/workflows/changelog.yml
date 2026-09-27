@@ -43,8 +43,11 @@ jobs:
             return 1
           }
 
-          # The lines between "## [Unreleased]" and the next "## [" heading.
-          unreleased() { awk '/^## \[Unreleased\]/ { f = 1; next } /^## \[/ { f = 0 } f'; }
+          # The lines between "## [Unreleased]" and the next "## [" heading,
+          # without trailing whitespace, so that alone doesn't count as new.
+          unreleased() {
+            awk '{ sub(/[[:space:]]+$/, "") } /^## \[Unreleased\]/ { f = 1; next } /^## \[/ { f = 0 } f'
+          }
 
           rc=0; head_file=$(fetch "$HEAD_SHA") || rc=$?
           [ "$rc" -eq 2 ] && fail "This PR has no CHANGELOG.md. Keep one at the repository root."
@@ -65,8 +68,10 @@ jobs:
           added=$(grep -Fvx -f <(unreleased <<<"$base_file") <(unreleased <<<"$head_file") \
                   | grep -Ev '^[[:space:]]*$|^### ' || true)
 
-          if [ -z "$added" ]; then
-            fail "This PR adds nothing under [Unreleased] in CHANGELOG.md. Add an entry there, or apply the skip-changelog label if the change isn't user-facing."
+          # At least one of those lines must be a list item: an entry, not
+          # stray prose or a comment. Continuation lines are fine alongside it.
+          if ! grep -Eq '^[-*] ' <<<"$added"; then
+            fail "This PR adds no entry (a '- ' list item) under [Unreleased] in CHANGELOG.md. Add one there, or apply the skip-changelog label if the change isn't user-facing."
           fi
           echo "New under [Unreleased]:"
           echo "$added"
