@@ -1,6 +1,6 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, stat, readdir, writeFile } from 'node:fs/promises';
+import { open, readFile, stat, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { sandbox } from '../helpers/sandbox.js';
 
@@ -27,8 +27,14 @@ test('authenticated encryption is randomized and detects tampering, truncation a
 test('files are private, encrypted, atomically replaced and fail closed on corruption', async () => {
   const file = path.join(box.dir, 'data', 'test.enc');
   store.writeEncryptedFile(file, { private: 'synthetic private data' });
-  assert.equal((await stat(file)).mode & 0o777, 0o600);
-  assert.equal((await readFile(file)).includes(Buffer.from('synthetic private data')), false);
+  // Check permissions and contents on the same open file, avoiding a path race.
+  const handle = await open(file, 'r');
+  try {
+    assert.equal((await handle.stat()).mode & 0o777, 0o600);
+    assert.equal((await handle.readFile()).includes(Buffer.from('synthetic private data')), false);
+  } finally {
+    await handle.close();
+  }
   store.writeEncryptedFile(file, { version: 2 });
   assert.deepEqual(store.readEncryptedFile(file), { version: 2 });
   assert.equal((await readdir(path.dirname(file))).some(name => name.endsWith('.tmp')), false);
