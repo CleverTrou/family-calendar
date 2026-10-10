@@ -17,16 +17,18 @@
     </header>
 
     <!-- ── Tab Bar ────────────────────────────────── -->
-    <nav class="tab-bar" role="tablist" aria-label="Settings sections">
+    <nav aria-label="Settings sections">
+    <div class="tab-bar" role="tablist" aria-label="Settings sections">
       <button class="tab-btn active" id="tab-accounts" data-tab="accounts" role="tab" aria-selected="true" aria-controls="panel-accounts">Accounts</button>
-      <button class="tab-btn" id="tab-display" data-tab="display" role="tab" aria-selected="false" aria-controls="panel-display">Display</button>
-      <button class="tab-btn" id="tab-system" data-tab="system" role="tab" aria-selected="false" aria-controls="panel-system">System</button>
+      <button class="tab-btn" id="tab-display" tabindex="-1" data-tab="display" role="tab" aria-selected="false" aria-controls="panel-display">Display</button>
+      <button class="tab-btn" id="tab-system" tabindex="-1" data-tab="system" role="tab" aria-selected="false" aria-controls="panel-system">System</button>
+    </div>
     </nav>
 
     <!-- ── PIN Overlay ────────────────────────────── -->
-    <div class="pin-overlay" id="pin-overlay" style="display:none">
+    <div class="pin-overlay" id="pin-overlay" role="dialog" aria-modal="true" aria-labelledby="pin-title" style="display:none">
       <div class="pin-card">
-        <h2>Admin Access</h2>
+        <h2 id="pin-title">Admin Access</h2>
         <p>Enter your PIN to manage settings.</p>
         <input type="password" id="pin-input" placeholder="PIN" aria-label="PIN" maxlength="8" autocomplete="off" inputmode="numeric">
         <button class="btn-primary" id="btn-pin-submit">Unlock</button>
@@ -409,7 +411,7 @@
           <h2>Display Scale</h2>
           <p class="card-desc">Optional fine-tuning on top of automatic viewport scaling. The layout already fills any resolution proportionally — use this only if you want elements larger or smaller than the default.</p>
           <div class="scale-control">
-            <input type="range" id="display-scale-slider" min="0.5" max="3" step="0.25" value="1">
+            <input type="range" id="display-scale-slider" aria-label="Display scale" min="0.5" max="3" step="0.25" value="1">
             <div class="scale-labels">
               <span>0.5×</span>
               <span id="display-scale-value" class="scale-current">1×</span>

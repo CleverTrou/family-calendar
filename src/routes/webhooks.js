@@ -153,8 +153,8 @@ export async function registerWebhookRoutes(fastify) {
     let { items, syncedBy } = parsed;
 
     // Handle flat concatenated JSON (items is an object, not an array)
-    if (items && !Array.isArray(items)) {
-      return reply.code(400).send({ error: '"items" must be an array' });
+    if (!Array.isArray(items) || items.some(item => !item || typeof item !== 'object' || Array.isArray(item))) {
+      return reply.code(400).send({ error: '"items" must be an array of objects' });
     }
 
     const result = updateReminders(items, syncedBy);

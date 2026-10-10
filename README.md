@@ -393,6 +393,13 @@ REMINDERS_WEBHOOK_SECRET=your-random-secret-here
 
 The display frontend (`GET /api/calendar`, `GET /api/display/status`, `GET /api/health`) remains unauthenticated so the Pi kiosk works without a token.
 
+## Tests and security checks
+
+Run `npm test` for backend security/privacy tests and `npm run test:browser` for
+Chromium accessibility and UI checks. GitHub Actions also runs dependency audits
+and CodeQL. See **[Testing guide](docs/testing.md)** for setup, coverage, and
+required-check configuration.
+
 ## License
 
 MIT

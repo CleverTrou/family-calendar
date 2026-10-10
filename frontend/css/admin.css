@@ -4,10 +4,10 @@
   --admin-bg: #f8f9fb;
   --admin-card: #ffffff;
   --admin-text: #1a1a2e;
-  --admin-text-secondary: #6b7280;
+  --admin-text-secondary: #596170;
   --admin-text-muted: #616977;
   --admin-border: #e5e7eb;
-  --admin-accent: #4285f4;
+  --admin-accent: #2563c9;
   --admin-accent-hover: #3367d6;
   --admin-success: #0f9d58;
   --admin-danger: #dc2626;
@@ -1185,7 +1185,7 @@ body {
 }
 
 .log-entry .log-time {
-  color: #6b7280;
+  color: #9ca3af;
 }
 
 .log-entry .log-level-info {
