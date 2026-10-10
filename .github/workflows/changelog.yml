@@ -6,10 +6,17 @@ name: Changelog
 # (CI, review-bot config, typo fixes), and for release PRs that move
 # [Unreleased] into a version, apply the `skip-changelog` label instead.
 # Dependabot PRs are exempt.
+#
+# `edited` is there for a PR retargeted to a different base branch: the check
+# compares against the base, so a new base needs a new run. Title and body
+# edits re-run it too, which is harmless.
+#
+# This file is byte-identical in every CleverTrou repo. Change all copies at
+# once, never one.
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
 
 permissions:
   contents: read
