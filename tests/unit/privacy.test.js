@@ -24,7 +24,7 @@ test('authenticated encryption is randomized and detects tampering, truncation a
   finally { process.env.CREDENTIAL_SECRET = secret; }
 });
 
-test('files are private, encrypted, atomically replaced and fail closed on corruption', async () => {
+test('files are private, encrypted and atomically replaced', async () => {
   const file = path.join(box.dir, 'data', 'test.enc');
   store.writeEncryptedFile(file, { private: 'synthetic private data' });
   // Check permissions and contents on the same open file, avoiding a path race.
@@ -38,6 +38,10 @@ test('files are private, encrypted, atomically replaced and fail closed on corru
   store.writeEncryptedFile(file, { version: 2 });
   assert.deepEqual(store.readEncryptedFile(file), { version: 2 });
   assert.equal((await readdir(path.dirname(file))).some(name => name.endsWith('.tmp')), false);
+});
+
+test('corrupted and missing files fail closed', async () => {
+  const file = path.join(box.dir, 'data', 'corrupted.enc');
   await writeFile(file, 'corrupted');
   assert.equal(store.readEncryptedFile(file), null);
   assert.equal(store.readEncryptedFile(file + '.missing'), null);
