@@ -13,10 +13,17 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-11
+
+Automated tests, a supported Node.js on the Pi, and a clean dependency audit.
+
 ### Added
 
-- GitHub Actions tests across Node 20/22/24, security/privacy regressions,
-  Chromium accessibility and keyboard checks, dependency audits, and CodeQL.
+- Automated tests on GitHub Actions across Node 20, 22, and 24: security and
+  privacy regressions, HTTP integration tests, Chromium accessibility and
+  keyboard checks, dependency audits, and CodeQL. Run them locally with
+  `npm test`, `npm run test:browser`, and `npm run test:security`; see
+  `docs/testing.md`. ([#79](https://github.com/CleverTrou/family-calendar/pull/79))
 
 ### Changed
 
@@ -35,11 +42,10 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ### Fixed
 
-- Reject malformed/future admin tokens and expired or cross-provider OAuth states;
-  block hex-mapped IPv6 private feed addresses and invalid webhook item arrays.
-- Prevent caching of API responses; improve PIN dialog focus, keyboard navigation
-  of settings tabs, form labels, and default display/admin text contrast.
-
+- The admin PIN dialog keeps keyboard focus, the settings tabs can be navigated
+  with the arrow keys, admin controls have labels, and default display and admin
+  text has more contrast.
+  ([#79](https://github.com/CleverTrou/family-calendar/pull/79))
 - The Pi Zero's heap cap is really 128 MB. On Node 22 and later,
   `--max-old-space-size=128` alone allowed a 320 MB heap.
   ([#71](https://github.com/CleverTrou/family-calendar/pull/71))
@@ -48,6 +54,11 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 - All 24 open Dependabot alerts (15 high, 9 moderate) resolved, including path
   traversal in @fastify/static. `npm audit` reports 0.
+- Malformed or future-dated admin tokens and expired or cross-provider OAuth
+  states are rejected. Feed URLs can no longer reach private networks through
+  hex-mapped IPv6 addresses, webhooks reject invalid item arrays, and API
+  responses are never cached.
+  ([#79](https://github.com/CleverTrou/family-calendar/pull/79))
   ([#72](https://github.com/CleverTrou/family-calendar/pull/72))
 
 ## [0.7.0] - 2026-07-04
@@ -178,7 +189,8 @@ The repository as it was when first made public.
 - Raspberry Pi kiosk mode that boots straight into fullscreen Chromium.
 - LG webOS app.
 
-[Unreleased]: https://github.com/CleverTrou/family-calendar/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/CleverTrou/family-calendar/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/CleverTrou/family-calendar/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CleverTrou/family-calendar/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CleverTrou/family-calendar/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/CleverTrou/family-calendar/compare/v0.4.0...v0.5.0
