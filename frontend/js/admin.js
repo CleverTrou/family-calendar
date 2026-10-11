@@ -90,8 +90,15 @@ function authFetch(url, options = {}) {
 
 function showPinOverlay() {
   document.getElementById('pin-overlay').style.display = 'flex';
+  document.querySelectorAll('.admin-shell > :not(#pin-overlay)').forEach(el => { el.inert = true; });
   const input = document.getElementById('pin-input');
   input.focus();
+  document.getElementById('pin-overlay').addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+    event.preventDefault();
+    const submit = document.getElementById('btn-pin-submit');
+    (document.activeElement === input ? submit : input).focus();
+  });
 
   document.getElementById('btn-pin-submit').addEventListener('click', submitPin);
   input.addEventListener('keydown', (e) => {
@@ -119,9 +126,12 @@ async function submitPin() {
     adminToken = data.token;
     sessionStorage.setItem('adminToken', adminToken);
     document.getElementById('pin-overlay').style.display = 'none';
+    document.querySelectorAll('.admin-shell > :not(#pin-overlay)').forEach(el => { el.inert = false; });
+    document.getElementById('pin-input').value = '';
     await loadData();
     setupTabs();
     handleUrlParams();
+    document.querySelector('.tab-btn.active').focus();
   } catch {
     errorEl.textContent = 'Connection error';
   }
@@ -132,6 +142,15 @@ async function submitPin() {
 function setupTabs() {
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    btn.addEventListener('keydown', (event) => {
+      const tabs = [...document.querySelectorAll('.tab-btn')];
+      const index = tabs.indexOf(btn);
+      const next = { ArrowRight: (index + 1) % tabs.length, ArrowLeft: (index + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      switchTab(tabs[next].dataset.tab);
+      tabs[next].focus();
+    });
   });
 }
 
@@ -140,6 +159,7 @@ function switchTab(tabName) {
     const isActive = b.dataset.tab === tabName;
     b.classList.toggle('active', isActive);
     b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    b.tabIndex = isActive ? 0 : -1;
   });
   document.querySelectorAll('.tab-panel').forEach((p) =>
     p.classList.toggle('active', p.id === 'panel-' + tabName)

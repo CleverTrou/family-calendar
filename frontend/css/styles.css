@@ -326,7 +326,7 @@ body {
 }
 
 .day-cell.is-today .day-cell-date {
-  color: var(--color-primary);
+  color: var(--text-primary);
 }
 
 .day-cell-month {

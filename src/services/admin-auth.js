@@ -38,14 +38,13 @@ export function generateToken() {
  * Returns true if the token is valid and not expired.
  */
 export function validateToken(token) {
-  if (!token) return false;
+  if (typeof token !== 'string' || !/^\d+\.[a-f0-9]{64}$/.test(token)) return false;
 
   const [timestamp, hmac] = token.split('.');
-  if (!timestamp || !hmac) return false;
 
   // Check expiry
-  const age = Date.now() - parseInt(timestamp);
-  if (isNaN(age) || age > TOKEN_TTL_MS) return false;
+  const age = Date.now() - Number(timestamp);
+  if (!Number.isSafeInteger(Number(timestamp)) || age < 0 || age > TOKEN_TTL_MS) return false;
 
   // Verify HMAC (timing-safe comparison)
   const expected = crypto

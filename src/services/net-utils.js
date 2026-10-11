@@ -4,10 +4,20 @@
  */
 
 export function normalizeIP(ipStr) {
-  // Collapse IPv6 forms that are really IPv4 so allowlist entries and request IPs
-  // are matched on the same family: ::ffff:10.0.0.1 -> 10.0.0.1, ::1 -> 127.0.0.1.
-  if (ipStr.startsWith('::ffff:')) return ipStr.slice(7);
-  if (ipStr === '::1') return '127.0.0.1';
+  // URL canonicalization handles expanded, uppercase and hex-mapped IPv6,
+  // including the form produced when safeFetch parses ::ffff:127.0.0.1.
+  if (ipStr.includes(':')) {
+    try {
+      const canonical = new URL(`http://[${ipStr.split('%')[0]}]/`).hostname.slice(1, -1);
+      if (canonical === '::1') return '127.0.0.1';
+      const mapped = canonical.match(/^::ffff:([a-f0-9]+):([a-f0-9]+)$/);
+      if (mapped) {
+        const high = parseInt(mapped[1], 16);
+        const low = parseInt(mapped[2], 16);
+        return [high >> 8, high & 255, low >> 8, low & 255].join('.');
+      }
+    } catch { /* Leave non-address input unchanged. */ }
+  }
   return ipStr;
 }
 

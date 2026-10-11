@@ -20,8 +20,8 @@ const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 function cleanExpiredStates() {
   const now = Date.now();
-  for (const [state, ts] of pendingStates) {
-    if (now - ts > STATE_TTL_MS) pendingStates.delete(state);
+  for (const [state, { timestamp }] of pendingStates) {
+    if (now - timestamp > STATE_TTL_MS) pendingStates.delete(state);
   }
 }
 
@@ -65,6 +65,7 @@ export async function registerAuthRoutes(fastify) {
       clientId,
       clientSecret,
       redirectUri,
+      provider: 'google',
     });
 
     const authUrl = oauth2Client.generateAuthUrl({
@@ -112,8 +113,9 @@ export async function registerAuthRoutes(fastify) {
     }
 
     // Validate CSRF state
+    cleanExpiredStates();
     const stateData = pendingStates.get(state);
-    if (!stateData) {
+    if (!stateData || stateData.provider !== 'google') {
       return reply.redirect('/admin#accounts?error=invalid_state');
     }
     pendingStates.delete(state);
@@ -249,6 +251,7 @@ export async function registerAuthRoutes(fastify) {
       return reply.redirect('/admin#accounts?error=missing_code');
     }
 
+    cleanExpiredStates();
     const stateData = pendingStates.get(state);
     if (!stateData || stateData.provider !== 'microsoft') {
       return reply.redirect('/admin#accounts?error=invalid_state');

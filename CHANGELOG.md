@@ -13,6 +13,11 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ## [Unreleased]
 
+### Added
+
+- GitHub Actions tests across Node 20/22/24, security/privacy regressions,
+  Chromium accessibility and keyboard checks, dependency audits, and CodeQL.
+
 ### Changed
 
 - **Breaking:** Node.js 20.18.1 or later is required (`engines` previously said
@@ -29,6 +34,11 @@ added features, so under SemVer each is a minor release. They were renumbered
   ([#70](https://github.com/CleverTrou/family-calendar/pull/70))
 
 ### Fixed
+
+- Reject malformed/future admin tokens and expired or cross-provider OAuth states;
+  block hex-mapped IPv6 private feed addresses and invalid webhook item arrays.
+- Prevent caching of API responses; improve PIN dialog focus, keyboard navigation
+  of settings tabs, form labels, and default display/admin text contrast.
 
 - The Pi Zero's heap cap is really 128 MB. On Node 22 and later,
   `--max-old-space-size=128` alone allowed a 320 MB heap.

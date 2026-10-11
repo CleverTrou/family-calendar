@@ -7,9 +7,12 @@ Unifies Google Calendar, iCloud Calendar, Apple Reminders, Microsoft Calendar, a
 ## Stack
 - **Backend:** Node.js 20+, Fastify 5, ES modules (`"type": "module"`)
 - **Frontend:** Vanilla HTML/CSS/JS in `frontend/` — no bundler, served as static files
-- **No tests** — manual verification via browser and Pi display
+- **Tests:** Node test runner + Playwright/axe; see `docs/testing.md`. Manual Pi verification remains useful.
 
 ## Commands
+- `npm test` — unit/security/privacy and HTTP integration tests
+- `npm run test:browser` — Chromium accessibility, privacy and UI tests
+- `npm run test:security` — dependency vulnerability audit
 - `npm start` / `npm run dev` — run server (dev uses `node --watch`)
 - `npm run auth:google` — one-time Google OAuth2 setup
 - `deploy/pi-setup.sh` — Raspberry Pi kiosk bootstrap

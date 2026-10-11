@@ -481,7 +481,7 @@ function KITCHEN_PAPER_STYLE_CSS() {
     '  box-shadow: 0 0 0 3px rgba(210, 130, 55, 0.25), 0 2px 10px var(--shadow);',
     '}',
     '[data-display-style="kitchen-paper"] .day-cell.is-today .day-cell-date {',
-    '  color: var(--color-family);',
+    '  color: var(--text-primary);',
     '}',
 
     /* Date number: warmer, tighter */
@@ -643,7 +643,7 @@ function JAPANDI_STYLE_CSS() {
     '  box-shadow: inset 0 2px 0 var(--color-primary);',
     '}',
     '[data-display-style="japandi"] .day-cell.is-today .day-cell-date {',
-    '  color: var(--color-primary);',
+    '  color: var(--text-primary);',
     '}',
 
     /* All-day events: pastel fill + colored left border */
