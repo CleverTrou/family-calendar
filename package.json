@@ -27,7 +27,7 @@
     "googleapis": "^173.0.0",
     "ical.js": "^2.2.1",
     "node-cron": "^4.6.0",
-    "tsdav": "^2.3.4",
+    "tsdav": "^2.4.0",
     "undici": "^7.30.0"
   },
   "devDependencies": {
