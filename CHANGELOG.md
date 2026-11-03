@@ -15,7 +15,7 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ### Added
 
-- `ALLOWED_NETWORKS` accepts the keyword `lan-ipv6`, which allows the IPv6 range your network currently has. Before, you had to type that range in, and when your ISP changed it, every phone and computer using IPv6 on your network got `403 Forbidden` until someone edited `.env`. The change is picked up within 30 seconds, with no restart. Use `lan-ipv6:eth0` to limit it to one network interface.
+- `ALLOWED_NETWORKS` accepts the keyword `lan-ipv6`, which allows the IPv6 range your network currently has. Before, you had to type that range in, and when your ISP changed it, every phone and computer using IPv6 on your network got `403 Forbidden` until someone edited `.env`. The change is picked up within 30 seconds, with no restart. Use `lan-ipv6:eth0` to limit it to one network interface. ([#99](https://github.com/CleverTrou/family-calendar/pull/99))
 
 ## [0.8.0] - 2026-10-11
 
