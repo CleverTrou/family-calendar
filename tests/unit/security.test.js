@@ -41,12 +41,17 @@ test('CIDR boundaries, IPv6 and mapped IPv4 enforce the allowlist', () => {
 });
 
 test('lan-ipv6 follows this machine\'s current global IPv6 /64 and nothing else', () => {
-  const iface = (...addresses) => ({
-    lo: [{ address: '::1', family: 'IPv6', internal: true }, { address: '127.0.0.1', family: 'IPv4', internal: true }],
-    eth0: addresses.map((address) => ({ address, family: address.includes(':') ? 'IPv6' : 'IPv4', internal: false })),
-    tailscale0: [{ address: 'fd7a:115c:a1e0::e034:9e4e', family: 'IPv6', internal: false }],
+  // Shaped like os.networkInterfaces(): each address carries its on-link `cidr`.
+  const entry = (cidr, internal = false) => {
+    const address = cidr.split('/')[0];
+    return { address, cidr, family: address.includes(':') ? 'IPv6' : 'IPv4', internal };
+  };
+  const iface = (...cidrs) => ({
+    lo: [entry('::1/128', true), entry('127.0.0.1/8', true)],
+    eth0: cidrs.map((c) => entry(c)),
+    tailscale0: [entry('fd7a:115c:a1e0::e034:9e4e/128')],
   });
-  let current = iface('10.0.0.40', '2601:445:880:cc40:8aa2:9eff:fea6:2d39', 'fe80::8aa2:9eff:fea6:2d39');
+  let current = iface('10.0.0.40/24', '2601:445:880:cc40:8aa2:9eff:fea6:2d39/64', 'fe80::8aa2:9eff:fea6:2d39/64');
   let clock = 0;
   const list = net.createAllowlist(['10.0.0.0/24', net.LAN_IPV6], { interfaces: () => current, ttlMs: 1000, now: () => clock });
 
@@ -56,19 +61,25 @@ test('lan-ipv6 follows this machine\'s current global IPv6 /64 and nothing else'
   assert.match(list.describe(), /lan-ipv6 \(now 2601:445:880:cc40::\/64\)/);
 
   // The ISP renumbers: the old prefix stops matching and the new one starts, once the TTL lapses.
-  current = iface('10.0.0.40', '2601:445:800:34b0::9dc');
+  current = iface('10.0.0.40/24', '2601:445:800:34b0::9dc/128', '2601:445:800:34b0:8aa2:9eff:fea6:2d39/64');
   assert.equal(list.allows('2601:445:800:34b0::1'), false, 'cached until the TTL lapses');
   clock = 1000;
   assert.equal(list.allows('2601:445:800:34b0:61d9:e505:4f7b:6c3b'), true, 'new prefix after TTL');
   assert.equal(list.allows('2601:445:880:cc40::1234'), false, 'old prefix dropped');
 
   // No global IPv6 at all: the keyword matches nothing rather than everything.
-  const none = net.createAllowlist([net.LAN_IPV6], { interfaces: () => iface('10.0.0.40') });
+  const none = net.createAllowlist([net.LAN_IPV6], { interfaces: () => iface('10.0.0.40/24') });
   assert.equal(none.allows('2601:445:800:34b0::1'), false);
   assert.match(none.describe(), /now none/);
 
+  // A lone /128 (DHCPv6) or tunnel address (Teredo, 6to4) adds no range.
+  const narrow = net.createAllowlist([net.LAN_IPV6], {
+    interfaces: () => iface('2601:445:800:34b0::9dc/128', '2001:0:4136:e378::1/64', '2002:c000:204::1/64'),
+  });
+  for (const ip of ['2601:445:800:34b0::1', '2001:0:4136:e378::2', '2002:c000:204::2']) assert.equal(narrow.allows(ip), false, ip);
+
   // lan-ipv6:<iface> ignores global addresses on other interfaces (a WAN port, a VPN).
-  const withWan = { ...iface('2601:445:800:34b0::9dc'), wan0: [{ address: '2001:558:6000::1', family: 'IPv6', internal: false }] };
+  const withWan = { ...iface('2601:445:800:34b0::1/64'), wan0: [entry('2001:558:6000::1/64')] };
   const scoped = net.createAllowlist(['lan-ipv6:eth0'], { interfaces: () => withWan });
   assert.equal(scoped.allows('2601:445:800:34b0::1'), true, 'named interface');
   assert.equal(scoped.allows('2001:558:6000::2'), false, 'other interface');

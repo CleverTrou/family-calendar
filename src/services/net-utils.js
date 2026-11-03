@@ -73,17 +73,23 @@ export const LAN_IPV6 = 'lan-ipv6';
 const LAN_IPV6_ENTRY = /^lan-ipv6(?::(.+))?$/;
 
 const GLOBAL_UNICAST = parseCIDR('2000::/3');
+// Global-looking ranges that are tunnels or documentation, never a LAN.
+const NOT_A_LAN = ['2001::/32', '2002::/16', '2001:db8::/32'].map(parseCIDR);
 
 // The /64 of each global IPv6 address on this machine's interfaces (all of them,
 // or only those named in `only`). ULA and link-local are skipped, so Tailscale's
-// fd7a:… address never widens the list.
+// fd7a:… address never widens the list. Only addresses the interface reports as
+// on-link at /64 or wider count: a DHCPv6 /128 (or a /96 point-to-point link)
+// says nothing about who else is on the segment, so it adds no range.
 export function lanIPv6Prefixes(interfaces = os.networkInterfaces(), only = null) {
   const nets = new Map();
   for (const [name, addrs] of Object.entries(interfaces)) {
     if (only && !only.has(name)) continue;
     for (const a of addrs || []) {
       if (a.internal || !a.address.includes(':')) continue;
-      if (!matchCIDR(a.address, GLOBAL_UNICAST)) continue;
+      if (!matchCIDR(a.address, GLOBAL_UNICAST) || NOT_A_LAN.some((n) => matchCIDR(a.address, n))) continue;
+      const onLink = parseInt((a.cidr || '').split('/')[1], 10);
+      if (!(onLink <= 64)) continue;
       const net = parseCIDR(`${a.address}/64`);
       nets.set(net.ip, net);
     }
