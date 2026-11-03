@@ -4,6 +4,7 @@
  */
 
 import os from 'node:os';
+import { performance } from 'node:perf_hooks';
 
 export function normalizeIP(ipStr) {
   // URL canonicalization handles expanded, uppercase and hex-mapped IPv6,
@@ -106,7 +107,7 @@ export function formatIPv6Prefix(net) {
 // Build the request allowlist from ALLOWED_NETWORKS entries. `lan-ipv6` is
 // re-resolved at most every `ttlMs`, so a prefix change takes effect without a
 // restart, and a prefix the machine no longer holds stops matching.
-export function createAllowlist(entries, { interfaces = () => os.networkInterfaces(), ttlMs = 30_000, now = Date.now } = {}) {
+export function createAllowlist(entries, { interfaces = () => os.networkInterfaces(), ttlMs = 30_000, now = () => performance.now() } = {}) {
   const lanEntries = entries.map((e) => e.match(LAN_IPV6_ENTRY)).filter(Boolean);
   const useLan = lanEntries.length > 0;
   // A bare `lan-ipv6` anywhere means every interface; otherwise only the named ones.
