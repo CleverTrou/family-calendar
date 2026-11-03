@@ -2,7 +2,7 @@
 
 ## Run locally
 
-Use Node 20.18.1 or later (24 recommended) and npm:
+Use Node 22.19 or later (24 recommended) and npm:
 
 ```sh
 npm ci
@@ -51,7 +51,7 @@ font without configured weather. Live provider consent and sync are not covered.
 
 `Tests` runs on pull requests, pushes to `main`, weekly, and manual dispatch:
 
-- **Security, privacy and API (Node 20.18.1 / 22 / 24)**
+- **Security, privacy and API (Node 22.19.0 / 22 / 24)**
 - **Accessibility and browser privacy**
 - **Dependency vulnerability audit** (production and development packages)
 

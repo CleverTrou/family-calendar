@@ -30,6 +30,17 @@ echo "  Home:  $PI_HOME"
 echo "  Repo:  $REPO_DIR"
 echo ""
 
+# 64-bit only: Node.js 22.19+ has no maintained 32-bit ARM build. NodeSource
+# never built 24 for armhf and stopped updating 22 at 22.15, and Debian's own
+# nodejs is 20. Checked here, before anything is installed.
+ARCH=$(dpkg --print-architecture)
+if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "amd64" ]; then
+  echo "ERROR: this is a 32-bit ($ARCH) OS, and this app needs Node.js 22.19 or later," >&2
+  echo "  which has no maintained 32-bit ARM build." >&2
+  echo "  Reflash with Raspberry Pi OS Lite (64-bit): the Zero 2 W, Pi 3 and Pi 4 all run it." >&2
+  exit 1
+fi
+
 # ── 1. System updates ──────────────────────────────────
 echo "→ Updating system packages..."
 apt update && apt upgrade -y
@@ -62,31 +73,12 @@ apt install -y \
   curl
 
 # ── 3. Node.js ────────────────────────────────────────
-MIN_NODE=20.18.1   # node-cron >=20, undici >=20.18.1
+MIN_NODE=22.19.0   # undici 8 needs >=22.19.0, googleapis >=178.1.1 needs 22
 if ! command -v node &>/dev/null; then
-  # 64-bit: NodeSource's Node 24 LTS (supported to April 2028). 32-bit (armhf):
-  # NodeSource never built 24 and stopped updating 22 at 22.15, so use Debian's
-  # own nodejs instead. Debian backports security fixes, and unattended-upgrades
-  # applies them automatically, but only trixie (13) ships a new enough one:
-  # bookworm's is 18.19. Check the candidate *before* installing it.
-  ARCH=$(dpkg --print-architecture)
-  NODE_PKGS=nodejs   # NodeSource's nodejs bundles npm
-  if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "amd64" ]; then
-    echo "→ Installing Node.js 24 LTS from NodeSource ($ARCH)..."
-    curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
-  else
-    CANDIDATE=$(apt-cache policy nodejs | awk '/Candidate:/ {print $2}')
-    if [ -z "$CANDIDATE" ] || [ "$CANDIDATE" = "(none)" ] \
-       || ! dpkg --compare-versions "$CANDIDATE" ge "$MIN_NODE"; then
-      echo "ERROR: $ARCH has no maintained NodeSource build, and Debian's nodejs here" >&2
-      echo "  (${CANDIDATE:-none}) is older than this app's minimum, $MIN_NODE." >&2
-      echo "  Use Raspberry Pi OS Lite (64-bit), or a 32-bit image based on Debian 13 (trixie)." >&2
-      exit 1
-    fi
-    echo "→ Installing Debian's Node.js $CANDIDATE ($ARCH has no maintained NodeSource build)..."
-    NODE_PKGS="nodejs npm"   # Debian packages npm separately
-  fi
-  apt install -y $NODE_PKGS
+  # NodeSource's Node 24 LTS (supported to April 2028). Its nodejs bundles npm.
+  echo "→ Installing Node.js 24 LTS from NodeSource ($ARCH)..."
+  curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
+  apt install -y nodejs
 fi
 NODE_VERSION=$(node -p process.versions.node)
 if ! dpkg --compare-versions "$NODE_VERSION" ge "$MIN_NODE"; then
@@ -95,7 +87,7 @@ if ! dpkg --compare-versions "$NODE_VERSION" ge "$MIN_NODE"; then
   echo "  Remove it (sudo apt remove nodejs) and re-run this script." >&2
   exit 1
 fi
-# A pre-existing Debian nodejs may lack npm (Debian packages it separately).
+# A pre-existing nodejs from Debian may lack npm (Debian packages it separately).
 if ! command -v npm &>/dev/null; then
   echo "→ Installing npm..."
   apt install -y npm

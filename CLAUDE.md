@@ -5,7 +5,7 @@ Always-on wall-mounted calendar display for Raspberry Pi 5 (and 4K TV via webOS)
 Unifies Google Calendar, iCloud Calendar, Apple Reminders, Microsoft Calendar, and Microsoft To Do.
 
 ## Stack
-- **Backend:** Node.js 20+, Fastify 5, ES modules (`"type": "module"`)
+- **Backend:** Node.js 22.19+, Fastify 5, ES modules (`"type": "module"`)
 - **Frontend:** Vanilla HTML/CSS/JS in `frontend/` — no bundler, served as static files
 - **Tests:** Node test runner + Playwright/axe; see `docs/testing.md`. Manual Pi verification remains useful.
 
