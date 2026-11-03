@@ -3,6 +3,9 @@
  * (server.js) and the SSRF guard for user-supplied feed URLs (safe-fetch.js).
  */
 
+import os from 'node:os';
+import { performance } from 'node:perf_hooks';
+
 export function normalizeIP(ipStr) {
   // URL canonicalization handles expanded, uppercase and hex-mapped IPv6,
   // including the form produced when safeFetch parses ::ffff:127.0.0.1.
@@ -60,6 +63,72 @@ export function matchCIDR(ipStr, net) {
   if (parts.length !== 4) return false;
   const ip = ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
   return (ip & net.mask) === net.ip;
+}
+
+// ALLOWED_NETWORKS keyword for "this machine's own IPv6 LAN, whatever its prefix
+// is today". ISPs hand out a new delegated prefix from time to time, so a
+// hard-coded /64 silently locks every native-IPv6 client out until it is edited.
+// `lan-ipv6` covers every non-loopback interface; `lan-ipv6:eth0` only that one,
+// for hosts that also hold a global address on a WAN or VPN interface.
+export const LAN_IPV6 = 'lan-ipv6';
+const LAN_IPV6_ENTRY = /^lan-ipv6(?::(.+))?$/;
+
+const GLOBAL_UNICAST = parseCIDR('2000::/3');
+// Global-looking ranges that are tunnels or documentation, never a LAN.
+const NOT_A_LAN = ['2001::/32', '2002::/16', '2001:db8::/32'].map(parseCIDR);
+
+// The /64 of each global IPv6 address on this machine's interfaces (all of them,
+// or only those named in `only`). ULA and link-local are skipped, so Tailscale's
+// fd7a:… address never widens the list. Only addresses the interface reports as
+// on-link at /64 or wider count: a DHCPv6 /128 (or a /96 point-to-point link)
+// says nothing about who else is on the segment, so it adds no range.
+export function lanIPv6Prefixes(interfaces = os.networkInterfaces(), only = null) {
+  const nets = new Map();
+  for (const [name, addrs] of Object.entries(interfaces)) {
+    if (only && !only.has(name)) continue;
+    for (const a of addrs || []) {
+      if (a.internal || !a.address.includes(':')) continue;
+      if (!matchCIDR(a.address, GLOBAL_UNICAST) || NOT_A_LAN.some((n) => matchCIDR(a.address, n))) continue;
+      const onLink = parseInt((a.cidr || '').split('/')[1], 10);
+      if (!(onLink <= 64)) continue;
+      const net = parseCIDR(`${a.address}/64`);
+      nets.set(net.ip, net);
+    }
+  }
+  return [...nets.values()];
+}
+
+export function formatIPv6Prefix(net) {
+  const groups = [];
+  for (let shift = 112n; shift >= 64n; shift -= 16n) groups.push(((net.ip >> shift) & 0xffffn).toString(16));
+  return normalizeIP(`${groups.join(':')}::`) + '/64';
+}
+
+// Build the request allowlist from ALLOWED_NETWORKS entries. `lan-ipv6` is
+// re-resolved at most every `ttlMs`, so a prefix change takes effect without a
+// restart, and a prefix the machine no longer holds stops matching.
+export function createAllowlist(entries, { interfaces = () => os.networkInterfaces(), ttlMs = 30_000, now = () => performance.now() } = {}) {
+  const lanEntries = entries.map((e) => e.match(LAN_IPV6_ENTRY)).filter(Boolean);
+  const useLan = lanEntries.length > 0;
+  // A bare `lan-ipv6` anywhere means every interface; otherwise only the named ones.
+  const only = lanEntries.some((m) => !m[1]) ? null : new Set(lanEntries.map((m) => m[1]));
+  const fixed = entries.filter((e) => !LAN_IPV6_ENTRY.test(e)).map(parseCIDR);
+  let lan = [];
+  let resolvedAt = -Infinity;
+  const lanNets = () => {
+    if (useLan && now() - resolvedAt >= ttlMs) {
+      lan = lanIPv6Prefixes(interfaces(), only);
+      resolvedAt = now();
+    }
+    return lan;
+  };
+  return {
+    allows: (ip) => fixed.some((net) => matchCIDR(ip, net)) || lanNets().some((net) => matchCIDR(ip, net)),
+    describe: () => {
+      const current = `(now ${lanNets().map(formatIPv6Prefix).join(', ') || 'none'})`;
+      return [...entries.filter((e) => !LAN_IPV6_ENTRY.test(e)), ...(useLan ? [`${lanEntries.map((m) => m[0]).join(', ')} ${current}`] : [])].join(', ');
+    },
+  };
 }
 
 // Private, loopback, link-local, CGNAT, documentation, and multicast/reserved
