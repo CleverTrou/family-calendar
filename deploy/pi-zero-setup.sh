@@ -115,7 +115,9 @@ if ! command -v node &>/dev/null; then
   curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
   apt install -y nodejs
 fi
-NODE_VERSION=$(node -p process.versions.node)
+# Check, then run, the same binary: the unit below uses this exact path.
+NODE_BIN=$(command -v node)
+NODE_VERSION=$("$NODE_BIN" -p process.versions.node)
 if ! dpkg --compare-versions "$NODE_VERSION" ge "$MIN_NODE"; then
   # An existing install is left alone above, so it can be too old.
   echo "ERROR: Node.js $NODE_VERSION is below this app's minimum, $MIN_NODE." >&2
@@ -190,7 +192,7 @@ Wants=network-online.target
 Type=simple
 User=$PI_USER
 WorkingDirectory=$REPO_DIR
-ExecStart=/usr/bin/node src/server.js
+ExecStart=$NODE_BIN src/server.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
