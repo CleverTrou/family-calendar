@@ -116,7 +116,7 @@ Differences from the standard setup:
 - **Lightweight mode** enabled — syncs every 15 min, frontend polls every 2 min
 - **Node.js heap limited** to ~152 MB to prevent OOM (`--max-old-space-size=128 --max-semi-space-size=8`; the old-space flag alone allows 320 MB on Node 22+)
 
-> **Note:** Use **Raspberry Pi OS Lite (64-bit)**. The Zero 2 W, Pi 3 and Pi 4 all run it. Both setup scripts refuse a 32-bit OS, because the app needs Node.js 22.19 or later, and no maintained 32-bit ARM build of it exists. If your board is on a 32-bit image, reflash it with the 64-bit one. The original Pi Zero W (ARMv6) can't run a 64-bit OS, so it isn't supported.
+> **Note:** Use **Raspberry Pi OS Lite (64-bit)**. The Zero 2 W, Pi 3 and Pi 4 all run it. Both setup scripts refuse a 32-bit OS. They install Node.js with apt, and no apt source ships 22.19 or later for 32-bit ARM: NodeSource stopped at 22.15, Debian ships 20, and Node.js 24 has no 32-bit ARM build at all. If your board is on a 32-bit image, reflash it with the 64-bit one. The original Pi Zero W (ARMv6) can't run a 64-bit OS, so it isn't supported.
 
 ### macOS (development or temporary display)
 

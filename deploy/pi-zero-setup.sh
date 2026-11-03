@@ -11,8 +11,8 @@
 #
 # Requirements:
 #   - Raspberry Pi Zero 2 W, Pi 3B/3B+, or Pi 4 (1GB)
-#   - Raspberry Pi OS Lite (64-bit). A 32-bit OS is refused: Node.js 22.19+,
-#     which this app needs, has no maintained 32-bit ARM build.
+#   - Raspberry Pi OS Lite (64-bit). A 32-bit OS is refused: no apt source
+#     ships Node.js 22.19+, which this app needs, for 32-bit ARM.
 #
 # Run on a fresh install:
 #
@@ -39,13 +39,14 @@ echo "  Home:  $PI_HOME"
 echo "  Repo:  $REPO_DIR"
 echo ""
 
-# 64-bit only: Node.js 22.19+ has no maintained 32-bit ARM build. NodeSource
-# never built 24 for armhf and stopped updating 22 at 22.15, and Debian's own
-# nodejs is 20. Checked here, before anything is installed.
+# 64-bit only: no apt source ships Node.js 22.19+ for 32-bit ARM. NodeSource
+# stopped updating armhf at 22.15 and never built 24 (Node.js 24 has no 32-bit
+# ARM build at all), and Debian's own nodejs is 20. Checked here, before
+# anything is installed.
 ARCH=$(dpkg --print-architecture)
 if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "amd64" ]; then
-  echo "ERROR: this is a 32-bit ($ARCH) OS, and this app needs Node.js 22.19 or later," >&2
-  echo "  which has no maintained 32-bit ARM build." >&2
+  echo "ERROR: this is a 32-bit ($ARCH) OS. This app needs Node.js 22.19 or later," >&2
+  echo "  and no apt source ships that for 32-bit ARM." >&2
   echo "  Reflash with Raspberry Pi OS Lite (64-bit): the Zero 2 W, Pi 3 and Pi 4 all run it." >&2
   exit 1
 fi
