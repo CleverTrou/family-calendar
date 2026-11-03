@@ -13,6 +13,10 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-03
+
+IPv6 allowlisting that follows your ISP, Node.js 22 on 64-bit only, and a dependency sweep.
+
 ### Added
 
 - `ALLOWED_NETWORKS` accepts the keyword `lan-ipv6`, which allows the IPv6 range your network currently has. Before, you had to type that range in, and when your ISP changed it, every phone and computer using IPv6 on your network got `403 Forbidden` until someone edited `.env`. The change is picked up within 30 seconds, with no restart. Use `lan-ipv6:eth0` to limit it to one network interface. ([#99](https://github.com/CleverTrou/family-calendar/pull/99))
@@ -21,6 +25,13 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 - **Breaking:** Node.js 22.19 or later is required, and the Pi setup scripts need a 64-bit OS. Node.js 20, the version the old 32-bit setup path installed from Debian, stopped getting updates in April 2026. The Zero 2 W, Pi 3 and Pi 4 all run Raspberry Pi OS Lite (64-bit). If yours is on a 32-bit image, back up `.env`, `settings.json` and `data/` (the README lists what each holds), then reflash it with the 64-bit one before updating. On a 32-bit OS, the setup scripts now stop before installing anything. ([#100](https://github.com/CleverTrou/family-calendar/pull/100))
 - `@fastify/static` updated to 10.1.8. It had been held at 10.1.3 because newer versions don't run on Node.js 20. `undici` 8 and newer `googleapis` versions were held back for the same reason. They aren't installed yet, but Dependabot can propose them again. ([#100](https://github.com/CleverTrou/family-calendar/pull/100))
+
+### Security
+
+- Dependency updates fix the high-severity `undici` advisories (memory exhaustion in its EventSource parser, and a Subresource Integrity bypass), plus advisories in `fastify` and `fast-uri`. `npm audit` now reports no high or critical issues. 8 moderate ones remain in indirect dependencies (`glob`/`minimatch` through `googleapis` and `@fastify/static`, `qs`, `ip-address`).
+  ([#90](https://github.com/CleverTrou/family-calendar/pull/90))
+  ([#91](https://github.com/CleverTrou/family-calendar/pull/91))
+  ([#98](https://github.com/CleverTrou/family-calendar/pull/98))
 
 ## [0.8.0] - 2026-10-11
 
@@ -198,7 +209,8 @@ The repository as it was when first made public.
 - Raspberry Pi kiosk mode that boots straight into fullscreen Chromium.
 - LG webOS app.
 
-[Unreleased]: https://github.com/CleverTrou/family-calendar/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/CleverTrou/family-calendar/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/CleverTrou/family-calendar/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/CleverTrou/family-calendar/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/CleverTrou/family-calendar/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/CleverTrou/family-calendar/compare/v0.5.0...v0.6.0
