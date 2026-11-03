@@ -11,7 +11,7 @@ import { registerWebhookRoutes } from './routes/webhooks.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerAccountRoutes } from './routes/accounts.js';
 import { requireAdmin, isPinRequired, verifyPin, generateToken } from './services/admin-auth.js';
-import { parseCIDR, matchCIDR } from './services/net-utils.js';
+import { createAllowlist } from './services/net-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -57,17 +57,17 @@ export async function buildApp() {
   // ── Security: IP allowlist ────────────────────────────
   // If ALLOWED_NETWORKS is set, reject requests from outside those ranges.
   if (config.allowedNetworks.length > 0) {
-    const nets = config.allowedNetworks.map(parseCIDR);
+    const allowlist = createAllowlist(config.allowedNetworks);
     fastify.addHook('onRequest', (request, reply, done) => {
       const ip = request.ip;
-      if (!nets.some((net) => matchCIDR(ip, net))) {
+      if (!allowlist.allows(ip)) {
         console.warn(`[Security] Blocked request from ${ip}`);
         reply.code(403).send({ error: 'Forbidden' });
         return;
       }
       done();
     });
-    console.log(`[Security] IP allowlist active: ${config.allowedNetworks.join(', ')}`);
+    console.log(`[Security] IP allowlist active: ${allowlist.describe()}`);
   }
 
   // ── Security: rate limiting on sensitive endpoints ────
