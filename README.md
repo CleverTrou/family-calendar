@@ -116,7 +116,7 @@ Differences from the standard setup:
 - **Lightweight mode** enabled — syncs every 15 min, frontend polls every 2 min
 - **Node.js heap limited** to ~152 MB to prevent OOM (`--max-old-space-size=128 --max-semi-space-size=8`; the old-space flag alone allows 320 MB on Node 22+)
 
-> **Note:** Use **Raspberry Pi OS Lite (64-bit)**. The Zero 2 W, Pi 3 and Pi 4 all run it. Both setup scripts refuse a 32-bit OS. They install Node.js with apt, and no apt source ships 22.19 or later for 32-bit ARM: NodeSource stopped at 22.15, Debian ships 20, and Node.js 24 has no 32-bit ARM build at all. If your board is on a 32-bit image, reflash it with the 64-bit one. The original Pi Zero W (ARMv6) can't run a 64-bit OS, so it isn't supported.
+> **Note:** Use **Raspberry Pi OS Lite (64-bit)**. The Zero 2 W, Pi 3 and Pi 4 all run it. Both setup scripts refuse a 32-bit OS. They install Node.js with apt from NodeSource or Raspberry Pi OS, and neither ships 22.19 or later for 32-bit ARM: NodeSource stopped at 22.15, and Raspberry Pi OS ships 20. If your board is on a 32-bit image, reflash it with the 64-bit one. **Back up first:** copy `.env`, `settings.json` and the whole `data/` folder (including the hidden `data/.credential-key`) out of `~/family-calendar`. After reflashing, run the setup script, copy the files back, and run `sudo systemctl restart family-calendar`. Connected accounts and cached events are encrypted with `CREDENTIAL_SECRET` from `.env`, or with `data/.credential-key` when `.env` has none. Without that key they can't be decrypted, and you'd have to connect every account again. The original Pi Zero W (ARMv6) can't run a 64-bit OS, so it isn't supported.
 
 ### macOS (development or temporary display)
 

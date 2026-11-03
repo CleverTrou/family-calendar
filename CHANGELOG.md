@@ -15,7 +15,7 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ### Changed
 
-- **Breaking:** Node.js 22.19 or later is required, and the Pi setup scripts need a 64-bit OS. Node.js 20, the newest a 32-bit Raspberry Pi could install with apt, stopped getting updates in April 2026. The Zero 2 W, Pi 3 and Pi 4 all run Raspberry Pi OS Lite (64-bit). If yours is on a 32-bit image, reflash it with the 64-bit one before updating. On a 32-bit OS, the setup scripts now stop before installing anything. ([#100](https://github.com/CleverTrou/family-calendar/pull/100))
+- **Breaking:** Node.js 22.19 or later is required, and the Pi setup scripts need a 64-bit OS. Node.js 20, the newest a 32-bit Raspberry Pi could install with apt, stopped getting updates in April 2026. The Zero 2 W, Pi 3 and Pi 4 all run Raspberry Pi OS Lite (64-bit). If yours is on a 32-bit image, back up `.env`, `settings.json` and `data/` (the README lists what each holds), then reflash it with the 64-bit one before updating. On a 32-bit OS, the setup scripts now stop before installing anything. ([#100](https://github.com/CleverTrou/family-calendar/pull/100))
 - `@fastify/static` updated to 10.1.8. It had been held at 10.1.3 because newer versions don't run on Node.js 20. `undici` 8 and newer `googleapis` versions were held back for the same reason. They aren't installed yet, but Dependabot can propose them again. ([#100](https://github.com/CleverTrou/family-calendar/pull/100))
 
 ## [0.8.0] - 2026-10-11
