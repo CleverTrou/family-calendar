@@ -116,7 +116,7 @@ Differences from the standard setup:
 - **Lightweight mode** enabled — syncs every 15 min, frontend polls every 2 min
 - **Node.js heap limited** to ~152 MB to prevent OOM (`--max-old-space-size=128 --max-semi-space-size=8`; the old-space flag alone allows 320 MB on Node 22+)
 
-> **Note:** Use **Raspberry Pi OS Lite (64-bit)**. The Zero 2 W, Pi 3 and Pi 4 all run it. Both setup scripts refuse a 32-bit OS. They install Node.js with apt from NodeSource or Raspberry Pi OS, and neither ships 22.19 or later for 32-bit ARM: NodeSource stopped at 22.15, and Raspberry Pi OS ships 20. If your board is on a 32-bit image, reflash it with the 64-bit one. **Back up first:** copy `.env`, `settings.json` and the whole `data/` folder (including the hidden `data/.credential-key`) out of `~/family-calendar`. After reflashing, run the setup script, copy the files back, and run `sudo systemctl restart family-calendar`. Connected accounts and cached events are encrypted with `CREDENTIAL_SECRET` from `.env`, or with `data/.credential-key` when `.env` has none. Without that key they can't be decrypted, and you'd have to connect every account again. The original Pi Zero W (ARMv6) can't run a 64-bit OS, so it isn't supported.
+> **Note:** Use **Raspberry Pi OS Lite (64-bit)**. The Zero 2 W, Pi 3 and Pi 4 all run it. Both setup scripts refuse a 32-bit OS. They install Node.js with apt from NodeSource or Raspberry Pi OS, and neither ships 22.19 or later for 32-bit ARM: NodeSource stopped at 22.15, and Raspberry Pi OS ships 20. If your board is on a 32-bit image, reflash it with the 64-bit one. **Back up first:** copy `.env`, `settings.json` and the whole `data/` folder (including the hidden `data/.credential-key`) out of `~/family-calendar`. After reflashing, run the setup script, then `sudo systemctl stop family-calendar` (the script starts it), copy the files back, and run `sudo systemctl start family-calendar`. Connected accounts and cached events are encrypted with `CREDENTIAL_SECRET` from `.env`, or with `data/.credential-key` when `.env` has none. Without that key they can't be decrypted, and you'd have to connect every account again. The original Pi Zero W (ARMv6) can't run a 64-bit OS, so it isn't supported.
 
 ### macOS (development or temporary display)
 
@@ -357,10 +357,10 @@ All configuration is via environment variables in `.env`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ALLOWED_NETWORKS` | *(none)* | Comma-separated CIDR ranges to allow (e.g., `10.0.0.0/24,127.0.0.1`) |
+| `ALLOWED_NETWORKS` | *(none)* | Comma-separated CIDR ranges to allow (e.g., `10.0.0.0/24,127.0.0.1`), plus the keyword `lan-ipv6` |
 | `ALLOW_LOCAL_ICS_FEEDS` | `false` | Allow ICS feed URLs to resolve to private/internal addresses (see below) |
 
-When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. Because the server listens dual-stack, list **IPv6 ranges too**: Tailscale MagicDNS gives clients an IPv6 address (`fd7a:115c:a1e0::/48`) first, and a LAN with native IPv6 needs its own `/64` prefix. IPv4-mapped addresses (`::ffff:10.0.0.5`) and `::1` are matched against their IPv4 forms, so `127.0.0.1` already covers local IPv6 loopback. The PIN endpoint is rate-limited to 5 attempts per minute.
+When `ALLOWED_NETWORKS` is set, requests from IPs outside those ranges receive `403 Forbidden`. Because the server listens dual-stack, list **IPv6 ranges too**: Tailscale MagicDNS gives clients an IPv6 address (`fd7a:115c:a1e0::/48`) first, and a LAN with native IPv6 needs its own `/64` prefix. Use the keyword `lan-ipv6` for that rather than typing the prefix: most ISPs change it from time to time, and a hard-coded one then returns `403` to every IPv6 client on your LAN. `lan-ipv6` allows the `/64` of each global IPv6 address this machine currently holds, on **every** network interface except loopback. Only addresses the interface reports as on a `/64` (or wider) count. A lone DHCPv6 `/128` and tunnel addresses (Teredo `2001::/32`, 6to4 `2002::/16`) add nothing. It is re-read every 30 seconds, so a new prefix works without a restart, and the old one stops working. If the machine also has a global IPv6 address on a WAN or VPN interface, name the LAN interface instead, e.g. `lan-ipv6:eth0` (repeat it for more than one interface), so that interface's range is not allowed too. IPv4-mapped addresses (`::ffff:10.0.0.5`) and `::1` are matched against their IPv4 forms, so `127.0.0.1` already covers local IPv6 loopback. The PIN endpoint is rate-limited to 5 attempts per minute.
 
 The server logs a startup warning if `ADMIN_PIN` or `ALLOWED_NETWORKS` is left unset, since both default to fully open. ICS feed URLs (connect-time test and every periodic re-sync) are fetched through a DNS-pinned guard that refuses to connect to private/internal addresses, even ones reached via DNS rebinding — set `ALLOW_LOCAL_ICS_FEEDS=true` if you want to subscribe to a feed hosted on your own network (a Synology/Nextcloud/Home Assistant instance, a Tailscale peer, etc).
 
@@ -370,6 +370,8 @@ The server logs a startup warning if `ADMIN_PIN` or `ALLOWED_NETWORKS` is left u
 ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1
 # add Tailscale if you use it (IPv4 and IPv6 ranges):
 ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1,100.64.0.0/10,fd7a:115c:a1e0::/48
+# add lan-ipv6 if your LAN has native IPv6:
+ALLOWED_NETWORKS=10.0.0.0/24,127.0.0.1,lan-ipv6,100.64.0.0/10,fd7a:115c:a1e0::/48
 
 # Protect the admin panel and sensitive API routes
 ADMIN_PIN=your-pin-here

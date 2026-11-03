@@ -13,6 +13,10 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ## [Unreleased]
 
+### Added
+
+- `ALLOWED_NETWORKS` accepts the keyword `lan-ipv6`, which allows the IPv6 range your network currently has. Before, you had to type that range in, and when your ISP changed it, every phone and computer using IPv6 on your network got `403 Forbidden` until someone edited `.env`. The change is picked up within 30 seconds, with no restart. Use `lan-ipv6:eth0` to limit it to one network interface. ([#99](https://github.com/CleverTrou/family-calendar/pull/99))
+
 ### Changed
 
 - **Breaking:** Node.js 22.19 or later is required, and the Pi setup scripts need a 64-bit OS. Node.js 20, the newest a 32-bit Raspberry Pi could install with apt, stopped getting updates in April 2026. The Zero 2 W, Pi 3 and Pi 4 all run Raspberry Pi OS Lite (64-bit). If yours is on a 32-bit image, back up `.env`, `settings.json` and `data/` (the README lists what each holds), then reflash it with the 64-bit one before updating. On a 32-bit OS, the setup scripts now stop before installing anything. ([#100](https://github.com/CleverTrou/family-calendar/pull/100))
