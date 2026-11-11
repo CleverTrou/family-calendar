@@ -14,6 +14,12 @@ permissions:
 jobs:
   analyze:
     name: JavaScript security analysis
+    # Code scanning is free only on public repositories on GitHub's Free, Pro
+    # and Team plans; a private repo needs a Code Security licence and the
+    # upload would fail. Matched against 'public' so a run with no
+    # repository object (scheduled, fork PR) skips: a missing value compares
+    # equal to false, so `private == false` would run.
+    if: ${{ github.event.repository.visibility == 'public' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
