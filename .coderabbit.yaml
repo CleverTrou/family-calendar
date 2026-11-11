@@ -24,8 +24,67 @@ reviews:
     - "!**/*.png"
     - "!**/*.ipk"
     - "!**/*.wgt"
-    - "!deploy/webos-app/**"
-    - "!deploy/tizen-app/**"
+
+  # Standing review instructions, identical in every CleverTrou repo. Change
+  # them in all repos at once, never in one copy.
+  path_instructions:
+    - path: "**"
+      instructions: |
+        Check every change for privacy, security and accessibility problems:
+        code, comments, docs, config, scripts, test fixtures and sample data
+        alike. Treat this repository as public, even if it is private today.
+
+        Privacy. Flag anything that identifies a real person or a real home
+        network, and suggest a placeholder (mypi.local, <user>, 192.0.2.10) or
+        an environment variable instead:
+        - Real people's names, including the repository owner's. The GitHub
+          account that owns the repository, and a name in a LICENSE or
+          copyright line, are fine.
+        - Email addresses, except GitHub noreply addresses and addresses at
+          example.com, example.org or example.net.
+        - Phone numbers, street addresses, and other people's names, account
+          names or handles, such as family members or other users.
+        - Hostnames and device names of real machines: .local names,
+          Tailscale MagicDNS names and *.ts.net domains, router, NAS or
+          computer names.
+        - IP addresses and prefixes, IPv4 or IPv6, except loopback, the
+          unspecified addresses (0.0.0.0 and ::), and the documentation ranges
+          192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 and 2001:db8::/32.
+        - Home directory paths or login names that contain a username, such
+          as /Users/<name>, /home/<name> or C:\Users\<name>.
+        - Descriptions of the owner's home network or devices: which services
+          run where, what else is on the network, travel or absence, location
+          or time zone.
+        - Machine identifiers: serial numbers, MAC addresses, device IDs and
+          cloud instance names.
+
+        Security. Flag:
+        - Secrets of any kind: API keys, tokens, passwords, private keys,
+          session data, webhook or push-notification topic URLs, and links
+          that carry a password.
+        - Credentials passed on a command line, printed to logs or errors, or
+          written to files without owner-only permissions.
+        - Shell, SQL, HTML or path injection, and evaluation of built strings.
+        - Downloads or installs that are not pinned and checked by hash or
+          signature, and disabled TLS or SSH host-key verification.
+        - Services exposed more widely than they need to be, missing
+          authentication or authorization, and overly broad CORS.
+        - GitHub Actions with permissions they do not need, unsafe
+          pull_request_target use, and third-party actions not pinned to a
+          commit SHA.
+
+        Accessibility, to WCAG 2.2 AA. Flag:
+        - Controls with no accessible name, or with a whole paragraph as the
+          name; form fields with no label; images with no text alternative.
+        - Text contrast below 4.5:1, or below 3:1 for large text and for
+          non-text UI, in both light and dark themes.
+        - No visible focus indicator, anything unreachable by keyboard, and
+          click targets smaller than 24x24 CSS pixels.
+        - Information given only by colour, in a UI or in terminal output.
+        - Motion that ignores prefers-reduced-motion, and HTML pages with no
+          lang attribute or title.
+        - SwiftUI and AppKit controls whose accessibility label, role or
+          action is missing or broken.
 
 chat:
   auto_reply: true
