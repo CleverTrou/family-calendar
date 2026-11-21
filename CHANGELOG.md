@@ -13,6 +13,17 @@ added features, so under SemVer each is a minor release. They were renumbered
 
 ## [Unreleased]
 
+### Security
+
+- Updated the server's libraries, clearing all 8 moderate advisories `npm audit`
+  reported. None affected how the calendar works: they were denial-of-service and
+  file-traversal issues in libraries it pulls in indirectly (glob, minimatch,
+  ip-address, qs). The libraries it uses directly moved to undici 8, googleapis
+  190, @fastify/static 10.1.12, @fastify/cors 11.4.3 and dotenv 18.0.10. The
+  check that refuses calendar feeds pointing at private addresses was re-tested
+  on undici 8.
+  ([#121](https://github.com/CleverTrou/family-calendar/pull/121))
+
 ## [0.9.0] - 2026-11-03
 
 IPv6 allowlisting that follows your ISP, Node.js 22 on 64-bit only, and a dependency sweep.
