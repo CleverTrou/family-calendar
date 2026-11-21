@@ -10,3 +10,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # init and analyze are two dependencies to Dependabot but one release
+      # upstream, and must stay on the same version. Without this group each
+      # gets its own PR, and merging one leaves the workflow mixed.
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
